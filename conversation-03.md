@@ -159,3 +159,59 @@ Reverted my server.as workaround — the language-level fix supersedes it and re
 Memory updated with the `v_entries` / `v_files` behaviour change as a new empirical finding.
 
 Asked the user to restart the server, ensure `data/` is gone, reload — should see the empty state with Load sample button.
+
+---
+
+## User (2026-05-18)
+
+tested, works
+
+---
+
+## Assistant (2026-05-18)
+
+Moved to step 2 — cleanup + git prep. Asked two questions: keep or drop the forensic `corrupt-*.json` files; how far to take the git setup.
+
+---
+
+## User (2026-05-18)
+
+Drop the corrupt files. (Second question redirected for clarification.)
+
+---
+
+## Assistant (2026-05-18)
+
+Asked what they'd like to clarify about the git-setup question.
+
+---
+
+## User (2026-05-18)
+
+If I create the repo, can you push everything to it?
+
+---
+
+## Assistant (2026-05-18)
+
+Confirmed yes — explained the split: I do local cleanup + .gitignore + README + git init + commit; user creates the empty GitHub repo (no auto-README to avoid merge conflict); I then add the remote and push. Listed the planned deletions and what would be kept.
+
+---
+
+## User (2026-05-18)
+
+Keep `data/` (gitignored) and `seed.as` (as a reference example of CSV-to-JSON conversion). Repo created at https://github.com/easycoder/account.git.
+
+---
+
+## Assistant (2026-05-18)
+
+Executed the publish:
+
+- Added a header note to `seed.as` explaining its role as a reference example with no shipped CSV.
+- Deleted `account.csv`, `account.ods`, `account.as` (CLI stub), `corrupt-05.json`, `corrupt-edit.json`, `allspeak-en.zip`, `.code-version`.
+- Wrote `.gitignore` covering `data/`, `.claude/`, `.code-version`.
+- Wrote `README.md` (overview, run instructions, sample-data flow, project layout, data shape).
+- Copied Apache 2.0 LICENSE from the allspeak repo.
+- `git init`, branch set to `main`, staged all 18 files (verified `data/` and `.claude/` excluded), committed with co-author trailer.
+- Added remote `git@github.com:easycoder/account.git`, pushed `main`. Push successful.

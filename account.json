@@ -43,16 +43,18 @@
             "#element": "div",
             "@id": "log-header",
             "display": "grid",
-            "grid-template-columns": "100px 1fr 1fr 60px 80px 100px 120px 110px 90px 90px 90px",
-            "padding": "0.5em 0.4em",
+            "grid-template-columns": "50px 100px 1fr 60px 1fr 90px 80px 100px 120px 110px 90px 90px 90px",
+            "padding": "0.5em calc(30px + 0.4em) 0.5em 0.4em",
             "border-bottom": "2px solid #333",
             "font-weight": "bold",
             "background": "#f4f4f4",
-            "#": ["$HDate", "$HName", "$HLocation", "$HTime", "$HDistance", "$HContact", "$HClient", "$HItem", "$HExpense", "$HPaid", "$HFees"],
+            "#": ["$HSeq", "$HDate", "$HName", "$HTime", "$HLocation", "$HPostcode", "$HDistance", "$HContact", "$HClient", "$HItem", "$HExpense", "$HPaid", "$HFees"],
 
+            "$HSeq":      { "#element": "div", "text-align": "right", "padding-right": "0.4em", "color": "#666", "#content": "Seq" },
             "$HDate":     { "#element": "div", "#content": "Date" },
             "$HName":     { "#element": "div", "#content": "Name" },
             "$HLocation": { "#element": "div", "#content": "Location" },
+            "$HPostcode": { "#element": "div", "#content": "Postcode" },
             "$HTime":     { "#element": "div", "#content": "Time" },
             "$HDistance": { "#element": "div", "#content": "Distance" },
             "$HContact":  { "#element": "div", "#content": "Contact" },
@@ -90,7 +92,7 @@
             "min-width": "440px",
             "max-width": "560px",
             "box-shadow": "0 4px 20px rgba(0,0,0,0.3)",
-            "#": ["$ModalTitle", "$KindRow", "$DateRow", "$NameRow", "$LocationRow", "$TimeRow", "$DistanceRow", "$ContactRow", "$ClientRow", "$DescriptionRow", "$MileageRow", "$ExpenseRow", "$PaidRow", "$FeesRow", "$StatusRow", "$Buttons"],
+            "#": ["$ModalTitle", "$KindRow", "$DateRow", "$NameRow", "$TimeRow", "$LocationRow", "$PostcodeRow", "$DistanceRow", "$ContactRow", "$ClientRow", "$DescriptionRow", "$MileageRow", "$ExpenseRow", "$PaidRow", "$FeesRow", "$LinkRow", "$StatusRow", "$Buttons"],
 
             "$ModalTitle": { "#element": "h2", "@id": "modal-title", "margin": "0 0 1em 0", "font-size": "1.2em", "#content": "Add booking" },
 
@@ -121,6 +123,13 @@
                 "#": ["$LocationLabel", "$LocationInput"],
                 "$LocationLabel": { "#element": "label", "min-width": "110px", "#content": "Location" },
                 "$LocationInput": { "#element": "input", "@id": "location-input", "@type": "text", "flex": "1", "padding": "0.2em" }
+            },
+
+            "$PostcodeRow": {
+                "#element": "div", "@id": "postcode-row", "display": "flex", "align-items": "baseline", "gap": "0.5em", "margin-bottom": "0.4em",
+                "#": ["$PostcodeLabel", "$PostcodeInput"],
+                "$PostcodeLabel": { "#element": "label", "min-width": "110px", "#content": "Postcode" },
+                "$PostcodeInput": { "#element": "input", "@id": "postcode-input", "@type": "text", "flex": "1", "padding": "0.2em" }
             },
 
             "$TimeRow": {
@@ -180,10 +189,17 @@
             },
 
             "$FeesRow": {
-                "#element": "div", "display": "flex", "align-items": "baseline", "gap": "0.5em", "margin-bottom": "0.8em",
+                "#element": "div", "display": "flex", "align-items": "baseline", "gap": "0.5em", "margin-bottom": "0.4em",
                 "#": ["$FeesLabel", "$FeesInput"],
                 "$FeesLabel": { "#element": "label", "min-width": "110px", "#content": "Fees (£)" },
                 "$FeesInput": { "#element": "input", "@id": "fees-input", "@type": "text", "flex": "1", "padding": "0.2em" }
+            },
+
+            "$LinkRow": {
+                "#element": "div", "display": "flex", "align-items": "baseline", "gap": "0.5em", "margin-bottom": "0.8em",
+                "#": ["$LinkLabel", "$LinkInput"],
+                "$LinkLabel": { "#element": "label", "min-width": "110px", "#content": "Link" },
+                "$LinkInput": { "#element": "input", "@id": "link-input", "@type": "text", "flex": "1", "padding": "0.2em", "placeholder": "URL or relative path to a document" }
             },
 
             "$StatusRow": {

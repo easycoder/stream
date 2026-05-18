@@ -30,6 +30,8 @@
     input NameInput
     div LocationRow
     input LocationInput
+    div PostcodeRow
+    input PostcodeInput
     div TimeRow
     input TimeInput
     div DistanceRow
@@ -45,6 +47,7 @@
     input ExpenseInput
     input PaidInput
     input FeesInput
+    input LinkInput
     button AddButton
     button SaveBtn
     button CancelBtn
@@ -52,6 +55,8 @@
     div ModalStatus
 
     div DataRowDivs
+    div RowWrappers
+    a LinkAnchors
     div SubDiv
     div GrandDiv
     div CellDiv
@@ -59,6 +64,9 @@
     variable RowStyleData
     variable RowStyleSub
     variable RowStyleGrand
+    variable RowWrapperStyle
+    variable LinkAnchorStyle
+    variable LinkAnchorIdle
     variable Grid
     variable CellRight
 
@@ -86,6 +94,7 @@
     variable Date
     variable Name
     variable Location
+    variable Postcode
     variable Time
     variable Distance
     variable Contact
@@ -178,7 +187,13 @@
     variable SampleFy
     variable SampleMm
     variable SampleRows
-!! @hash e4caa9db
+
+    variable Link
+    variable LinkVal
+
+    variable ServiceSeq
+    variable SeqStyle
+!! @hash 0f1e6c78
 !!!
 
 !! Boot the GUI: render the Webson layout, attach to the elements we will
@@ -198,6 +213,8 @@
     attach NameInput to `name-input`
     attach LocationRow to `location-row`
     attach LocationInput to `location-input`
+    attach PostcodeRow to `postcode-row`
+    attach PostcodeInput to `postcode-input`
     attach TimeRow to `time-row`
     attach TimeInput to `time-input`
     attach DistanceRow to `distance-row`
@@ -213,6 +230,7 @@
     attach ExpenseInput to `expense-input`
     attach PaidInput to `paid-input`
     attach FeesInput to `fees-input`
+    attach LinkInput to `link-input`
     attach AddButton to `add-button`
     attach SaveBtn to `save-btn`
     attach CancelBtn to `cancel-btn`
@@ -220,24 +238,28 @@
     attach ModalStatus to `modal-status`
     attach EmptyState to `empty-state`
     attach LoadSampleBtn to `load-sample-btn`
-!! @hash 2d2b1de8
+!! @hash 641f99a5
 !!!
 
 !! Cache the shared row-level inline styles.
 
-    put `100px 1fr 1fr 60px 80px 100px 120px 110px 90px 90px 90px` into Grid
+    put `50px 100px 1fr 60px 1fr 90px 80px 100px 120px 110px 90px 90px 90px` into Grid
     put `display: grid; grid-template-columns: ` cat Grid into RowStyleData
-    put RowStyleData cat `; padding: 0.4em 0.4em; border-bottom: 1px solid #eee; cursor: pointer` into RowStyleData
+    put RowStyleData cat `; padding: 0.4em 0.4em; border-bottom: 1px solid #eee; cursor: pointer; flex: 1` into RowStyleData
     put `display: grid; grid-template-columns: ` cat Grid into RowStyleSub
-    put RowStyleSub cat `; padding: 0.4em 0.4em; border-top: 1px solid #aaa; border-bottom: 1px solid #aaa; background: #fafafa; font-weight: bold` into RowStyleSub
+    put RowStyleSub cat `; padding: 0.4em calc(30px + 0.4em) 0.4em 0.4em; border-top: 1px solid #aaa; border-bottom: 1px solid #aaa; background: #fafafa; font-weight: bold` into RowStyleSub
     put `display: grid; grid-template-columns: ` cat Grid into RowStyleGrand
-    put RowStyleGrand cat `; padding: 0.6em 0.4em; border-top: 2px solid #333; background: #eef; font-weight: bold` into RowStyleGrand
+    put RowStyleGrand cat `; padding: 0.6em calc(30px + 0.4em) 0.6em 0.4em; border-top: 2px solid #333; background: #eef; font-weight: bold` into RowStyleGrand
+    put `display: flex; align-items: stretch` into RowWrapperStyle
+    put `width: 30px; display: flex; align-items: center; justify-content: center; text-decoration: none; color: #28a; font-size: 1.1em; border-bottom: 1px solid #eee` into LinkAnchorStyle
+    put `width: 30px; display: block; border-bottom: 1px solid #eee` into LinkAnchorIdle
+    put `text-align: right; padding-right: 0.4em; color: #666` into SeqStyle
     put `text-align: right` into CellRight
     put `padding: 0.3em 0.9em; cursor: pointer; border: 0; border-radius: 4px; background: #28a; color: white` into KindSelectedStyle
     put `padding: 0.3em 0.9em; cursor: pointer; border: 0; border-radius: 4px; background: #eee; color: #333` into KindUnselectedStyle
     put `January,February,March,April,May,June,July,August,September,October,November,December` into MonthNames
     split MonthNames on `,`
-!! @hash 3c2b739c
+!! @hash 6b3565b2
 !!!
 
 !! Wire up the click and change handlers, then do the initial load.
@@ -315,10 +337,13 @@ AfterPass1:
     set the style of EmptyState to `display: none`
 
     set the elements of DataRowDivs to NumDataRows
+    set the elements of RowWrappers to NumDataRows
+    set the elements of LinkAnchors to NumDataRows
     set the elements of DataRowFys to NumDataRows
     set the elements of DataRowMms to NumDataRows
     set the elements of DataRowFileIdxs to NumDataRows
 
+    put 0 into ServiceSeq
     put 0 into GrandMileage
     put 0 into GrandExpense
     put 0 into GrandPaid
@@ -397,13 +422,16 @@ AfterPass1:
 
     on click DataRowDivs gosub OnRowClick
     return
-!! @hash c90628b8
+!! @hash 2e41d115
 !!!
 
 
-!! Render one data row: unpack the dict, accumulate totals, create a div
-!! (indexed in DataRowDivs at the current cursor) with eleven cell divs
-!! styled per the shared grid template.
+!! Render one data row: unpack the dict, accumulate totals, then build a
+!! per-row flex wrapper containing [link anchor, body grid]. The link
+!! anchor is a sibling of the body — not a child — so a click on it opens
+!! the linked document natively without also firing the body's row-click
+!! handler (AllSpeak has no `stopPropagation` primitive). Rows with no
+!! link still allocate a 30px slot for visual alignment.
 
 EmitDataRow:
     put property `kind` of Row into Kind
@@ -411,10 +439,12 @@ EmitDataRow:
     put property `expense` of Row into Expense
     put property `paid` of Row into Paid
     put property `fees` of Row into Fees
+    put property `link` of Row into Link
     if Kind is `service`
     begin
         put property `name` of Row into Name
         put property `location` of Row into Location
+        put property `postcode` of Row into Postcode
         put property `time` of Row into Time
         put property `distance` of Row into Distance
         put property `contact` of Row into Contact
@@ -426,6 +456,7 @@ EmitDataRow:
     begin
         put empty into Name
         put empty into Location
+        put empty into Postcode
         put empty into Time
         put empty into Distance
         put empty into Contact
@@ -442,8 +473,22 @@ EmitDataRow:
     add Paid to GrandPaid
     add Fees to GrandFees
 
-    create DataRowDivs in LogBody
+    create RowWrappers in LogBody
+    set the style of RowWrappers to RowWrapperStyle
+
+    create DataRowDivs in RowWrappers
     set the style of DataRowDivs to RowStyleData
+
+    create CellDiv in DataRowDivs
+    set the style of CellDiv to SeqStyle
+    if Kind is `service`
+    begin
+        add 1 to ServiceSeq
+        put ServiceSeq cat `` into TempStr
+        set the content of CellDiv to TempStr
+    end
+    else
+        set the content of CellDiv to ``
 
     put Date into Parts
     split Parts on `-`
@@ -461,10 +506,13 @@ EmitDataRow:
     set the content of CellDiv to Name
 
     create CellDiv in DataRowDivs
+    set the content of CellDiv to Time
+
+    create CellDiv in DataRowDivs
     set the content of CellDiv to Location
 
     create CellDiv in DataRowDivs
-    set the content of CellDiv to Time
+    set the content of CellDiv to Postcode
 
     create CellDiv in DataRowDivs
     put Distance cat `` into Distance
@@ -503,8 +551,20 @@ EmitDataRow:
     put Fees into MoneyVal
     gosub FormatMoney
     set the content of CellDiv to MoneyStr
+
+    create LinkAnchors in RowWrappers
+    if Link is not empty
+    begin
+        set the style of LinkAnchors to LinkAnchorStyle
+        set attribute `href` of LinkAnchors to Link
+        set attribute `title` of LinkAnchors to Link
+        set the content of LinkAnchors to `🔗`
+        set attribute `target` of LinkAnchors to `_blank`
+    end
+    else
+        set the style of LinkAnchors to LinkAnchorIdle
     return
-!! @hash b11e1e92
+!! @hash 44e4b125
 !!!
 
 
@@ -530,8 +590,11 @@ EmitSubtotal:
     set the style of SubDiv to RowStyleSub
 
     create CellDiv in SubDiv
+
+    create CellDiv in SubDiv
     set the content of CellDiv to MonthLabel
 
+    create CellDiv in SubDiv
     create CellDiv in SubDiv
     create CellDiv in SubDiv
     create CellDiv in SubDiv
@@ -563,7 +626,7 @@ EmitSubtotal:
     gosub FormatMoney
     set the content of CellDiv to MoneyStr
     return
-!! @hash a4cd0d45
+!! @hash 291a7a26
 !!!
 
 
@@ -574,8 +637,11 @@ EmitGrandTotal:
     set the style of GrandDiv to RowStyleGrand
 
     create CellDiv in GrandDiv
+
+    create CellDiv in GrandDiv
     set the content of CellDiv to `Grand total`
 
+    create CellDiv in GrandDiv
     create CellDiv in GrandDiv
     create CellDiv in GrandDiv
     create CellDiv in GrandDiv
@@ -607,7 +673,7 @@ EmitGrandTotal:
     gosub FormatMoney
     set the content of CellDiv to MoneyStr
     return
-!! @hash efa48021
+!! @hash 0df57faa
 !!!
 
 
@@ -624,6 +690,7 @@ OnAdd:
     set the content of DateInput to ``
     set the content of NameInput to ``
     set the content of LocationInput to ``
+    set the content of PostcodeInput to ``
     set the content of TimeInput to ``
     set the content of DistanceInput to ``
     set the content of ContactInput to ``
@@ -633,12 +700,13 @@ OnAdd:
     set the content of ExpenseInput to ``
     set the content of PaidInput to ``
     set the content of FeesInput to ``
+    set the content of LinkInput to ``
     set the content of ModalStatus to ``
     set the style of DeleteBtn to `display: none`
     gosub SelectKindService
     set the style of Overlay to `display: flex; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 100; justify-content: center; align-items: center`
     return
-!! @hash 2094e2f7
+!! @hash 1ad96e01
 !!!
 
 
@@ -670,6 +738,7 @@ OnRowClick:
     begin
         put property `name` of Row into Name
         put property `location` of Row into Location
+        put property `postcode` of Row into Postcode
         put property `time` of Row into Time
         put property `distance` of Row into Distance
         put property `contact` of Row into Contact
@@ -677,6 +746,7 @@ OnRowClick:
         put property `mileage` of Row into MileageVal
         set the content of NameInput to Name
         set the content of LocationInput to Location
+        set the content of PostcodeInput to Postcode
         set the content of TimeInput to Time
         put Distance cat `` into Distance
         set the content of DistanceInput to Distance
@@ -692,6 +762,7 @@ OnRowClick:
         set the content of DescriptionInput to Description
         set the content of NameInput to ``
         set the content of LocationInput to ``
+        set the content of PostcodeInput to ``
         set the content of TimeInput to ``
         set the content of DistanceInput to ``
         set the content of ContactInput to ``
@@ -707,11 +778,13 @@ OnRowClick:
     put property `fees` of Row into MoneyVal
     gosub FormatMoneyPlain
     set the content of FeesInput to MoneyStr
+    put property `link` of Row into Link
+    set the content of LinkInput to Link
     set the content of ModalStatus to ``
     set the style of DeleteBtn to `display: inline-block; padding: 0.4em 1em; background: #d33; color: white; border: 0; border-radius: 4px; cursor: pointer`
     set the style of Overlay to `display: flex; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 100; justify-content: center; align-items: center`
     return
-!! @hash 5f60b3c1
+!! @hash 53295636
 !!!
 
 
@@ -749,6 +822,7 @@ ApplyKindVisibility:
     begin
         set the style of NameRow to `display: flex; align-items: baseline; gap: 0.5em; margin-bottom: 0.4em`
         set the style of LocationRow to `display: flex; align-items: baseline; gap: 0.5em; margin-bottom: 0.4em`
+        set the style of PostcodeRow to `display: flex; align-items: baseline; gap: 0.5em; margin-bottom: 0.4em`
         set the style of TimeRow to `display: flex; align-items: baseline; gap: 0.5em; margin-bottom: 0.4em`
         set the style of DistanceRow to `display: flex; align-items: baseline; gap: 0.5em; margin-bottom: 0.4em`
         set the style of ContactRow to `display: flex; align-items: baseline; gap: 0.5em; margin-bottom: 0.4em`
@@ -760,6 +834,7 @@ ApplyKindVisibility:
     begin
         set the style of NameRow to `display: none`
         set the style of LocationRow to `display: none`
+        set the style of PostcodeRow to `display: none`
         set the style of TimeRow to `display: none`
         set the style of DistanceRow to `display: none`
         set the style of ContactRow to `display: none`
@@ -768,7 +843,7 @@ ApplyKindVisibility:
         set the style of DescriptionRow to `display: flex; align-items: baseline; gap: 0.5em; margin-bottom: 0.4em`
     end
     return
-!! @hash 166595ce
+!! @hash f4fdedb9
 !!!
 
 
@@ -815,6 +890,7 @@ OnSave:
     begin
         put the content of NameInput into Name
         put the content of LocationInput into Location
+        put the content of PostcodeInput into Postcode
         put the content of TimeInput into Time
         put the content of DistanceInput into Distance
         put the content of ContactInput into Contact
@@ -822,6 +898,7 @@ OnSave:
         put the content of MileageInput into TempStr
         set property `name` of NewRow to Name
         set property `location` of NewRow to Location
+        set property `postcode` of NewRow to Postcode
         set property `time` of NewRow to Time
         set property `distance` of NewRow to Distance
         set property `contact` of NewRow to Contact
@@ -842,6 +919,9 @@ OnSave:
     put the content of FeesInput into TempStr
     gosub ParseMoneyInput
     set property `fees` of NewRow to PenceInput
+    put the content of LinkInput into LinkVal
+    if LinkVal is not empty
+        set property `link` of NewRow to LinkVal
 
     if EditFy is empty
         gosub PostAdd
@@ -853,7 +933,7 @@ OnSave:
     set the style of Overlay to `display: none`
     gosub Refresh
     return
-!! @hash f8e55419
+!! @hash 9c51f313
 !!!
 
 
