@@ -1,0 +1,112 @@
+[
+    {
+        "fy": "2026-27",
+        "mm": "04",
+        "rows": [
+            {
+                "kind": "service",
+                "date": "2026-04-12",
+                "name": "Margaret Holloway",
+                "location": "Crematorium Chapel, Eastfield",
+                "time": "11:30",
+                "distance": "22",
+                "contact": "Sarah Bell",
+                "client": "Mason & Sons",
+                "mileage": 220,
+                "expense": 0,
+                "paid": 0,
+                "fees": 30000
+            },
+            {
+                "kind": "service",
+                "date": "2026-04-24",
+                "name": "Frank Albright",
+                "location": "St Cuthbert's, Highmoor",
+                "time": "14:00",
+                "distance": "18",
+                "contact": "Tom Reid",
+                "client": "Pearson Funerals",
+                "mileage": 180,
+                "expense": 0,
+                "paid": 0,
+                "fees": 35000
+            }
+        ]
+    },
+    {
+        "fy": "2026-27",
+        "mm": "05",
+        "rows": [
+            {
+                "kind": "service",
+                "date": "2026-05-08",
+                "name": "Doreen Castle",
+                "location": "Memorial Gardens, Brookvale",
+                "time": "10:00",
+                "distance": "15",
+                "contact": "Anna Vance",
+                "client": "Mason & Sons",
+                "mileage": 150,
+                "expense": 0,
+                "paid": 0,
+                "fees": 30000
+            },
+            {
+                "kind": "expense",
+                "date": "2026-05-15",
+                "description": "Camera tripod replacement",
+                "expense": 8500,
+                "paid": 8500,
+                "fees": 0
+            },
+            {
+                "kind": "service",
+                "date": "2026-05-22",
+                "name": "Henry Crowther",
+                "location": "All Saints', Westcombe",
+                "time": "11:00",
+                "distance": "30",
+                "contact": "Sarah Bell",
+                "client": "Greenfield Care",
+                "mileage": 300,
+                "expense": 0,
+                "paid": 0,
+                "fees": 35000
+            }
+        ]
+    },
+    {
+        "fy": "2026-27",
+        "mm": "06",
+        "rows": [
+            {
+                "kind": "service",
+                "date": "2026-06-05",
+                "name": "Edith Park-Jones",
+                "location": "Crematorium Chapel, Eastfield",
+                "time": "13:30",
+                "distance": "22",
+                "contact": "Tom Reid",
+                "client": "Pearson Funerals",
+                "mileage": 220,
+                "expense": 0,
+                "paid": 0,
+                "fees": 32500
+            },
+            {
+                "kind": "service",
+                "date": "2026-06-19",
+                "name": "Albert Wickham",
+                "location": "St Mary's, Riverdown",
+                "time": "11:30",
+                "distance": "12",
+                "contact": "Anna Vance",
+                "client": "Tempest",
+                "mileage": 120,
+                "expense": 0,
+                "paid": 0,
+                "fees": 30000
+            }
+        ]
+    }
+]
