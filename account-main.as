@@ -193,7 +193,16 @@
 
     variable ServiceSeq
     variable SeqStyle
-!! @hash 0f1e6c78
+
+    variable Config
+    variable Manifest
+    variable ReadOnly
+    variable DataReadBase
+    variable DataWriteBase
+    variable ManifestUrl
+
+    variable OrigDistance
+!! @hash 734ea021
 !!!
 
 !! Boot the GUI: render the Webson layout, attach to the elements we will
@@ -276,10 +285,11 @@
     on click KindExpenseBtn gosub SelectKindExpense
     on click LoadSampleBtn gosub OnLoadSample
 
+    gosub LoadConfig
     gosub Refresh
 
     stop
-!! @hash 1a94131c
+!! @hash 829e7711
 !!!
 
 
@@ -296,7 +306,18 @@ Refresh:
     put 0 into NumBuckets
     put 0 into NumFys
 
-    rest get FyList from `/list/data` or go to AfterPass1
+    if ManifestUrl is not empty
+    begin
+        rest get Manifest from ManifestUrl on failure
+        begin
+            go to AfterPass1
+        end
+        put property `fys` of Manifest into FyList
+    end
+    else
+    begin
+        rest get FyList from `/list/data` or go to AfterPass1
+    end
     put the json count of FyList into NumFys
     put 0 into FyIndex
     while FyIndex is less than NumFys
@@ -306,7 +327,10 @@ Refresh:
         put property `name` of FyEntry into FyName
         if FyType is `dir`
         begin
-            rest get MmList from `/list/data/` cat FyName
+            if ManifestUrl is not empty
+                put property `months` of FyEntry into MmList
+            else
+                rest get MmList from `/list/data/` cat FyName
             put the json count of MmList into NumMms
             put 0 into MmIndex
             while MmIndex is less than NumMms
@@ -316,7 +340,7 @@ Refresh:
                 put property `name` of MmEntry into MmFileName
                 if MmType is `file` and MmFileName ends with `.json`
                 begin
-                    rest get Rows from `/read/data/` cat FyName cat `/` cat MmFileName
+                    rest get Rows from DataReadBase cat `/` cat FyName cat `/` cat MmFileName
                     put the json count of Rows into NumRows
                     add NumRows to NumDataRows
                     if NumRows is greater than 0
@@ -365,7 +389,10 @@ AfterPass1:
         put property `name` of FyEntry into FyName
         if FyType is `dir`
         begin
-            rest get MmList from `/list/data/` cat FyName
+            if ManifestUrl is not empty
+                put property `months` of FyEntry into MmList
+            else
+                rest get MmList from `/list/data/` cat FyName
             put the json count of MmList into NumMms
             put 0 into MmIndex
             while MmIndex is less than NumMms
@@ -377,7 +404,7 @@ AfterPass1:
                 begin
                     put MmFileName into MmName
                     replace `.json` with `` in MmName
-                    rest get Rows from `/read/data/` cat FyName cat `/` cat MmFileName
+                    rest get Rows from DataReadBase cat `/` cat FyName cat `/` cat MmFileName
                     put the json count of Rows into NumRows
                     put 0 into RowIndex
                     while RowIndex is less than NumRows
@@ -422,7 +449,7 @@ AfterPass1:
 
     on click DataRowDivs gosub OnRowClick
     return
-!! @hash 2e41d115
+!! @hash f4dd61ff
 !!!
 
 
@@ -702,11 +729,12 @@ OnAdd:
     set the content of FeesInput to ``
     set the content of LinkInput to ``
     set the content of ModalStatus to ``
+    put empty into OrigDistance
     set the style of DeleteBtn to `display: none`
     gosub SelectKindService
     set the style of Overlay to `display: flex; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 100; justify-content: center; align-items: center`
     return
-!! @hash 1ad96e01
+!! @hash 2a3b924d
 !!!
 
 
@@ -724,7 +752,7 @@ OnRowClick:
     put DataRowMms into EditMm
     index DataRowFileIdxs to RowN
     put DataRowFileIdxs into EditFileIdx
-    rest get Rows from `/read/data/` cat EditFy cat `/` cat EditMm cat `.json`
+    rest get Rows from DataReadBase cat `/` cat EditFy cat `/` cat EditMm cat `.json`
     put element EditFileIdx of Rows into Row
     set the content of ModalTitle to `Edit booking`
     put property `kind` of Row into Kind
@@ -750,6 +778,7 @@ OnRowClick:
         set the content of TimeInput to Time
         put Distance cat `` into Distance
         set the content of DistanceInput to Distance
+        put Distance into OrigDistance
         set the content of ContactInput to Contact
         set the content of ClientInput to Client
         gosub FormatMileage
@@ -765,6 +794,7 @@ OnRowClick:
         set the content of PostcodeInput to ``
         set the content of TimeInput to ``
         set the content of DistanceInput to ``
+        put empty into OrigDistance
         set the content of ContactInput to ``
         set the content of ClientInput to ``
         set the content of MileageInput to ``
@@ -781,10 +811,13 @@ OnRowClick:
     put property `link` of Row into Link
     set the content of LinkInput to Link
     set the content of ModalStatus to ``
-    set the style of DeleteBtn to `display: inline-block; padding: 0.4em 1em; background: #d33; color: white; border: 0; border-radius: 4px; cursor: pointer`
+    if ReadOnly
+        set the style of DeleteBtn to `display: none`
+    else
+        set the style of DeleteBtn to `display: inline-block; padding: 0.4em 1em; background: #d33; color: white; border: 0; border-radius: 4px; cursor: pointer`
     set the style of Overlay to `display: flex; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 100; justify-content: center; align-items: center`
     return
-!! @hash 53295636
+!! @hash 3974bad0
 !!!
 
 
@@ -923,6 +956,21 @@ OnSave:
     if LinkVal is not empty
         set property `link` of NewRow to LinkVal
 
+    if NewKind is `service`
+    begin
+        if Distance is not empty and Distance is not OrigDistance
+        begin
+            put Distance into TempStr
+            gosub ParseMileageInput
+            put TenthsInput into MileageVal
+            multiply MileageVal by 2
+            set property `mileage` of NewRow to MileageVal
+            put TenthsInput into PenceInput
+            multiply PenceInput by 9
+            set property `expense` of NewRow to PenceInput
+        end
+    end
+
     if EditFy is empty
         gosub PostAdd
     else if EditFy is NewFy and EditMm is NewMm
@@ -933,7 +981,7 @@ OnSave:
     set the style of Overlay to `display: none`
     gosub Refresh
     return
-!! @hash 9c51f313
+!! @hash fde53e4f
 !!!
 
 
@@ -941,17 +989,17 @@ OnSave:
 !! `add` mode, POST the resulting array.
 
 PostAdd:
-    rest get OrigRows from `/read/data/` cat NewFy cat `/` cat NewMm cat `.json` on failure
+    rest get OrigRows from DataReadBase cat `/` cat NewFy cat `/` cat NewMm cat `.json` on failure
     begin
         set OrigRows to array
     end
     put the json count of OrigRows into BucketCount
     put `add` into BuildMode
     gosub BuildSortedBucket
-    put `/write/data/` cat NewFy cat `/` cat NewMm cat `.json` into WriteUrl
+    put DataWriteBase cat `/` cat NewFy cat `/` cat NewMm cat `.json` into WriteUrl
     rest post Bucket to WriteUrl
     return
-!! @hash b7d4d80f
+!! @hash 6ccc9ac0
 !!!
 
 
@@ -959,14 +1007,14 @@ PostAdd:
 !! swaps NewRow in at EditFileIdx.
 
 PostReplace:
-    rest get OrigRows from `/read/data/` cat EditFy cat `/` cat EditMm cat `.json`
+    rest get OrigRows from DataReadBase cat `/` cat EditFy cat `/` cat EditMm cat `.json`
     put the json count of OrigRows into BucketCount
     put `replace` into BuildMode
     gosub BuildSortedBucket
-    put `/write/data/` cat EditFy cat `/` cat EditMm cat `.json` into WriteUrl
+    put DataWriteBase cat `/` cat EditFy cat `/` cat EditMm cat `.json` into WriteUrl
     rest post Bucket to WriteUrl
     return
-!! @hash 6c63ee95
+!! @hash 9888c1ca
 !!!
 
 
@@ -975,17 +1023,17 @@ PostReplace:
 
 PostMove:
     gosub RemoveFromOldBucket
-    rest get OrigRows from `/read/data/` cat NewFy cat `/` cat NewMm cat `.json` on failure
+    rest get OrigRows from DataReadBase cat `/` cat NewFy cat `/` cat NewMm cat `.json` on failure
     begin
         set OrigRows to array
     end
     put the json count of OrigRows into BucketCount
     put `add` into BuildMode
     gosub BuildSortedBucket
-    put `/write/data/` cat NewFy cat `/` cat NewMm cat `.json` into WriteUrl
+    put DataWriteBase cat `/` cat NewFy cat `/` cat NewMm cat `.json` into WriteUrl
     rest post Bucket to WriteUrl
     return
-!! @hash 76685941
+!! @hash 8f311aa9
 !!!
 
 
@@ -993,14 +1041,14 @@ PostMove:
 !! EditFileIdx; POST the shorter array.
 
 RemoveFromOldBucket:
-    rest get OrigRows from `/read/data/` cat EditFy cat `/` cat EditMm cat `.json`
+    rest get OrigRows from DataReadBase cat `/` cat EditFy cat `/` cat EditMm cat `.json`
     put the json count of OrigRows into BucketCount
     put `remove` into BuildMode
     gosub BuildSortedBucket
-    put `/write/data/` cat EditFy cat `/` cat EditMm cat `.json` into WriteUrl
+    put DataWriteBase cat `/` cat EditFy cat `/` cat EditMm cat `.json` into WriteUrl
     rest post Bucket to WriteUrl
     return
-!! @hash 89bd1eba
+!! @hash 75fb1e4f
 !!!
 
 
@@ -1049,6 +1097,46 @@ OnLoadSample:
     gosub Refresh
     return
 !! @hash 0eac7a55
+!!!
+
+
+!! LoadConfig: load config.json and apply mode-driven settings.
+!!
+!! Three modes the app supports, switched entirely by config:
+!!   1. Live local server (default if no config.json is present): reads from
+!!      /list/data and /read/data/..., writes to /write/data/... — same as
+!!      the original behaviour, served by server.as.
+!!   2. Static read-only deploy: reads from a flat manifest (data/index.json)
+!!      and a relative dataReadBase like `data`. No writes; the Add button
+!!      and the modal's Save/Delete buttons are hidden. Suited to hosting
+!!      on Cloudflare Pages / Netlify / similar for an accountant view.
+!!   3. (Future) any other backend that can satisfy the same shape — only
+!!      the URL bases / readonly flag need to change.
+!!
+!! Defaults are set first so the live app works even with no config.json
+!! committed; the deploy bundle ships a config.json that overrides.
+
+LoadConfig:
+    put `/read/data` into DataReadBase
+    put `/write/data` into DataWriteBase
+    put empty into ManifestUrl
+    put 0 into ReadOnly
+    rest get Config from `config.json` on failure
+    begin
+        return
+    end
+    put property `dataReadBase` of Config into DataReadBase
+    put property `dataWriteBase` of Config into DataWriteBase
+    put property `manifestUrl` of Config into ManifestUrl
+    put property `readonly` of Config into ReadOnly
+    if ReadOnly
+    begin
+        set the style of AddButton to `display: none`
+        set the style of SaveBtn to `display: none`
+        set the content of CancelBtn to `Close`
+    end
+    return
+!! @hash e45b08c5
 !!!
 
 
