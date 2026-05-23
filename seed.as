@@ -315,26 +315,25 @@ BuildService:
     gosub ParseMoney
     set entry `expense` of Row to Pence
 
-    index Fields to 10
-    put Fields into Money
-    gosub ParseMoney
-    set entry `paid` of Row to Pence
+    set entry `paid` of Row to false
+    set entry `linkSent` of Row to false
 
     index Fields to 11
     put Fields into Money
     gosub ParseMoney
     set entry `fees` of Row to Pence
     return
-!! @hash 0c427c67
+!! @hash d98bb9f4
 !!!
 
 
 !! Populate Row as an expense-kind dictionary from Fields.
 !!
 !! Expense rows have no name/location/time/distance/contact/client; the
-!! Mileage/Item column carries a free-form description (e.g. "Fees").
-!! Money columns are kept since the user may record either a cost, a
-!! receipt, or both against an expense row.
+!! Mileage/Item column carries a free-form description (e.g. "Fees"). The
+!! `paid` and `linkSent` columns are now booleans (see account-main.as),
+!! so the CSV's old monetary-paid field is dropped on import — the user
+!! marks paid status individually in the GUI.
 
 BuildExpense:
     reset Row
@@ -354,17 +353,15 @@ BuildExpense:
     gosub ParseMoney
     set entry `expense` of Row to Pence
 
-    index Fields to 10
-    put Fields into Money
-    gosub ParseMoney
-    set entry `paid` of Row to Pence
+    set entry `paid` of Row to false
+    set entry `linkSent` of Row to false
 
     index Fields to 11
     put Fields into Money
     gosub ParseMoney
     set entry `fees` of Row to Pence
     return
-!! @hash 71dff2bf
+!! @hash f1918d4f
 !!!
 
 

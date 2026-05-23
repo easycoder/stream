@@ -45,9 +45,12 @@
     div MileageRow
     input MileageInput
     input ExpenseInput
-    input PaidInput
     input FeesInput
     input LinkInput
+    button LinkSentBtn
+    div LinkSentDate
+    button PaidBtn
+    div PaidDate
     button AddButton
     button SaveBtn
     button CancelBtn
@@ -69,6 +72,9 @@
     variable LinkAnchorIdle
     variable Grid
     variable CellRight
+    variable CellCenter
+    variable ToggleBtnSetStyle
+    variable ToggleBtnClearStyle
 
     variable FyList
     variable NumFys
@@ -104,6 +110,7 @@
     variable Expense
     variable Paid
     variable Fees
+    variable LinkSent
 
     variable DisplayDate
     variable Mi
@@ -130,12 +137,10 @@
 
     variable MonthMileage
     variable MonthExpense
-    variable MonthPaid
     variable MonthFees
 
     variable GrandMileage
     variable GrandExpense
-    variable GrandPaid
     variable GrandFees
 
     variable MonthNames
@@ -191,6 +196,11 @@
     variable Link
     variable LinkVal
 
+    variable TodayIso
+    variable TodayYy
+    variable TodayMo
+    variable TodayDd
+
     variable ServiceSeq
     variable SeqStyle
 
@@ -202,7 +212,7 @@
     variable ManifestUrl
 
     variable OrigDistance
-!! @hash 734ea021
+!! @hash 0c5b0617
 !!!
 
 !! Boot the GUI: render the Webson layout, attach to the elements we will
@@ -237,9 +247,12 @@
     attach MileageRow to `mileage-row`
     attach MileageInput to `mileage-input`
     attach ExpenseInput to `expense-input`
-    attach PaidInput to `paid-input`
     attach FeesInput to `fees-input`
     attach LinkInput to `link-input`
+    attach LinkSentBtn to `linksent-btn`
+    attach LinkSentDate to `linksent-date`
+    attach PaidBtn to `paid-btn`
+    attach PaidDate to `paid-date`
     attach AddButton to `add-button`
     attach SaveBtn to `save-btn`
     attach CancelBtn to `cancel-btn`
@@ -247,12 +260,12 @@
     attach ModalStatus to `modal-status`
     attach EmptyState to `empty-state`
     attach LoadSampleBtn to `load-sample-btn`
-!! @hash 641f99a5
+!! @hash d98418bf
 !!!
 
 !! Cache the shared row-level inline styles.
 
-    put `50px 100px 1fr 60px 1fr 90px 80px 100px 120px 110px 90px 90px 90px` into Grid
+    put `50px 100px 1fr 60px 1fr 90px 80px 100px 120px 70px 110px 90px 90px 70px` into Grid
     put `display: grid; grid-template-columns: ` cat Grid into RowStyleData
     put RowStyleData cat `; padding: 0.4em 0.4em; border-bottom: 1px solid #eee; cursor: pointer; flex: 1` into RowStyleData
     put `display: grid; grid-template-columns: ` cat Grid into RowStyleSub
@@ -264,11 +277,14 @@
     put `width: 30px; display: block; border-bottom: 1px solid #eee` into LinkAnchorIdle
     put `text-align: right; padding-right: 0.4em; color: #666` into SeqStyle
     put `text-align: right` into CellRight
+    put `text-align: center; color: #28a; font-weight: bold` into CellCenter
     put `padding: 0.3em 0.9em; cursor: pointer; border: 0; border-radius: 4px; background: #28a; color: white` into KindSelectedStyle
     put `padding: 0.3em 0.9em; cursor: pointer; border: 0; border-radius: 4px; background: #eee; color: #333` into KindUnselectedStyle
+    put `padding: 0.3em 0.9em; cursor: pointer; border: 0; border-radius: 4px; background: #eee; color: #333` into ToggleBtnSetStyle
+    put `padding: 0.3em 0.9em; cursor: pointer; border: 0; border-radius: 4px; background: #28a; color: white` into ToggleBtnClearStyle
     put `January,February,March,April,May,June,July,August,September,October,November,December` into MonthNames
     split MonthNames on `,`
-!! @hash 6b3565b2
+!! @hash e35aa26e
 !!!
 
 !! Wire up the click and change handlers, then do the initial load.
@@ -284,12 +300,14 @@
     on click KindServiceBtn gosub SelectKindService
     on click KindExpenseBtn gosub SelectKindExpense
     on click LoadSampleBtn gosub OnLoadSample
+    on click LinkSentBtn gosub OnToggleLinkSent
+    on click PaidBtn gosub OnTogglePaid
 
     gosub LoadConfig
     gosub Refresh
 
     stop
-!! @hash 829e7711
+!! @hash a27ac24a
 !!!
 
 
@@ -370,11 +388,9 @@ AfterPass1:
     put 0 into ServiceSeq
     put 0 into GrandMileage
     put 0 into GrandExpense
-    put 0 into GrandPaid
     put 0 into GrandFees
     put 0 into MonthMileage
     put 0 into MonthExpense
-    put 0 into MonthPaid
     put 0 into MonthFees
     put empty into LastFy
     put empty into LastMm
@@ -415,7 +431,6 @@ AfterPass1:
                             if IsFirstRow is false gosub EmitSubtotal
                             put 0 into MonthMileage
                             put 0 into MonthExpense
-                            put 0 into MonthPaid
                             put 0 into MonthFees
                             put FyName into LastFy
                             put MmName into LastMm
@@ -449,7 +464,7 @@ AfterPass1:
 
     on click DataRowDivs gosub OnRowClick
     return
-!! @hash f4dd61ff
+!! @hash 3eab978d
 !!!
 
 
@@ -467,6 +482,7 @@ EmitDataRow:
     put property `paid` of Row into Paid
     put property `fees` of Row into Fees
     put property `link` of Row into Link
+    put property `linkSent` of Row into LinkSent
     if Kind is `service`
     begin
         put property `name` of Row into Name
@@ -493,11 +509,9 @@ EmitDataRow:
     end
     add Mileage to MonthMileage
     add Expense to MonthExpense
-    add Paid to MonthPaid
     add Fees to MonthFees
     add Mileage to GrandMileage
     add Expense to GrandExpense
-    add Paid to GrandPaid
     add Fees to GrandFees
 
     create RowWrappers in LogBody
@@ -552,6 +566,11 @@ EmitDataRow:
     set the content of CellDiv to Client
 
     create CellDiv in DataRowDivs
+    set the style of CellDiv to CellCenter
+    if LinkSent
+        set the content of CellDiv to `✓`
+
+    create CellDiv in DataRowDivs
     if Kind is `service`
     begin
         put Mileage into MileageVal
@@ -569,15 +588,14 @@ EmitDataRow:
 
     create CellDiv in DataRowDivs
     set the style of CellDiv to CellRight
-    put Paid into MoneyVal
+    put Fees into MoneyVal
     gosub FormatMoney
     set the content of CellDiv to MoneyStr
 
     create CellDiv in DataRowDivs
-    set the style of CellDiv to CellRight
-    put Fees into MoneyVal
-    gosub FormatMoney
-    set the content of CellDiv to MoneyStr
+    set the style of CellDiv to CellCenter
+    if Paid
+        set the content of CellDiv to `✓`
 
     create LinkAnchors in RowWrappers
     if Link is not empty
@@ -591,7 +609,7 @@ EmitDataRow:
     else
         set the style of LinkAnchors to LinkAnchorIdle
     return
-!! @hash 44e4b125
+!! @hash d67492c4
 !!!
 
 
@@ -628,6 +646,7 @@ EmitSubtotal:
     create CellDiv in SubDiv
     create CellDiv in SubDiv
     create CellDiv in SubDiv
+    create CellDiv in SubDiv
 
     create CellDiv in SubDiv
     put MonthMileage into MileageVal
@@ -643,17 +662,13 @@ EmitSubtotal:
 
     create CellDiv in SubDiv
     set the style of CellDiv to CellRight
-    put MonthPaid into MoneyVal
+    put MonthFees into MoneyVal
     gosub FormatMoney
     set the content of CellDiv to MoneyStr
 
     create CellDiv in SubDiv
-    set the style of CellDiv to CellRight
-    put MonthFees into MoneyVal
-    gosub FormatMoney
-    set the content of CellDiv to MoneyStr
     return
-!! @hash 291a7a26
+!! @hash 18109203
 !!!
 
 
@@ -668,6 +683,7 @@ EmitGrandTotal:
     create CellDiv in GrandDiv
     set the content of CellDiv to `Grand total`
 
+    create CellDiv in GrandDiv
     create CellDiv in GrandDiv
     create CellDiv in GrandDiv
     create CellDiv in GrandDiv
@@ -690,17 +706,13 @@ EmitGrandTotal:
 
     create CellDiv in GrandDiv
     set the style of CellDiv to CellRight
-    put GrandPaid into MoneyVal
+    put GrandFees into MoneyVal
     gosub FormatMoney
     set the content of CellDiv to MoneyStr
 
     create CellDiv in GrandDiv
-    set the style of CellDiv to CellRight
-    put GrandFees into MoneyVal
-    gosub FormatMoney
-    set the content of CellDiv to MoneyStr
     return
-!! @hash 0df57faa
+!! @hash 829c3546
 !!!
 
 
@@ -725,16 +737,19 @@ OnAdd:
     set the content of DescriptionInput to ``
     set the content of MileageInput to ``
     set the content of ExpenseInput to ``
-    set the content of PaidInput to ``
     set the content of FeesInput to ``
     set the content of LinkInput to ``
+    put empty into LinkSent
+    gosub RefreshLinkSentDisplay
+    clear Paid
+    gosub RefreshPaidDisplay
     set the content of ModalStatus to ``
     put empty into OrigDistance
     set the style of DeleteBtn to `display: none`
     gosub SelectKindService
     set the style of Overlay to `display: flex; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 100; justify-content: center; align-items: center`
     return
-!! @hash 2a3b924d
+!! @hash d145be15
 !!!
 
 
@@ -802,14 +817,15 @@ OnRowClick:
     put property `expense` of Row into MoneyVal
     gosub FormatMoneyPlain
     set the content of ExpenseInput to MoneyStr
-    put property `paid` of Row into MoneyVal
-    gosub FormatMoneyPlain
-    set the content of PaidInput to MoneyStr
     put property `fees` of Row into MoneyVal
     gosub FormatMoneyPlain
     set the content of FeesInput to MoneyStr
     put property `link` of Row into Link
     set the content of LinkInput to Link
+    put property `linkSent` of Row into LinkSent
+    gosub RefreshLinkSentDisplay
+    put property `paid` of Row into Paid
+    gosub RefreshPaidDisplay
     set the content of ModalStatus to ``
     if ReadOnly
         set the style of DeleteBtn to `display: none`
@@ -817,7 +833,7 @@ OnRowClick:
         set the style of DeleteBtn to `display: inline-block; padding: 0.4em 1em; background: #d33; color: white; border: 0; border-radius: 4px; cursor: pointer`
     set the style of Overlay to `display: flex; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 100; justify-content: center; align-items: center`
     return
-!! @hash 3974bad0
+!! @hash 35f1dde3
 !!!
 
 
@@ -946,15 +962,20 @@ OnSave:
     put the content of ExpenseInput into TempStr
     gosub ParseMoneyInput
     set property `expense` of NewRow to PenceInput
-    put the content of PaidInput into TempStr
-    gosub ParseMoneyInput
-    set property `paid` of NewRow to PenceInput
     put the content of FeesInput into TempStr
     gosub ParseMoneyInput
     set property `fees` of NewRow to PenceInput
     put the content of LinkInput into LinkVal
     if LinkVal is not empty
         set property `link` of NewRow to LinkVal
+    if LinkSent is not empty
+        set property `linkSent` of NewRow to LinkSent
+    else
+        set property `linkSent` of NewRow to false
+    if Paid
+        set property `paid` of NewRow to Paid
+    else
+        set property `paid` of NewRow to false
 
     if NewKind is `service`
     begin
@@ -981,7 +1002,7 @@ OnSave:
     set the style of Overlay to `display: none`
     gosub Refresh
     return
-!! @hash fde53e4f
+!! @hash 62b4aead
 !!!
 
 
@@ -1097,6 +1118,105 @@ OnLoadSample:
     gosub Refresh
     return
 !! @hash 0eac7a55
+!!!
+
+
+!! ComputeTodayIso: produce today's local date as a YYYY-MM-DD string in TodayIso.
+!!
+!! Uses the bare `the year` / `the month` / `the day number` accessors, which return the corresponding components of "now" when no `of <timestamp>` operand is supplied. `the month` is 0-indexed (Jan = 0), so we add 1 before formatting. Month and day are zero-padded so the resulting string sorts the same way the on-disk date strings do.
+
+ComputeTodayIso:
+    put the year into TodayYy
+    put the month into TodayMo
+    add 1 to TodayMo
+    put the day number into TodayDd
+    put TodayMo cat `` into TempStr
+    if the length of TempStr is 1
+        put `0` cat TempStr into TempStr
+    put TempStr into TodayMo
+    put TodayDd cat `` into TempStr
+    if the length of TempStr is 1
+        put `0` cat TempStr into TempStr
+    put TempStr into TodayDd
+    put TodayYy cat `-` cat TodayMo cat `-` cat TodayDd into TodayIso
+    return
+!! @hash 44738a6e
+!!!
+
+
+!! RefreshLinkSentDisplay / RefreshPaidDisplay: paint the toggle button and date pill from the current state.
+!!
+!! Each toggle stores either a date string ("set") or a falsy value (empty / false from a migrated record). Truthy state shows "Clear" + the date; falsy state shows "Set" with no date. The display refresh is the single place that reads state and updates DOM, so handlers just mutate the variable and call this.
+
+RefreshLinkSentDisplay:
+    if LinkSent
+    begin
+        set the content of LinkSentBtn to `Clear`
+        set the style of LinkSentBtn to ToggleBtnClearStyle
+        set the content of LinkSentDate to LinkSent
+    end
+    else
+    begin
+        set the content of LinkSentBtn to `Set`
+        set the style of LinkSentBtn to ToggleBtnSetStyle
+        set the content of LinkSentDate to ``
+    end
+    return
+!! @hash 0a4c0236
+!!!
+
+
+!! RefreshPaidDisplay: mirror of RefreshLinkSentDisplay for the Paid toggle.
+
+RefreshPaidDisplay:
+    if Paid
+    begin
+        set the content of PaidBtn to `Clear`
+        set the style of PaidBtn to ToggleBtnClearStyle
+        set the content of PaidDate to Paid
+    end
+    else
+    begin
+        set the content of PaidBtn to `Set`
+        set the style of PaidBtn to ToggleBtnSetStyle
+        set the content of PaidDate to ``
+    end
+    return
+!! @hash 4ba0c699
+!!!
+
+
+!! OnToggleLinkSent / OnTogglePaid: flip the toggle and refresh its display.
+!!
+!! Setting captures today's date; clearing drops to empty so the truthiness check above lights up the "Set" face of the button.
+
+OnToggleLinkSent:
+    if LinkSent
+        put empty into LinkSent
+    else
+    begin
+        gosub ComputeTodayIso
+        put TodayIso into LinkSent
+    end
+    gosub RefreshLinkSentDisplay
+    return
+!! @hash 6cec39eb
+!!!
+
+
+!! OnTogglePaid: mirror of OnToggleLinkSent for the Paid toggle.
+
+OnTogglePaid:
+    if Paid
+        put empty into Paid
+    else
+    begin
+        gosub ComputeTodayIso
+        put TodayIso into Paid
+    end
+    gosub RefreshPaidDisplay
+    return
+!! @hash 1ce1fcba
 !!!
 
 
