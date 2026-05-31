@@ -43,12 +43,12 @@
             "#element": "div",
             "@id": "log-header",
             "display": "grid",
-            "grid-template-columns": "50px 100px 1fr 60px 1fr 90px 80px 100px 120px 70px 110px 90px 90px 70px",
+            "grid-template-columns": "50px 100px 1fr 60px 1fr 90px 80px 100px 120px 70px 110px 90px 90px 35px 70px",
             "padding": "0.5em calc(30px + 0.4em) 0.5em 0.4em",
             "border-bottom": "2px solid #333",
             "font-weight": "bold",
             "background": "#f4f4f4",
-            "#": ["$HSeq", "$HDate", "$HName", "$HTime", "$HLocation", "$HPostcode", "$HDistance", "$HContact", "$HClient", "$HLinkSent", "$HItem", "$HExpense", "$HFees", "$HPaid"],
+            "#": ["$HSeq", "$HDate", "$HName", "$HTime", "$HLocation", "$HPostcode", "$HDistance", "$HContact", "$HClient", "$HLinkSent", "$HItem", "$HExpense", "$HFees", "$HInv", "$HPaid"],
 
             "$HSeq":      { "#element": "div", "text-align": "right", "padding-right": "0.4em", "color": "#666", "#content": "Seq" },
             "$HDate":     { "#element": "div", "#content": "Date" },
@@ -63,6 +63,7 @@
             "$HItem":     { "#element": "div", "#content": "Mileage / Item" },
             "$HExpense":  { "#element": "div", "text-align": "right", "#content": "Expense" },
             "$HFees":     { "#element": "div", "text-align": "right", "#content": "Fees" },
+            "$HInv":      { "#element": "div", "text-align": "center", "#content": "Inv" },
             "$HPaid":     { "#element": "div", "text-align": "center", "#content": "Paid" }
         },
 
@@ -93,7 +94,7 @@
             "min-width": "440px",
             "max-width": "560px",
             "box-shadow": "0 4px 20px rgba(0,0,0,0.3)",
-            "#": ["$ModalTitle", "$KindRow", "$DateRow", "$NameRow", "$TimeRow", "$LocationRow", "$PostcodeRow", "$DistanceRow", "$ContactRow", "$ClientRow", "$DescriptionRow", "$MileageRow", "$ExpenseRow", "$FeesRow", "$LinkRow", "$LinkSentRow", "$PaidRow", "$StatusRow", "$Buttons"],
+            "#": ["$ModalTitle", "$KindRow", "$DateRow", "$NameRow", "$TimeRow", "$LocationRow", "$PostcodeRow", "$DistanceRow", "$ContactRow", "$ClientRow", "$DescriptionRow", "$MileageRow", "$ExpenseRow", "$FeesRow", "$LinkRow", "$LinkSentRow", "$InvoicedRow", "$PaidRow", "$StatusRow", "$Buttons"],
 
             "$ModalTitle": { "#element": "h2", "@id": "modal-title", "margin": "0 0 1em 0", "font-size": "1.2em", "#content": "Add booking" },
 
@@ -202,6 +203,14 @@
                 "$LinkSentLabel": { "#element": "label", "min-width": "110px", "#content": "Link sent" },
                 "$LinkSentBtn":   { "#element": "button", "@id": "linksent-btn", "@type": "button", "padding": "0.3em 0.9em", "cursor": "pointer", "border": "0", "border-radius": "4px", "background": "#eee", "color": "#333", "#content": "Set" },
                 "$LinkSentDate":  { "#element": "div", "@id": "linksent-date", "color": "#444" }
+            },
+
+            "$InvoicedRow": {
+                "#element": "div", "display": "flex", "align-items": "baseline", "gap": "0.5em", "margin-bottom": "0.4em",
+                "#": ["$InvoicedLabel", "$InvoicedBtn", "$InvoicedDate"],
+                "$InvoicedLabel": { "#element": "label", "min-width": "110px", "#content": "Invoiced" },
+                "$InvoicedBtn":   { "#element": "button", "@id": "invoiced-btn", "@type": "button", "padding": "0.3em 0.9em", "cursor": "pointer", "border": "0", "border-radius": "4px", "background": "#eee", "color": "#333", "#content": "Set" },
+                "$InvoicedDate":  { "#element": "div", "@id": "invoiced-date", "color": "#444" }
             },
 
             "$PaidRow": {

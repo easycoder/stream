@@ -49,6 +49,8 @@
     input LinkInput
     button LinkSentBtn
     div LinkSentDate
+    button InvoicedBtn
+    div InvoicedDate
     button PaidBtn
     div PaidDate
     button AddButton
@@ -111,6 +113,7 @@
     variable Paid
     variable Fees
     variable LinkSent
+    variable Invoiced
 
     variable DisplayDate
     variable Mi
@@ -212,7 +215,7 @@
     variable ManifestUrl
 
     variable OrigDistance
-!! @hash 0c5b0617
+!! @hash 24ee70a2
 !!!
 
 !! Boot the GUI: render the Webson layout, attach to the elements we will
@@ -251,6 +254,8 @@
     attach LinkInput to `link-input`
     attach LinkSentBtn to `linksent-btn`
     attach LinkSentDate to `linksent-date`
+    attach InvoicedBtn to `invoiced-btn`
+    attach InvoicedDate to `invoiced-date`
     attach PaidBtn to `paid-btn`
     attach PaidDate to `paid-date`
     attach AddButton to `add-button`
@@ -260,12 +265,12 @@
     attach ModalStatus to `modal-status`
     attach EmptyState to `empty-state`
     attach LoadSampleBtn to `load-sample-btn`
-!! @hash d98418bf
+!! @hash bd72668d
 !!!
 
 !! Cache the shared row-level inline styles.
 
-    put `50px 100px 1fr 60px 1fr 90px 80px 100px 120px 70px 110px 90px 90px 70px` into Grid
+    put `50px 100px 1fr 60px 1fr 90px 80px 100px 120px 70px 110px 90px 90px 35px 70px` into Grid
     put `display: grid; grid-template-columns: ` cat Grid into RowStyleData
     put RowStyleData cat `; padding: 0.4em 0.4em; border-bottom: 1px solid #eee; cursor: pointer; flex: 1` into RowStyleData
     put `display: grid; grid-template-columns: ` cat Grid into RowStyleSub
@@ -284,7 +289,7 @@
     put `padding: 0.3em 0.9em; cursor: pointer; border: 0; border-radius: 4px; background: #28a; color: white` into ToggleBtnClearStyle
     put `January,February,March,April,May,June,July,August,September,October,November,December` into MonthNames
     split MonthNames on `,`
-!! @hash e35aa26e
+!! @hash e8444709
 !!!
 
 !! Wire up the click and change handlers, then do the initial load.
@@ -301,13 +306,14 @@
     on click KindExpenseBtn gosub SelectKindExpense
     on click LoadSampleBtn gosub OnLoadSample
     on click LinkSentBtn gosub OnToggleLinkSent
+    on click InvoicedBtn gosub OnToggleInvoiced
     on click PaidBtn gosub OnTogglePaid
 
     gosub LoadConfig
     gosub Refresh
 
     stop
-!! @hash a27ac24a
+!! @hash a06fae12
 !!!
 
 
@@ -483,6 +489,7 @@ EmitDataRow:
     put property `fees` of Row into Fees
     put property `link` of Row into Link
     put property `linkSent` of Row into LinkSent
+    put property `invoiced` of Row into Invoiced
     if Kind is `service`
     begin
         put property `name` of Row into Name
@@ -594,6 +601,11 @@ EmitDataRow:
 
     create CellDiv in DataRowDivs
     set the style of CellDiv to CellCenter
+    if Invoiced
+        set the content of CellDiv to `✓`
+
+    create CellDiv in DataRowDivs
+    set the style of CellDiv to CellCenter
     if Paid
         set the content of CellDiv to `✓`
 
@@ -609,7 +621,7 @@ EmitDataRow:
     else
         set the style of LinkAnchors to LinkAnchorIdle
     return
-!! @hash d67492c4
+!! @hash 369abb0a
 !!!
 
 
@@ -667,8 +679,10 @@ EmitSubtotal:
     set the content of CellDiv to MoneyStr
 
     create CellDiv in SubDiv
+
+    create CellDiv in SubDiv
     return
-!! @hash 18109203
+!! @hash ffe70c49
 !!!
 
 
@@ -711,8 +725,10 @@ EmitGrandTotal:
     set the content of CellDiv to MoneyStr
 
     create CellDiv in GrandDiv
+
+    create CellDiv in GrandDiv
     return
-!! @hash 829c3546
+!! @hash 80f5e436
 !!!
 
 
@@ -741,6 +757,8 @@ OnAdd:
     set the content of LinkInput to ``
     put empty into LinkSent
     gosub RefreshLinkSentDisplay
+    put empty into Invoiced
+    gosub RefreshInvoicedDisplay
     clear Paid
     gosub RefreshPaidDisplay
     set the content of ModalStatus to ``
@@ -749,7 +767,7 @@ OnAdd:
     gosub SelectKindService
     set the style of Overlay to `display: flex; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 100; justify-content: center; align-items: center`
     return
-!! @hash d145be15
+!! @hash 7af064b4
 !!!
 
 
@@ -824,6 +842,8 @@ OnRowClick:
     set the content of LinkInput to Link
     put property `linkSent` of Row into LinkSent
     gosub RefreshLinkSentDisplay
+    put property `invoiced` of Row into Invoiced
+    gosub RefreshInvoicedDisplay
     put property `paid` of Row into Paid
     gosub RefreshPaidDisplay
     set the content of ModalStatus to ``
@@ -833,7 +853,7 @@ OnRowClick:
         set the style of DeleteBtn to `display: inline-block; padding: 0.4em 1em; background: #d33; color: white; border: 0; border-radius: 4px; cursor: pointer`
     set the style of Overlay to `display: flex; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 100; justify-content: center; align-items: center`
     return
-!! @hash 35f1dde3
+!! @hash 395ef511
 !!!
 
 
@@ -972,6 +992,10 @@ OnSave:
         set property `linkSent` of NewRow to LinkSent
     else
         set property `linkSent` of NewRow to false
+    if Invoiced is not empty
+        set property `invoiced` of NewRow to Invoiced
+    else
+        set property `invoiced` of NewRow to false
     if Paid
         set property `paid` of NewRow to Paid
     else
@@ -1002,7 +1026,7 @@ OnSave:
     set the style of Overlay to `display: none`
     gosub Refresh
     return
-!! @hash 62b4aead
+!! @hash 14374b1a
 !!!
 
 
@@ -1217,6 +1241,42 @@ OnTogglePaid:
     gosub RefreshPaidDisplay
     return
 !! @hash 1ce1fcba
+!!!
+
+
+!! RefreshInvoicedDisplay: paint the Invoiced toggle button and date pill from the current state.
+
+RefreshInvoicedDisplay:
+    if Invoiced
+    begin
+        set the content of InvoicedBtn to `Clear`
+        set the style of InvoicedBtn to ToggleBtnClearStyle
+        set the content of InvoicedDate to Invoiced
+    end
+    else
+    begin
+        set the content of InvoicedBtn to `Set`
+        set the style of InvoicedBtn to ToggleBtnSetStyle
+        set the content of InvoicedDate to ``
+    end
+    return
+!! @hash 0405915e
+!!!
+
+
+!! OnToggleInvoiced: mirror of OnTogglePaid for the Invoiced toggle.
+
+OnToggleInvoiced:
+    if Invoiced
+        put empty into Invoiced
+    else
+    begin
+        gosub ComputeTodayIso
+        put TodayIso into Invoiced
+    end
+    gosub RefreshInvoicedDisplay
+    return
+!! @hash ac62f392
 !!!
 
 
