@@ -1975,6 +1975,8 @@ OnLoadSample:
 
 OnExport:
     set the content of ExportStatus to `Download started.`
+    wait 5 seconds
+    set the content of ExportStatus to ``
     return
 !! @hash placeholder
 !!!
