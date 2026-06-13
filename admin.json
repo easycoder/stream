@@ -446,6 +446,7 @@
           },
           "$LocationRow": {
             "#element": "div",
+            "@id": "location-row",
             "display": "flex",
             "align-items": "center",
             "gap": "0.5em",
@@ -474,6 +475,7 @@
           },
           "$PostcodeRow": {
             "#element": "div",
+            "@id": "postcode-row",
             "#": [
               "$PostcodeLabel",
               "$PostcodeInput"
@@ -502,6 +504,7 @@
           },
           "$DistanceRow": {
             "#element": "div",
+            "@id": "distance-row",
             "#": [
               "$DistanceLabel",
               "$DistanceInput"
@@ -530,6 +533,7 @@
           },
           "$ContactRow": {
             "#element": "div",
+            "@id": "contact-row",
             "#": [
               "$ContactLabel",
               "$ContactInput"
@@ -558,6 +562,7 @@
           },
           "$ClientRow": {
             "#element": "div",
+            "@id": "client-row",
             "#": [
               "$ClientLabel",
               "$ClientInput"
@@ -586,6 +591,7 @@
           },
           "$ClientEmailRow": {
             "#element": "div",
+            "@id": "client-email-row",
             "#": [
               "$ClientEmailLabel",
               "$ClientEmailInput"
@@ -614,6 +620,7 @@
           },
           "$DacastRow": {
             "#element": "div",
+            "@id": "dacast-row",
             "#": [
               "$DacastLabel",
               "$DacastInput"
@@ -642,6 +649,7 @@
           },
           "$StreamUrlRow": {
             "#element": "div",
+            "@id": "stream-url-row",
             "#": [
               "$StreamUrlLabel",
               "$StreamUrlInput"
@@ -670,6 +678,7 @@
           },
           "$RecordingUrlRow": {
             "#element": "div",
+            "@id": "recording-url-row",
             "#": [
               "$RecordingUrlLabel",
               "$RecordingUrlBtn",
@@ -712,6 +721,7 @@
           },
           "$LinkSentRow": {
             "#element": "div",
+            "@id": "link-sent-row",
             "#": [
               "$LinkSentLabel",
               "$LinkSentToggle",
@@ -750,6 +760,7 @@
           },
           "$InvoicedRow": {
             "#element": "div",
+            "@id": "invoiced-row",
             "#": [
               "$InvoicedLabel",
               "$InvoicedToggle",
@@ -788,6 +799,7 @@
           },
           "$PaidRow": {
             "#element": "div",
+            "@id": "paid-row",
             "#": [
               "$PaidLabel",
               "$PaidInput",
@@ -824,6 +836,7 @@
           },
           "$TitleRow": {
             "#element": "div",
+            "@id": "title-row",
             "#": [
               "$TitleLabel",
               "$TitleInput"
@@ -852,6 +865,7 @@
           },
           "$ContactNameRow": {
             "#element": "div",
+            "@id": "contact-name-row",
             "#": [
               "$ContactNameLabel",
               "$ContactNameInput"
@@ -880,6 +894,7 @@
           },
           "$ContactRelationRow": {
             "#element": "div",
+            "@id": "contact-relation-row",
             "#": [
               "$ContactRelationLabel",
               "$ContactRelationInput"
@@ -908,6 +923,7 @@
           },
           "$ContactPhoneRow": {
             "#element": "div",
+            "@id": "contact-phone-row",
             "#": [
               "$ContactPhoneLabel",
               "$ContactPhoneInput"
@@ -936,6 +952,7 @@
           },
           "$ContactEmailRow": {
             "#element": "div",
+            "@id": "contact-email-row",
             "#": [
               "$ContactEmailLabel",
               "$ContactEmailInput"
@@ -964,6 +981,7 @@
           },
           "$MileageRow": {
             "#element": "div",
+            "@id": "mileage-row",
             "#": [
               "$MileageLabel",
               "$MileageInput"
@@ -1020,6 +1038,7 @@
           },
           "$FeesRow": {
             "#element": "div",
+            "@id": "fees-row",
             "#": [
               "$FeesLabel",
               "$FeesInput"
@@ -1048,6 +1067,7 @@
           },
           "$RecordingTextRow": {
             "#element": "div",
+            "@id": "recording-text-row",
             "#": [
               "$RecordingTextLabel",
               "$RecordingTextInput"
@@ -1076,6 +1096,7 @@
           },
           "$TributeUrlRow": {
             "#element": "div",
+            "@id": "tribute-url-row",
             "#": [
               "$TributeUrlLabel",
               "$TributeUrlBtn",

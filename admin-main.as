@@ -104,6 +104,27 @@
     variable TributeUrlVal
     variable DocumentUrlVal
     variable DocumentUpPath
+    variable LocationRow
+    variable PostcodeRow
+    variable DistanceRow
+    variable ContactRow
+    variable ClientRow
+    variable ClientEmailRow
+    variable DacastRow
+    variable StreamUrlRow
+    variable MileageRow
+    variable FeesRow
+    variable LinkSentRow
+    variable InvoicedRow
+    variable PaidRow
+    variable TitleRow
+    variable ContactNameRow
+    variable ContactRelationRow
+    variable ContactPhoneRow
+    variable ContactEmailRow
+    variable RecordingTextRow
+    variable RecordingUrlRow
+    variable TributeUrlRow
     variable ToField
     variable CcField
     variable SubjectField
@@ -240,6 +261,27 @@
     attach StreamUrlInput to `stream-url-input`
     attach RecordingUrlInput to `recording-url-input`
     attach RecordingUrlBtn to `recording-url-btn`
+    attach LocationRow to `location-row`
+    attach PostcodeRow to `postcode-row`
+    attach DistanceRow to `distance-row`
+    attach ContactRow to `contact-row`
+    attach ClientRow to `client-row`
+    attach ClientEmailRow to `client-email-row`
+    attach DacastRow to `dacast-row`
+    attach StreamUrlRow to `stream-url-row`
+    attach MileageRow to `mileage-row`
+    attach FeesRow to `fees-row`
+    attach LinkSentRow to `link-sent-row`
+    attach InvoicedRow to `invoiced-row`
+    attach PaidRow to `paid-row`
+    attach TitleRow to `title-row`
+    attach ContactNameRow to `contact-name-row`
+    attach ContactRelationRow to `contact-relation-row`
+    attach ContactPhoneRow to `contact-phone-row`
+    attach ContactEmailRow to `contact-email-row`
+    attach RecordingTextRow to `recording-text-row`
+    attach RecordingUrlRow to `recording-url-row`
+    attach TributeUrlRow to `tribute-url-row`
     attach MileageInput to `mileage-input`
     attach ExpenseInput to `expense-input`
     attach FeesInput to `fees-input`
@@ -1100,6 +1142,28 @@ SelectKindService:
     set style `display` of RecordingTextInput to `inline-block`
     set style `display` of TributeUrlInput to `inline-block`
     set style `display` of DocumentUrlInput to `inline-block`
+    ! Show all rows for Service variant
+    set style `display` of LocationRow to `flex`
+    set style `display` of PostcodeRow to `flex`
+    set style `display` of DistanceRow to `flex`
+    set style `display` of ContactRow to `flex`
+    set style `display` of ClientRow to `flex`
+    set style `display` of ClientEmailRow to `flex`
+    set style `display` of DacastRow to `flex`
+    set style `display` of StreamUrlRow to `flex`
+    set style `display` of MileageRow to `flex`
+    set style `display` of FeesRow to `flex`
+    set style `display` of LinkSentRow to `flex`
+    set style `display` of InvoicedRow to `flex`
+    set style `display` of PaidRow to `flex`
+    set style `display` of TitleRow to `flex`
+    set style `display` of ContactNameRow to `flex`
+    set style `display` of ContactRelationRow to `flex`
+    set style `display` of ContactPhoneRow to `flex`
+    set style `display` of ContactEmailRow to `flex`
+    set style `display` of RecordingTextRow to `flex`
+    set style `display` of RecordingUrlRow to `flex`
+    set style `display` of TributeUrlRow to `flex`
     return
 
 SelectKindExpense:
@@ -1107,32 +1171,30 @@ SelectKindExpense:
     set the style of KindServiceBtn to KindUnselectedStyle
     set the style of KindExpenseBtn to KindSelectedStyle
     set the style of KindSlideshowBtn to KindUnselectedStyle
+    ! Show only Name, Expense, Document rows — hide everything else
     set style `display` of NameInput to `inline-block`
-    set style `display` of LocationInput to `none`
-    set style `display` of PostcodeInput to `none`
-    set style `display` of DistanceInput to `none`
-    set style `display` of ContactInput to `none`
-    set style `display` of ClientInput to `none`
-    set style `display` of ClientEmailInput to `none`
-    set style `display` of DacastInput to `none`
-    set style `display` of StreamUrlInput to `none`
-    set style `display` of MileageInput to `none`
-    set style `display` of FeesInput to `none`
-    set style `display` of LinkSentInput to `none`
-    set style `display` of LinkSentToggle to `none`
-    set style `display` of InvoicedInput to `none`
-    set style `display` of InvoicedToggle to `none`
-    set style `display` of PaidInput to `none`
-    set style `display` of PaidDateInput to `none`
-    set style `display` of RecordingUrlInput to `none`
-    set style `display` of TitleField to `none`
-    set style `display` of ContactNameInput to `none`
-    set style `display` of ContactRelationInput to `none`
-    set style `display` of ContactPhoneInput to `none`
-    set style `display` of ContactEmailInput to `none`
-    set style `display` of RecordingTextInput to `none`
-    set style `display` of TributeUrlInput to `none`
     set style `display` of DocumentUrlInput to `inline-block`
+    set style `display` of LocationRow to `none`
+    set style `display` of PostcodeRow to `none`
+    set style `display` of DistanceRow to `none`
+    set style `display` of ContactRow to `none`
+    set style `display` of ClientRow to `none`
+    set style `display` of ClientEmailRow to `none`
+    set style `display` of DacastRow to `none`
+    set style `display` of StreamUrlRow to `none`
+    set style `display` of MileageRow to `none`
+    set style `display` of FeesRow to `none`
+    set style `display` of LinkSentRow to `none`
+    set style `display` of InvoicedRow to `none`
+    set style `display` of PaidRow to `none`
+    set style `display` of TitleRow to `none`
+    set style `display` of ContactNameRow to `none`
+    set style `display` of ContactRelationRow to `none`
+    set style `display` of ContactPhoneRow to `none`
+    set style `display` of ContactEmailRow to `none`
+    set style `display` of RecordingTextRow to `none`
+    set style `display` of RecordingUrlRow to `none`
+    set style `display` of TributeUrlRow to `none`
     return
 
 SelectKindSlideshow:
@@ -1157,6 +1219,28 @@ SelectKindSlideshow:
     set style `display` of RecordingTextInput to `none`
     set style `display` of TributeUrlInput to `none`
     set style `display` of DocumentUrlInput to `none`
+    ! Slideshow: show Name, Location, Contact, Client, ClientEmail rows; hide everything else
+    set style `display` of LocationRow to `flex`
+    set style `display` of ContactRow to `flex`
+    set style `display` of ClientRow to `flex`
+    set style `display` of ClientEmailRow to `flex`
+    set style `display` of PostcodeRow to `none`
+    set style `display` of DistanceRow to `none`
+    set style `display` of DacastRow to `none`
+    set style `display` of StreamUrlRow to `none`
+    set style `display` of MileageRow to `none`
+    set style `display` of FeesRow to `none`
+    set style `display` of LinkSentRow to `none`
+    set style `display` of InvoicedRow to `none`
+    set style `display` of PaidRow to `none`
+    set style `display` of TitleRow to `none`
+    set style `display` of ContactNameRow to `none`
+    set style `display` of ContactRelationRow to `none`
+    set style `display` of ContactPhoneRow to `none`
+    set style `display` of ContactEmailRow to `none`
+    set style `display` of RecordingTextRow to `none`
+    set style `display` of RecordingUrlRow to `none`
+    set style `display` of TributeUrlRow to `none`
     return
 !! @hash placeholder
 !!!
