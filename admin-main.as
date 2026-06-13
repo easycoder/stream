@@ -1970,10 +1970,11 @@ OnLoadSample:
 !!!
 
 
-!! OnExport: the button is an <a href="books.php?key=Acct2026"> so it navigates natively.
+!! OnExport: navigate to the read-only accounts page.
 
 OnExport:
     set the content of ExportStatus to `Opening accounts view...`
+    location `books.php?key=Acct2026`
     return
 !! @hash placeholder
 !!!
