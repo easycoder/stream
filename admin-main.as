@@ -1974,9 +1974,10 @@ OnLoadSample:
 !! so navigation happens natively. We just show a status message.
 
 OnExport:
-    ! The export button is an <a href="export.php" download> so it navigates natively.
-    ! Just show a brief status before the page unloads.
     set the content of ExportStatus to `Download started.`
+    location `export.php`
+    wait 3 seconds
+    set the content of ExportStatus to `Download problem — try signing out and back in.`
     return
 !! @hash placeholder
 !!!
