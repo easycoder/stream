@@ -1116,6 +1116,12 @@ SelectKindExpense:
     set style `display` of ClientEmailInput to `none`
     set style `display` of DacastInput to `none`
     set style `display` of StreamUrlInput to `none`
+    set style `display` of MileageInput to `none`
+    set style `display` of FeesInput to `none`
+    set style `display` of LinkSentInput to `none`
+    set style `display` of InvoicedInput to `none`
+    set style `display` of PaidInput to `none`
+    set style `display` of RecordingUrlInput to `none`
     set style `display` of TitleField to `none`
     set style `display` of ContactNameInput to `none`
     set style `display` of ContactRelationInput to `none`
