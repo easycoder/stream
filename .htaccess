@@ -1,0 +1,18 @@
+# stream.eclecity.net — URL routing for the AllSpeak front end.
+# The .as / .json / .php / .html files are served directly when
+# requested by name. The two named endpoints below are rewritten
+# to their underlying .html launchers.
+
+RewriteEngine On
+
+# Serve real files and directories as-is
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# /admin -> redirect to / (admin now lives at root)
+RewriteRule ^admin/?$ / [R=302,L]
+
+# /{slug} -> single-stream viewer
+# Slugs always start with a digit (YYMMDD-...)
+RewriteRule ^[0-9][^/]*/?$ stream.html [L]

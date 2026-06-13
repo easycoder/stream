@@ -1,2 +1,5 @@
-# Stream data — written at runtime, lives on the production server
 data/
+deploy/
+ignore/
+.code-version
+.claude/
