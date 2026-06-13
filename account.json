@@ -1,0 +1,241 @@
+{
+    "#doc": "Account project — service log layout (Phase 6: add/edit/delete via modal).",
+    "#element": "div",
+    "@id": "page",
+    "font-family": "sans-serif",
+    "font-size": "14px",
+    "color": "#222",
+    "margin": "1em",
+    "max-width": "1500px",
+    "#": ["$Header", "$Log", "$Overlay"],
+
+    "$Header": {
+        "#element": "div",
+        "@id": "header",
+        "display": "flex",
+        "align-items": "baseline",
+        "gap": "1.5em",
+        "margin-bottom": "1em",
+        "#": ["$Title", "$AddButton", "$ExportButton", "$ExportStatus"],
+
+        "$Title":        { "#element": "h1", "@id": "title", "margin": "0", "font-size": "1.4em", "#content": "Service log" },
+        "$AddButton":    { "#element": "button", "@id": "add-button", "padding": "0.4em 1em", "font-size": "1em", "cursor": "pointer", "#content": "Add booking" },
+        "$ExportButton": { "#element": "button", "@id": "export-button", "padding": "0.4em 1em", "font-size": "1em", "cursor": "pointer", "#content": "Export" },
+        "$ExportStatus": { "#element": "div", "@id": "export-status", "font-size": "0.9em", "color": "#666" }
+    },
+
+    "$Log": {
+        "#element": "div",
+        "@id": "log",
+        "#": ["$LogHeader", "$LogBody", "$EmptyState"],
+
+        "$EmptyState": {
+            "#element": "div",
+            "@id": "empty-state",
+            "display": "none",
+            "padding": "3em 1em",
+            "text-align": "center",
+            "color": "#666",
+            "#": ["$EmptyMsg", "$LoadSampleBtn"],
+            "$EmptyMsg":      { "#element": "div", "margin-bottom": "1em", "#content": "No bookings yet. Add your first one above, or load some sample data to see how it looks." },
+            "$LoadSampleBtn": { "#element": "button", "@id": "load-sample-btn", "padding": "0.5em 1.2em", "font-size": "1em", "cursor": "pointer", "background": "#28a", "color": "white", "border": "0", "border-radius": "4px", "#content": "Load sample data" }
+        },
+
+        "$LogHeader": {
+            "#element": "div",
+            "@id": "log-header",
+            "display": "grid",
+            "grid-template-columns": "50px 100px 1fr 60px 1fr 90px 80px 100px 120px 70px 110px 90px 90px 35px 70px",
+            "padding": "0.5em calc(30px + 0.4em) 0.5em 0.4em",
+            "border-bottom": "2px solid #333",
+            "font-weight": "bold",
+            "background": "#f4f4f4",
+            "#": ["$HSeq", "$HDate", "$HName", "$HTime", "$HLocation", "$HPostcode", "$HDistance", "$HContact", "$HClient", "$HLinkSent", "$HItem", "$HExpense", "$HFees", "$HInv", "$HPaid"],
+
+            "$HSeq":      { "#element": "div", "text-align": "right", "padding-right": "0.4em", "color": "#666", "#content": "Seq" },
+            "$HDate":     { "#element": "div", "#content": "Date" },
+            "$HName":     { "#element": "div", "#content": "Name" },
+            "$HLocation": { "#element": "div", "#content": "Location" },
+            "$HPostcode": { "#element": "div", "#content": "Postcode" },
+            "$HTime":     { "#element": "div", "#content": "Time" },
+            "$HDistance": { "#element": "div", "#content": "Distance" },
+            "$HContact":  { "#element": "div", "#content": "Contact" },
+            "$HClient":   { "#element": "div", "#content": "Client" },
+            "$HLinkSent": { "#element": "div", "text-align": "center", "#content": "Sent" },
+            "$HItem":     { "#element": "div", "#content": "Mileage / Item" },
+            "$HExpense":  { "#element": "div", "text-align": "right", "#content": "Expense" },
+            "$HFees":     { "#element": "div", "text-align": "right", "#content": "Fees" },
+            "$HInv":      { "#element": "div", "text-align": "center", "#content": "Inv" },
+            "$HPaid":     { "#element": "div", "text-align": "center", "#content": "Paid" }
+        },
+
+        "$LogBody": { "#element": "div", "@id": "log-body" }
+    },
+
+    "$Overlay": {
+        "#element": "div",
+        "@id": "overlay",
+        "display": "none",
+        "position": "fixed",
+        "top": "0",
+        "left": "0",
+        "right": "0",
+        "bottom": "0",
+        "background": "rgba(0,0,0,0.5)",
+        "z-index": "100",
+        "justify-content": "center",
+        "align-items": "center",
+        "#": ["$Modal"],
+
+        "$Modal": {
+            "#element": "div",
+            "@id": "modal",
+            "background": "white",
+            "border-radius": "8px",
+            "padding": "1.5em 2em",
+            "min-width": "440px",
+            "max-width": "560px",
+            "box-shadow": "0 4px 20px rgba(0,0,0,0.3)",
+            "#": ["$ModalTitle", "$KindRow", "$DateRow", "$NameRow", "$TimeRow", "$LocationRow", "$PostcodeRow", "$DistanceRow", "$ContactRow", "$ClientRow", "$DescriptionRow", "$MileageRow", "$ExpenseRow", "$FeesRow", "$LinkRow", "$LinkSentRow", "$InvoicedRow", "$PaidRow", "$StatusRow", "$Buttons"],
+
+            "$ModalTitle": { "#element": "h2", "@id": "modal-title", "margin": "0 0 1em 0", "font-size": "1.2em", "#content": "Add booking" },
+
+            "$KindRow": {
+                "#element": "div", "display": "flex", "align-items": "center", "gap": "0.5em", "margin-bottom": "0.5em",
+                "#": ["$KindLabel", "$KindServiceBtn", "$KindExpenseBtn"],
+                "$KindLabel":      { "#element": "label", "min-width": "110px", "#content": "Kind" },
+                "$KindServiceBtn": { "#element": "button", "@id": "kind-service-btn", "@type": "button", "padding": "0.3em 0.9em", "cursor": "pointer", "border": "0", "border-radius": "4px", "background": "#28a", "color": "white", "#content": "Service" },
+                "$KindExpenseBtn": { "#element": "button", "@id": "kind-expense-btn", "@type": "button", "padding": "0.3em 0.9em", "cursor": "pointer", "border": "0", "border-radius": "4px", "background": "#eee", "color": "#333", "#content": "Expense" }
+            },
+
+            "$DateRow": {
+                "#element": "div", "display": "flex", "align-items": "baseline", "gap": "0.5em", "margin-bottom": "0.4em",
+                "#": ["$DateLabel", "$DateInput"],
+                "$DateLabel": { "#element": "label", "min-width": "110px", "#content": "Date" },
+                "$DateInput": { "#element": "input", "@id": "date-input", "@type": "date", "flex": "1", "padding": "0.2em" }
+            },
+
+            "$NameRow": {
+                "#element": "div", "@id": "name-row", "display": "flex", "align-items": "baseline", "gap": "0.5em", "margin-bottom": "0.4em",
+                "#": ["$NameLabel", "$NameInput"],
+                "$NameLabel": { "#element": "label", "min-width": "110px", "#content": "Name" },
+                "$NameInput": { "#element": "input", "@id": "name-input", "@type": "text", "flex": "1", "padding": "0.2em" }
+            },
+
+            "$LocationRow": {
+                "#element": "div", "@id": "location-row", "display": "flex", "align-items": "baseline", "gap": "0.5em", "margin-bottom": "0.4em",
+                "#": ["$LocationLabel", "$LocationInput"],
+                "$LocationLabel": { "#element": "label", "min-width": "110px", "#content": "Location" },
+                "$LocationInput": { "#element": "input", "@id": "location-input", "@type": "text", "flex": "1", "padding": "0.2em" }
+            },
+
+            "$PostcodeRow": {
+                "#element": "div", "@id": "postcode-row", "display": "flex", "align-items": "baseline", "gap": "0.5em", "margin-bottom": "0.4em",
+                "#": ["$PostcodeLabel", "$PostcodeInput"],
+                "$PostcodeLabel": { "#element": "label", "min-width": "110px", "#content": "Postcode" },
+                "$PostcodeInput": { "#element": "input", "@id": "postcode-input", "@type": "text", "flex": "1", "padding": "0.2em" }
+            },
+
+            "$TimeRow": {
+                "#element": "div", "@id": "time-row", "display": "flex", "align-items": "baseline", "gap": "0.5em", "margin-bottom": "0.4em",
+                "#": ["$TimeLabel", "$TimeInput"],
+                "$TimeLabel": { "#element": "label", "min-width": "110px", "#content": "Time" },
+                "$TimeInput": { "#element": "input", "@id": "time-input", "@type": "text", "flex": "1", "padding": "0.2em" }
+            },
+
+            "$DistanceRow": {
+                "#element": "div", "@id": "distance-row", "display": "flex", "align-items": "baseline", "gap": "0.5em", "margin-bottom": "0.4em",
+                "#": ["$DistanceLabel", "$DistanceInput"],
+                "$DistanceLabel": { "#element": "label", "min-width": "110px", "#content": "Distance" },
+                "$DistanceInput": { "#element": "input", "@id": "distance-input", "@type": "text", "flex": "1", "padding": "0.2em" }
+            },
+
+            "$ContactRow": {
+                "#element": "div", "@id": "contact-row", "display": "flex", "align-items": "baseline", "gap": "0.5em", "margin-bottom": "0.4em",
+                "#": ["$ContactLabel", "$ContactInput"],
+                "$ContactLabel": { "#element": "label", "min-width": "110px", "#content": "Contact" },
+                "$ContactInput": { "#element": "input", "@id": "contact-input", "@type": "text", "flex": "1", "padding": "0.2em" }
+            },
+
+            "$ClientRow": {
+                "#element": "div", "@id": "client-row", "display": "flex", "align-items": "baseline", "gap": "0.5em", "margin-bottom": "0.4em",
+                "#": ["$ClientLabel", "$ClientInput"],
+                "$ClientLabel": { "#element": "label", "min-width": "110px", "#content": "Client" },
+                "$ClientInput": { "#element": "input", "@id": "client-input", "@type": "text", "flex": "1", "padding": "0.2em" }
+            },
+
+            "$DescriptionRow": {
+                "#element": "div", "@id": "description-row", "display": "none", "align-items": "baseline", "gap": "0.5em", "margin-bottom": "0.4em",
+                "#": ["$DescriptionLabel", "$DescriptionInput"],
+                "$DescriptionLabel": { "#element": "label", "min-width": "110px", "#content": "Description" },
+                "$DescriptionInput": { "#element": "input", "@id": "description-input", "@type": "text", "flex": "1", "padding": "0.2em" }
+            },
+
+            "$MileageRow": {
+                "#element": "div", "@id": "mileage-row", "display": "flex", "align-items": "baseline", "gap": "0.5em", "margin-bottom": "0.4em",
+                "#": ["$MileageLabel", "$MileageInput"],
+                "$MileageLabel": { "#element": "label", "min-width": "110px", "#content": "Mileage" },
+                "$MileageInput": { "#element": "input", "@id": "mileage-input", "@type": "text", "flex": "1", "padding": "0.2em" }
+            },
+
+            "$ExpenseRow": {
+                "#element": "div", "display": "flex", "align-items": "baseline", "gap": "0.5em", "margin-bottom": "0.4em",
+                "#": ["$ExpenseLabel", "$ExpenseInput"],
+                "$ExpenseLabel": { "#element": "label", "min-width": "110px", "#content": "Expense (£)" },
+                "$ExpenseInput": { "#element": "input", "@id": "expense-input", "@type": "text", "flex": "1", "padding": "0.2em" }
+            },
+
+            "$FeesRow": {
+                "#element": "div", "display": "flex", "align-items": "baseline", "gap": "0.5em", "margin-bottom": "0.4em",
+                "#": ["$FeesLabel", "$FeesInput"],
+                "$FeesLabel": { "#element": "label", "min-width": "110px", "#content": "Fees (£)" },
+                "$FeesInput": { "#element": "input", "@id": "fees-input", "@type": "text", "flex": "1", "padding": "0.2em" }
+            },
+
+            "$LinkRow": {
+                "#element": "div", "display": "flex", "align-items": "baseline", "gap": "0.5em", "margin-bottom": "0.4em",
+                "#": ["$LinkLabel", "$LinkInput"],
+                "$LinkLabel": { "#element": "label", "min-width": "110px", "#content": "Link" },
+                "$LinkInput": { "#element": "input", "@id": "link-input", "@type": "text", "flex": "1", "padding": "0.2em", "placeholder": "URL or relative path to a document" }
+            },
+
+            "$LinkSentRow": {
+                "#element": "div", "display": "flex", "align-items": "baseline", "gap": "0.5em", "margin-bottom": "0.4em",
+                "#": ["$LinkSentLabel", "$LinkSentBtn", "$LinkSentDate"],
+                "$LinkSentLabel": { "#element": "label", "min-width": "110px", "#content": "Link sent" },
+                "$LinkSentBtn":   { "#element": "button", "@id": "linksent-btn", "@type": "button", "padding": "0.3em 0.9em", "cursor": "pointer", "border": "0", "border-radius": "4px", "background": "#eee", "color": "#333", "#content": "Set" },
+                "$LinkSentDate":  { "#element": "div", "@id": "linksent-date", "color": "#444" }
+            },
+
+            "$InvoicedRow": {
+                "#element": "div", "display": "flex", "align-items": "baseline", "gap": "0.5em", "margin-bottom": "0.4em",
+                "#": ["$InvoicedLabel", "$InvoicedBtn", "$InvoicedDate"],
+                "$InvoicedLabel": { "#element": "label", "min-width": "110px", "#content": "Invoiced" },
+                "$InvoicedBtn":   { "#element": "button", "@id": "invoiced-btn", "@type": "button", "padding": "0.3em 0.9em", "cursor": "pointer", "border": "0", "border-radius": "4px", "background": "#eee", "color": "#333", "#content": "Set" },
+                "$InvoicedDate":  { "#element": "div", "@id": "invoiced-date", "color": "#444" }
+            },
+
+            "$PaidRow": {
+                "#element": "div", "display": "flex", "align-items": "baseline", "gap": "0.5em", "margin-bottom": "0.8em",
+                "#": ["$PaidLabel", "$PaidBtn", "$PaidDate"],
+                "$PaidLabel": { "#element": "label", "min-width": "110px", "#content": "Paid" },
+                "$PaidBtn":   { "#element": "button", "@id": "paid-btn", "@type": "button", "padding": "0.3em 0.9em", "cursor": "pointer", "border": "0", "border-radius": "4px", "background": "#eee", "color": "#333", "#content": "Set" },
+                "$PaidDate":  { "#element": "div", "@id": "paid-date", "color": "#444" }
+            },
+
+            "$StatusRow": {
+                "#element": "div", "@id": "modal-status",
+                "color": "#c00", "font-size": "0.9em", "min-height": "1.2em", "margin": "0.4em 0 0 0"
+            },
+
+            "$Buttons": {
+                "#element": "div", "display": "flex", "gap": "0.5em", "margin-top": "0.8em", "justify-content": "flex-end",
+                "#": ["$DeleteBtn", "$Spacer", "$CancelBtn", "$SaveBtn"],
+                "$DeleteBtn": { "#element": "button", "@id": "delete-btn", "padding": "0.4em 1em", "background": "#d33", "color": "white", "border": "0", "border-radius": "4px", "cursor": "pointer", "display": "none", "#content": "Delete" },
+                "$Spacer":    { "#element": "div", "flex": "1" },
+                "$CancelBtn": { "#element": "button", "@id": "cancel-btn", "padding": "0.4em 1em", "cursor": "pointer", "#content": "Cancel" },
+                "$SaveBtn":   { "#element": "button", "@id": "save-btn", "padding": "0.4em 1em", "background": "#28a", "color": "white", "border": "0", "border-radius": "4px", "cursor": "pointer", "#content": "Save" }
+            }
+        }
+    }
+}

@@ -1,0 +1,7 @@
+{
+    "_doc": "Backend config for the account app. Live local-server mode is the default; the static read-only deploy bundle ships an overridden config.json (manifestUrl set, dataReadBase pointing at relative `data`, dataWriteBase empty, readonly true).",
+    "readonly": false,
+    "manifestUrl": "",
+    "dataReadBase": "/read/data",
+    "dataWriteBase": "/write/data"
+}
