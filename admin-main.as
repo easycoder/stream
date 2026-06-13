@@ -80,6 +80,27 @@
     div SubDiv
     div GrandDiv
     div CellDiv
+    div LocationRow
+    div PostcodeRow
+    div DistanceRow
+    div ContactRow
+    div ClientRow
+    div ClientEmailRow
+    div DacastRow
+    div StreamUrlRow
+    div MileageRow
+    div FeesRow
+    div LinkSentRow
+    div InvoicedRow
+    div PaidRow
+    div TitleRow
+    div ContactNameRow
+    div ContactRelationRow
+    div ContactPhoneRow
+    div ContactEmailRow
+    div RecordingTextRow
+    div RecordingUrlRow
+    div TributeUrlRow
 
     variable RowStyleData
     variable RowStyleSub
@@ -104,27 +125,6 @@
     variable TributeUrlVal
     variable DocumentUrlVal
     variable DocumentUpPath
-    variable LocationRow
-    variable PostcodeRow
-    variable DistanceRow
-    variable ContactRow
-    variable ClientRow
-    variable ClientEmailRow
-    variable DacastRow
-    variable StreamUrlRow
-    variable MileageRow
-    variable FeesRow
-    variable LinkSentRow
-    variable InvoicedRow
-    variable PaidRow
-    variable TitleRow
-    variable ContactNameRow
-    variable ContactRelationRow
-    variable ContactPhoneRow
-    variable ContactEmailRow
-    variable RecordingTextRow
-    variable RecordingUrlRow
-    variable TributeUrlRow
     variable ToField
     variable CcField
     variable SubjectField
