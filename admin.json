@@ -1,0 +1,1267 @@
+{
+  "#doc": "Filming admin \u2014 merged service log and stream management.",
+  "#element": "div",
+  "@id": "page",
+  "font-family": "sans-serif",
+  "font-size": "14px",
+  "color": "#222",
+  "margin": "1em",
+  "max-width": "1500px",
+  "#": [
+    "$LoginPanel",
+    "$AdminPanel"
+  ],
+  "background": "#f5f5f5",
+  "min-height": "100vh",
+  "$LoginPanel": {
+    "#element": "div",
+    "@id": "login-panel",
+    "max-width": "22em",
+    "margin": "4em auto",
+    "padding": "2em",
+    "border": "1px solid #ddd",
+    "border-radius": "6px",
+    "background": "#fafafa",
+    "#": [
+      "$LoginTitle",
+      "$UserField",
+      "$PassField",
+      "$LoginButton",
+      "$LoginStatus"
+    ]
+  },
+  "$LoginTitle": {
+    "#element": "h2",
+    "#content": "Sign in",
+    "margin": "0 0 1em 0",
+    "font-weight": "400"
+  },
+  "$UserField": {
+    "#element": "input",
+    "@id": "user-field",
+    "@type": "text",
+    "@placeholder": "Username",
+    "@autocomplete": "username",
+    "display": "block",
+    "width": "100%",
+    "padding": "0.5em",
+    "margin-bottom": "1em",
+    "box-sizing": "border-box",
+    "font-size": "1em"
+  },
+  "$PassField": {
+    "#element": "input",
+    "@id": "pass-field",
+    "@type": "password",
+    "@placeholder": "Password",
+    "@autocomplete": "current-password",
+    "display": "block",
+    "width": "100%",
+    "padding": "0.5em",
+    "margin-bottom": "1em",
+    "box-sizing": "border-box",
+    "font-size": "1em"
+  },
+  "$LoginButton": {
+    "#element": "button",
+    "@id": "login-button",
+    "display": "block",
+    "width": "100%",
+    "padding": "0.5em",
+    "background": "#28a",
+    "color": "white",
+    "border": "0",
+    "border-radius": "4px",
+    "font-size": "1em",
+    "cursor": "pointer",
+    "#content": "Sign in"
+  },
+  "$LoginStatus": {
+    "#element": "div",
+    "@id": "login-status",
+    "color": "#c00",
+    "font-size": "0.9em",
+    "min-height": "1.2em",
+    "margin-top": "0.8em"
+  },
+  "$AdminPanel": {
+    "#element": "div",
+    "@id": "admin-panel",
+    "background": "white",
+    "border": "1px solid #ddd",
+    "border-radius": "6px",
+    "padding": "1em",
+    "margin-top": "0.5em",
+    "#": [
+      "$Header",
+      "$LogTableWrap",
+      "$EmptyState",
+      "$Overlay"
+    ],
+    "$Header": {
+      "#element": "div",
+      "@id": "header",
+      "display": "flex",
+      "align-items": "baseline",
+      "gap": "1.5em",
+      "margin-bottom": "1em",
+      "#": [
+        "$Title",
+        "$AddButton",
+        "$ExportButton",
+        "$ExportStatus"
+      ]
+    },
+    "$Title": {
+      "#element": "h1",
+      "@id": "title",
+      "margin": "0",
+      "font-size": "1.4em",
+      "#content": "Service log"
+    },
+    "$AddButton": {
+      "#element": "button",
+      "@id": "add-button",
+      "padding": "0.4em 1em",
+      "font-size": "1em",
+      "cursor": "pointer",
+      "#content": "Add booking"
+    },
+    "$ExportButton": {
+      "#element": "a",
+      "@id": "export-button",
+      "@href": "export.php",
+      "@download": "",
+      "padding": "0.4em 1em",
+      "font-size": "1em",
+      "cursor": "pointer",
+      "text-decoration": "none",
+      "color": "inherit",
+      "#content": "Export"
+    },
+    "$ExportStatus": {
+      "#element": "div",
+      "@id": "export-status",
+      "font-size": "0.9em",
+      "color": "#060",
+      "min-height": "1.2em"
+    },
+    "$LogTableWrap": {
+      "#element": "div",
+      "@id": "log-table-wrap",
+      "overflow-y": "auto",
+      "max-height": "calc(100vh - 200px)",
+      "#": [
+        "$LogHeader",
+        "$LogBody"
+      ]
+    },
+    "$LogBody": {
+      "#element": "div",
+      "@id": "log-body",
+      "display": "block"
+    },
+    "$EmptyState": {
+      "#element": "div",
+      "@id": "empty-state",
+      "display": "none",
+      "#": [
+        "$EmptyMsg",
+        "$LoadSampleBtn"
+      ],
+      "$EmptyMsg": {
+        "#element": "div",
+        "#content": "No data yet",
+        "padding": "3em 1em",
+        "text-align": "center",
+        "color": "#666"
+      },
+      "$LoadSampleBtn": {
+        "#element": "button",
+        "@id": "load-sample-btn",
+        "padding": "0.4em 1em",
+        "margin": "1em auto",
+        "display": "block",
+        "cursor": "pointer",
+        "#content": "Load sample data"
+      }
+    },
+    "$Overlay": {
+      "#element": "div",
+      "@id": "overlay",
+      "position": "fixed",
+      "top": "0",
+      "left": "0",
+      "width": "100%",
+      "height": "100%",
+      "background": "rgba(0,0,0,0.4)",
+      "display": "none",
+      "align-items": "flex-start",
+      "justify-content": "center",
+      "padding-top": "5vh",
+      "z-index": "1000",
+      "#": [
+        "$Modal"
+      ],
+      "$Modal": {
+        "#element": "div",
+        "background": "white",
+        "border-radius": "8px",
+        "padding": "1.5em",
+        "max-width": "700px",
+        "width": "90%",
+        "max-height": "85vh",
+        "overflow-y": "auto",
+        "box-shadow": "0 4px 30px rgba(0,0,0,0.3)",
+        "#": [
+          "$ModalForm"
+        ]
+      },
+      "$ModalForm": {
+        "#element": "div",
+        "@id": "modal-form",
+        "#": [
+          "$ModalTitle",
+          "$KindButtons",
+          "$FormFields",
+          "$ModalStatus",
+          "$Buttons"
+        ],
+        "$ModalTitle": {
+          "#element": "h2",
+          "@id": "modal-title",
+          "margin": "0 0 1em 0",
+          "font-weight": "400",
+          "display": "flex",
+          "align-items": "center",
+          "gap": "0.5em"
+        },
+        "$KindButtons": {
+          "#element": "div",
+          "display": "flex",
+          "gap": "0.5em",
+          "margin-bottom": "1em",
+          "align-items": "center",
+          "#": [
+            "$KindServiceBtn",
+            "$KindExpenseBtn",
+            "$KindSlideshowBtn",
+            "$KindSpacer",
+            "$StreamButton",
+            "$Button1",
+            "$Button2"
+          ],
+          "$KindServiceBtn": {
+            "#element": "button",
+            "@id": "kind-service-btn",
+            "padding": "0.3em 0.8em",
+            "font-size": "0.9em",
+            "cursor": "pointer",
+            "border": "1px solid #aaa",
+            "border-radius": "4px",
+            "background": "#eee",
+            "color": "#333",
+            "#content": "Service"
+          },
+          "$KindExpenseBtn": {
+            "#element": "button",
+            "@id": "kind-expense-btn",
+            "padding": "0.3em 0.8em",
+            "font-size": "0.9em",
+            "cursor": "pointer",
+            "border": "1px solid #aaa",
+            "border-radius": "4px",
+            "background": "#eee",
+            "color": "#333",
+            "#content": "Expense"
+          },
+          "$KindSlideshowBtn": {
+            "#element": "button",
+            "@id": "kind-slideshow-btn",
+            "padding": "0.3em 0.8em",
+            "font-size": "0.9em",
+            "cursor": "pointer",
+            "border": "1px solid #aaa",
+            "border-radius": "4px",
+            "background": "#eee",
+            "color": "#333",
+            "#content": "Slideshow"
+          },
+          "$KindSpacer": {
+            "#element": "div",
+            "flex": "1"
+          },
+          "$StreamButton": {
+            "#element": "button",
+            "@id": "stream-button",
+            "padding": "0.3em 0.8em",
+            "font-size": "0.9em",
+            "cursor": "pointer",
+            "border": "1px solid #aaa",
+            "border-radius": "4px",
+            "background": "#eee",
+            "color": "#333",
+            "#content": "Stream"
+          },
+          "$Button1": {
+            "#element": "button",
+            "@id": "button-1",
+            "padding": "0.3em 0.8em",
+            "font-size": "0.9em",
+            "cursor": "pointer",
+            "border": "1px solid #aaa",
+            "border-radius": "4px",
+            "background": "#eee",
+            "color": "#333",
+            "#content": "Email 1"
+          },
+          "$Button2": {
+            "#element": "button",
+            "@id": "button-2",
+            "padding": "0.3em 0.8em",
+            "font-size": "0.9em",
+            "cursor": "pointer",
+            "border": "1px solid #aaa",
+            "border-radius": "4px",
+            "background": "#eee",
+            "color": "#333",
+            "#content": "Email 2"
+          },
+          "align-items": "center"
+        },
+        "$FormFields": {
+          "#element": "div",
+          "@id": "form-fields",
+          "display": "flex",
+          "flex-direction": "column",
+          "#": [
+            "$DateRow",
+            "$TimeRow",
+            "$NameRow",
+            "$LocationRow",
+            "$PostcodeRow",
+            "$DistanceRow",
+            "$ContactRow",
+            "$ClientRow",
+            "$ClientEmailRow",
+            "$StreamUrlRow",
+            "$DacastRow",
+            "$MileageRow",
+            "$ExpenseRow",
+            "$FeesRow",
+            "$LinkSentRow",
+            "$InvoicedRow",
+            "$PaidRow",
+            "$TitleRow",
+            "$ContactNameRow",
+            "$ContactRelationRow",
+            "$ContactPhoneRow",
+            "$ContactEmailRow",
+            "$RecordingTextRow",
+            "$RecordingUrlRow",
+            "$TributeUrlRow"
+          ],
+          "$DateRow": {
+            "#element": "div",
+            "display": "flex",
+            "align-items": "center",
+            "gap": "0.5em",
+            "#": [
+              "$DateLabel",
+              "$DateInput"
+            ],
+            "$DateLabel": {
+              "#element": "label",
+              "#content": "Date",
+              "width": "120px",
+              "flex-shrink": "0",
+              "font-size": "0.85em",
+              "color": "#555"
+            },
+            "$DateInput": {
+              "#element": "input",
+              "@id": "date-input",
+              "@type": "date",
+              "flex": "1",
+              "min-width": "0",
+              "padding": "0.3em",
+              "font-size": "1em"
+            }
+          },
+          "$TimeRow": {
+            "#element": "div",
+            "display": "flex",
+            "align-items": "center",
+            "gap": "0.5em",
+            "#": [
+              "$TimeLabel",
+              "$TimeInput"
+            ],
+            "$TimeLabel": {
+              "#element": "label",
+              "#content": "Time",
+              "width": "120px",
+              "flex-shrink": "0",
+              "font-size": "0.85em",
+              "color": "#555"
+            },
+            "$TimeInput": {
+              "#element": "input",
+              "@id": "time-input",
+              "@type": "time",
+              "flex": "1",
+              "min-width": "0",
+              "padding": "0.3em",
+              "font-size": "1em"
+            }
+          },
+          "$NameRow": {
+            "#element": "div",
+            "display": "flex",
+            "align-items": "center",
+            "gap": "0.5em",
+            "#": [
+              "$NameLabel",
+              "$NameInput"
+            ],
+            "$NameLabel": {
+              "#element": "label",
+              "#content": "Name / Deceased",
+              "width": "120px",
+              "flex-shrink": "0",
+              "font-size": "0.85em",
+              "color": "#555"
+            },
+            "$NameInput": {
+              "#element": "input",
+              "@id": "name-input",
+              "@type": "text",
+              "@placeholder": "Full name",
+              "flex": "1",
+              "min-width": "0",
+              "padding": "0.3em",
+              "font-size": "1em"
+            }
+          },
+          "$LocationRow": {
+            "#element": "div",
+            "display": "flex",
+            "align-items": "center",
+            "gap": "0.5em",
+            "#": [
+              "$LocationLabel",
+              "$LocationInput"
+            ],
+            "$LocationLabel": {
+              "#element": "label",
+              "#content": "Location",
+              "width": "120px",
+              "flex-shrink": "0",
+              "font-size": "0.85em",
+              "color": "#555"
+            },
+            "$LocationInput": {
+              "#element": "input",
+              "@id": "location-input",
+              "@type": "text",
+              "@placeholder": "Chapel, church, or venue",
+              "flex": "1",
+              "min-width": "0",
+              "padding": "0.3em",
+              "font-size": "1em"
+            }
+          },
+          "$PostcodeRow": {
+            "#element": "div",
+            "#": [
+              "$PostcodeLabel",
+              "$PostcodeInput"
+            ],
+            "$PostcodeLabel": {
+              "#element": "label",
+              "#content": "Postcode",
+              "font-size": "0.85em",
+              "color": "#555",
+              "width": "120px",
+              "flex-shrink": "0"
+            },
+            "$PostcodeInput": {
+              "#element": "input",
+              "@id": "postcode-input",
+              "@type": "text",
+              "@placeholder": "e.g. LS1 2AB",
+              "padding": "0.3em",
+              "font-size": "1em",
+              "flex": "1",
+              "min-width": "0"
+            },
+            "display": "flex",
+            "align-items": "center",
+            "gap": "0.5em"
+          },
+          "$DistanceRow": {
+            "#element": "div",
+            "#": [
+              "$DistanceLabel",
+              "$DistanceInput"
+            ],
+            "$DistanceLabel": {
+              "#element": "label",
+              "#content": "Distance (miles)",
+              "font-size": "0.85em",
+              "color": "#555",
+              "width": "120px",
+              "flex-shrink": "0"
+            },
+            "$DistanceInput": {
+              "#element": "input",
+              "@id": "distance-input",
+              "@type": "text",
+              "@placeholder": "e.g. 22.5",
+              "padding": "0.3em",
+              "font-size": "1em",
+              "flex": "1",
+              "min-width": "0"
+            },
+            "display": "flex",
+            "align-items": "center",
+            "gap": "0.5em"
+          },
+          "$ContactRow": {
+            "#element": "div",
+            "#": [
+              "$ContactLabel",
+              "$ContactInput"
+            ],
+            "$ContactLabel": {
+              "#element": "label",
+              "#content": "Client rep",
+              "font-size": "0.85em",
+              "color": "#555",
+              "width": "120px",
+              "flex-shrink": "0"
+            },
+            "$ContactInput": {
+              "#element": "input",
+              "@id": "contact-input",
+              "@type": "text",
+              "@placeholder": "Contact person",
+              "padding": "0.3em",
+              "font-size": "1em",
+              "flex": "1",
+              "min-width": "0"
+            },
+            "display": "flex",
+            "align-items": "center",
+            "gap": "0.5em"
+          },
+          "$ClientRow": {
+            "#element": "div",
+            "#": [
+              "$ClientLabel",
+              "$ClientInput"
+            ],
+            "$ClientLabel": {
+              "#element": "label",
+              "#content": "Client company",
+              "font-size": "0.85em",
+              "color": "#555",
+              "width": "120px",
+              "flex-shrink": "0"
+            },
+            "$ClientInput": {
+              "#element": "input",
+              "@id": "client-input",
+              "@type": "text",
+              "@placeholder": "e.g. Mason & Sons",
+              "padding": "0.3em",
+              "font-size": "1em",
+              "flex": "1",
+              "min-width": "0"
+            },
+            "display": "flex",
+            "align-items": "center",
+            "gap": "0.5em"
+          },
+          "$ClientEmailRow": {
+            "#element": "div",
+            "#": [
+              "$ClientEmailLabel",
+              "$ClientEmailInput"
+            ],
+            "$ClientEmailLabel": {
+              "#element": "label",
+              "#content": "Client email",
+              "font-size": "0.85em",
+              "color": "#555",
+              "width": "120px",
+              "flex-shrink": "0"
+            },
+            "$ClientEmailInput": {
+              "#element": "input",
+              "@id": "client-email-input",
+              "@type": "email",
+              "@placeholder": "e.g. client@example.com",
+              "padding": "0.3em",
+              "font-size": "1em",
+              "flex": "1",
+              "min-width": "0"
+            },
+            "display": "flex",
+            "align-items": "center",
+            "gap": "0.5em"
+          },
+          "$DacastRow": {
+            "#element": "div",
+            "#": [
+              "$DacastLabel",
+              "$DacastInput"
+            ],
+            "$DacastLabel": {
+              "#element": "label",
+              "#content": "Dacast ID",
+              "font-size": "0.85em",
+              "color": "#555",
+              "width": "120px",
+              "flex-shrink": "0"
+            },
+            "$DacastInput": {
+              "#element": "input",
+              "@id": "dacast-input",
+              "@type": "text",
+              "@placeholder": "Stream ID",
+              "padding": "0.3em",
+              "font-size": "1em",
+              "flex": "1",
+              "min-width": "0"
+            },
+            "display": "flex",
+            "align-items": "center",
+            "gap": "0.5em"
+          },
+          "$StreamUrlRow": {
+            "#element": "div",
+            "#": [
+              "$StreamUrlLabel",
+              "$StreamUrlInput"
+            ],
+            "$StreamUrlLabel": {
+              "#element": "label",
+              "#content": "Stream URL",
+              "font-size": "0.85em",
+              "color": "#555",
+              "width": "120px",
+              "flex-shrink": "0"
+            },
+            "$StreamUrlInput": {
+              "#element": "input",
+              "@id": "stream-url-input",
+              "@type": "url",
+              "@placeholder": "https://...",
+              "padding": "0.3em",
+              "font-size": "1em",
+              "flex": "1",
+              "min-width": "0"
+            },
+            "display": "flex",
+            "align-items": "center",
+            "gap": "0.5em"
+          },
+          "$RecordingUrlRow": {
+            "#element": "div",
+            "#": [
+              "$RecordingUrlLabel",
+              "$RecordingUrlBtn",
+              "$RecordingUrlInput"
+            ],
+            "$RecordingUrlLabel": {
+              "#element": "label",
+              "#content": "Recording URL",
+              "font-size": "0.85em",
+              "color": "#555",
+              "width": "120px",
+              "flex-shrink": "0"
+            },
+            "$RecordingUrlInput": {
+              "#element": "input",
+              "@id": "recording-url-input",
+              "@type": "url",
+              "@placeholder": "https://...",
+              "padding": "0.3em",
+              "font-size": "1em",
+              "flex": "1",
+              "min-width": "0"
+            },
+            "$RecordingUrlBtn": {
+              "#element": "button",
+              "@id": "recording-url-btn",
+              "padding": "0.2em 0.5em",
+              "cursor": "pointer",
+              "font-size": "1em",
+              "background": "#eee",
+              "border": "1px solid #bbb",
+              "border-radius": "3px",
+              "flex-shrink": "0",
+              "disabled": true,
+              "#content": "\u2197"
+            },
+            "display": "flex",
+            "align-items": "center",
+            "gap": "0.5em"
+          },
+          "$LinkSentRow": {
+            "#element": "div",
+            "#": [
+              "$LinkSentLabel",
+              "$LinkSentToggle",
+              "$LinkSentInput"
+            ],
+            "$LinkSentLabel": {
+              "#element": "label",
+              "#content": "Link sent",
+              "font-size": "0.85em",
+              "color": "#555",
+              "width": "120px",
+              "flex-shrink": "0"
+            },
+            "$LinkSentInput": {
+              "#element": "input",
+              "@id": "link-sent-input",
+              "@type": "date",
+              "padding": "0.3em",
+              "font-size": "1em",
+              "flex": "1",
+              "min-width": "0"
+            },
+            "display": "flex",
+            "align-items": "center",
+            "gap": "0.5em",
+            "$LinkSentToggle": {
+              "#element": "input",
+              "@id": "link-sent-toggle",
+              "@type": "checkbox",
+              "width": "1.3em",
+              "height": "1.3em",
+              "cursor": "pointer",
+              "margin": "0.2em 0",
+              "flex-shrink": "0"
+            }
+          },
+          "$InvoicedRow": {
+            "#element": "div",
+            "#": [
+              "$InvoicedLabel",
+              "$InvoicedToggle",
+              "$InvoicedInput"
+            ],
+            "$InvoicedLabel": {
+              "#element": "label",
+              "#content": "Invoiced",
+              "font-size": "0.85em",
+              "color": "#555",
+              "width": "120px",
+              "flex-shrink": "0"
+            },
+            "$InvoicedInput": {
+              "#element": "input",
+              "@id": "invoiced-input",
+              "@type": "date",
+              "padding": "0.3em",
+              "font-size": "1em",
+              "flex": "1",
+              "min-width": "0"
+            },
+            "display": "flex",
+            "align-items": "center",
+            "gap": "0.5em",
+            "$InvoicedToggle": {
+              "#element": "input",
+              "@id": "invoiced-toggle",
+              "@type": "checkbox",
+              "width": "1.3em",
+              "height": "1.3em",
+              "cursor": "pointer",
+              "margin": "0.2em 0",
+              "flex-shrink": "0"
+            }
+          },
+          "$PaidRow": {
+            "#element": "div",
+            "#": [
+              "$PaidLabel",
+              "$PaidInput",
+              "$PaidDateInput"
+            ],
+            "$PaidLabel": {
+              "#element": "label",
+              "#content": "Paid",
+              "font-size": "0.85em",
+              "color": "#555",
+              "width": "120px",
+              "flex-shrink": "0"
+            },
+            "$PaidInput": {
+              "#element": "input",
+              "@id": "paid-input",
+              "@type": "checkbox",
+              "width": "1.3em",
+              "height": "1.3em",
+              "cursor": "pointer"
+            },
+            "display": "flex",
+            "align-items": "center",
+            "gap": "0.5em",
+            "$PaidDateInput": {
+              "#element": "input",
+              "@id": "paid-date-input",
+              "@type": "date",
+              "flex": "1",
+              "min-width": "0",
+              "padding": "0.3em",
+              "font-size": "1em"
+            }
+          },
+          "$TitleRow": {
+            "#element": "div",
+            "#": [
+              "$TitleLabel",
+              "$TitleInput"
+            ],
+            "$TitleLabel": {
+              "#element": "label",
+              "#content": "Stream title",
+              "font-size": "0.85em",
+              "color": "#555",
+              "width": "120px",
+              "flex-shrink": "0"
+            },
+            "$TitleInput": {
+              "#element": "input",
+              "@id": "title-input",
+              "@type": "text",
+              "@placeholder": "Stream title",
+              "padding": "0.3em",
+              "font-size": "1em",
+              "flex": "1",
+              "min-width": "0"
+            },
+            "display": "flex",
+            "align-items": "center",
+            "gap": "0.5em"
+          },
+          "$ContactNameRow": {
+            "#element": "div",
+            "#": [
+              "$ContactNameLabel",
+              "$ContactNameInput"
+            ],
+            "$ContactNameLabel": {
+              "#element": "label",
+              "#content": "Contact name",
+              "font-size": "0.85em",
+              "color": "#555",
+              "width": "120px",
+              "flex-shrink": "0"
+            },
+            "$ContactNameInput": {
+              "#element": "input",
+              "@id": "contact-name-input",
+              "@type": "text",
+              "@placeholder": "",
+              "padding": "0.3em",
+              "font-size": "1em",
+              "flex": "1",
+              "min-width": "0"
+            },
+            "display": "flex",
+            "align-items": "center",
+            "gap": "0.5em"
+          },
+          "$ContactRelationRow": {
+            "#element": "div",
+            "#": [
+              "$ContactRelationLabel",
+              "$ContactRelationInput"
+            ],
+            "$ContactRelationLabel": {
+              "#element": "label",
+              "#content": "Contact relation",
+              "font-size": "0.85em",
+              "color": "#555",
+              "width": "120px",
+              "flex-shrink": "0"
+            },
+            "$ContactRelationInput": {
+              "#element": "input",
+              "@id": "contact-relation-input",
+              "@type": "text",
+              "@placeholder": "",
+              "padding": "0.3em",
+              "font-size": "1em",
+              "flex": "1",
+              "min-width": "0"
+            },
+            "display": "flex",
+            "align-items": "center",
+            "gap": "0.5em"
+          },
+          "$ContactPhoneRow": {
+            "#element": "div",
+            "#": [
+              "$ContactPhoneLabel",
+              "$ContactPhoneInput"
+            ],
+            "$ContactPhoneLabel": {
+              "#element": "label",
+              "#content": "Contact phone",
+              "font-size": "0.85em",
+              "color": "#555",
+              "width": "120px",
+              "flex-shrink": "0"
+            },
+            "$ContactPhoneInput": {
+              "#element": "input",
+              "@id": "contact-phone-input",
+              "@type": "tel",
+              "@placeholder": "",
+              "padding": "0.3em",
+              "font-size": "1em",
+              "flex": "1",
+              "min-width": "0"
+            },
+            "display": "flex",
+            "align-items": "center",
+            "gap": "0.5em"
+          },
+          "$ContactEmailRow": {
+            "#element": "div",
+            "#": [
+              "$ContactEmailLabel",
+              "$ContactEmailInput"
+            ],
+            "$ContactEmailLabel": {
+              "#element": "label",
+              "#content": "Contact email",
+              "font-size": "0.85em",
+              "color": "#555",
+              "width": "120px",
+              "flex-shrink": "0"
+            },
+            "$ContactEmailInput": {
+              "#element": "input",
+              "@id": "contact-email-input",
+              "@type": "email",
+              "@placeholder": "",
+              "padding": "0.3em",
+              "font-size": "1em",
+              "flex": "1",
+              "min-width": "0"
+            },
+            "display": "flex",
+            "align-items": "center",
+            "gap": "0.5em"
+          },
+          "$MileageRow": {
+            "#element": "div",
+            "#": [
+              "$MileageLabel",
+              "$MileageInput"
+            ],
+            "$MileageLabel": {
+              "#element": "label",
+              "#content": "Mileage (miles)",
+              "font-size": "0.85em",
+              "color": "#555",
+              "width": "120px",
+              "flex-shrink": "0"
+            },
+            "$MileageInput": {
+              "#element": "input",
+              "@id": "mileage-input",
+              "@type": "number",
+              "@min": "0",
+              "padding": "0.3em",
+              "font-size": "1em",
+              "flex": "1",
+              "min-width": "0"
+            },
+            "display": "flex",
+            "align-items": "center",
+            "gap": "0.5em"
+          },
+          "$ExpenseRow": {
+            "#element": "div",
+            "#": [
+              "$ExpenseLabel",
+              "$ExpenseInput"
+            ],
+            "$ExpenseLabel": {
+              "#element": "label",
+              "#content": "Expense (\u00a3)",
+              "font-size": "0.85em",
+              "color": "#555",
+              "width": "120px",
+              "flex-shrink": "0"
+            },
+            "$ExpenseInput": {
+              "#element": "input",
+              "@id": "expense-input",
+              "@type": "number",
+              "@min": "0",
+              "padding": "0.3em",
+              "font-size": "1em",
+              "flex": "1",
+              "min-width": "0"
+            },
+            "display": "flex",
+            "align-items": "center",
+            "gap": "0.5em"
+          },
+          "$FeesRow": {
+            "#element": "div",
+            "#": [
+              "$FeesLabel",
+              "$FeesInput"
+            ],
+            "$FeesLabel": {
+              "#element": "label",
+              "#content": "Fees (\u00a3)",
+              "font-size": "0.85em",
+              "color": "#555",
+              "width": "120px",
+              "flex-shrink": "0"
+            },
+            "$FeesInput": {
+              "#element": "input",
+              "@id": "fees-input",
+              "@type": "number",
+              "@min": "0",
+              "padding": "0.3em",
+              "font-size": "1em",
+              "flex": "1",
+              "min-width": "0"
+            },
+            "display": "flex",
+            "align-items": "center",
+            "gap": "0.5em"
+          },
+          "$RecordingTextRow": {
+            "#element": "div",
+            "#": [
+              "$RecordingTextLabel",
+              "$RecordingTextInput"
+            ],
+            "$RecordingTextLabel": {
+              "#element": "label",
+              "#content": "Recording description",
+              "font-size": "0.85em",
+              "color": "#555",
+              "width": "120px",
+              "flex-shrink": "0"
+            },
+            "$RecordingTextInput": {
+              "#element": "textarea",
+              "@id": "recording-text-input",
+              "height": "10em",
+              "padding": "0.3em",
+              "font-size": "1em",
+              "box-sizing": "border-box",
+              "flex": "1",
+              "min-width": "0"
+            },
+            "display": "flex",
+            "align-items": "flex-start",
+            "gap": "0.5em"
+          },
+          "$TributeUrlRow": {
+            "#element": "div",
+            "#": [
+              "$TributeUrlLabel",
+              "$TributeUrlBtn",
+              "$TributeUrlInput"
+            ],
+            "$TributeUrlLabel": {
+              "#element": "label",
+              "#content": "Tribute video URL",
+              "font-size": "0.85em",
+              "color": "#555",
+              "width": "120px",
+              "flex-shrink": "0"
+            },
+            "$TributeUrlInput": {
+              "#element": "input",
+              "@id": "tribute-url-input",
+              "@type": "url",
+              "@placeholder": "https://drive.google.com/...",
+              "padding": "0.3em",
+              "font-size": "1em",
+              "box-sizing": "border-box",
+              "flex": "1",
+              "min-width": "0"
+            },
+            "$TributeUrlBtn": {
+              "#element": "button",
+              "@id": "tribute-url-btn",
+              "padding": "0.2em 0.5em",
+              "cursor": "pointer",
+              "font-size": "1em",
+              "background": "#eee",
+              "border": "1px solid #bbb",
+              "border-radius": "3px",
+              "flex-shrink": "0",
+              "disabled": true,
+              "#content": "\u2197"
+            },
+            "display": "flex",
+            "align-items": "center",
+            "gap": "0.5em"
+          },
+          "gap": "0.5em"
+        },
+        "$ModalStatus": {
+          "#element": "div",
+          "@id": "modal-status",
+          "color": "#c00",
+          "font-size": "0.9em",
+          "min-height": "1.2em",
+          "margin": "0.6em 0 0 0",
+          "display": "flex",
+          "align-items": "center",
+          "gap": "0.5em"
+        },
+        "$Buttons": {
+          "#element": "div",
+          "display": "flex",
+          "gap": "0.5em",
+          "margin-top": "1em",
+          "justify-content": "flex-end",
+          "#": [
+            "$DeleteBtn",
+            "$Spacer",
+            "$CancelBtn",
+            "$SaveBtn"
+          ],
+          "$DeleteBtn": {
+            "#element": "button",
+            "@id": "delete-btn",
+            "padding": "0.4em 1em",
+            "background": "#d33",
+            "color": "white",
+            "border": "0",
+            "border-radius": "4px",
+            "cursor": "pointer",
+            "display": "none",
+            "#content": "Delete"
+          },
+          "$Spacer": {
+            "#element": "div",
+            "flex": "1"
+          },
+          "$CancelBtn": {
+            "#element": "button",
+            "@id": "cancel-btn",
+            "padding": "0.4em 1em",
+            "cursor": "pointer",
+            "#content": "Cancel"
+          },
+          "$SaveBtn": {
+            "#element": "button",
+            "@id": "save-btn",
+            "padding": "0.4em 1em",
+            "background": "#28a",
+            "color": "white",
+            "border": "0",
+            "border-radius": "4px",
+            "cursor": "pointer",
+            "#content": "Save"
+          },
+          "align-items": "center"
+        }
+      }
+    },
+    "$LogHeader": {
+      "#element": "div",
+      "@id": "log-header",
+      "display": "grid",
+      "grid-template-columns": "1fr 0.7fr 2.5fr 2.5fr 0.7fr 0.4fr 1fr 1fr 0.6fr 0.6fr 0.5fr 0.5fr 0.5fr",
+      "padding": "0.5em 0.4em",
+      "position": "sticky",
+      "top": "0",
+      "z-index": "1",
+      "border-bottom": "2px solid #333",
+      "font-weight": "bold",
+      "background": "#e8e8e8",
+      "font-size": "0.85em",
+      "#": [
+        "$LHDate",
+        "$LHTime",
+        "$LHName",
+        "$LHLocation",
+        "$LHPostcode",
+        "$LHFlag",
+        "$LHContact",
+        "$LHClient",
+        "$LHExpense",
+        "$LHFees",
+        "$LHLink",
+        "$LHInv",
+        "$LHPaid"
+      ],
+      "$LHDate": {
+        "#element": "div",
+        "#content": "Date"
+      },
+      "$LHTime": {
+        "#element": "div",
+        "#content": "Time"
+      },
+      "$LHName": {
+        "#element": "div",
+        "#content": "Name"
+      },
+      "$LHClient": {
+        "#element": "div",
+        "#content": "Client"
+      },
+      "$LHExpense": {
+        "#element": "div",
+        "#content": "Exp"
+      },
+      "$LHFees": {
+        "#element": "div",
+        "#content": "Fees"
+      },
+      "$LHPaid": {
+        "#element": "div",
+        "#content": "Pd",
+        "text-align": "center"
+      },
+      "$LHFlag": {
+        "#element": "div",
+        "#content": ""
+      },
+      "$LHLink": {
+        "#element": "div",
+        "#content": "Link",
+        "text-align": "center"
+      },
+      "$LHInv": {
+        "#element": "div",
+        "#content": "Inv",
+        "text-align": "center"
+      },
+      "$LHLocation": {
+        "#element": "div",
+        "#content": "Location"
+      },
+      "$LHPostcode": {
+        "#element": "div",
+        "#content": "PCode"
+      },
+      "$LHContact": {
+        "#element": "div",
+        "#content": "Contact"
+      }
+    }
+  }
+}

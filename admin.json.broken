@@ -1,0 +1,430 @@
+{
+    "#doc": "Filming admin — merged service log and stream management.",
+    "#element": "div",
+    "@id": "page",
+    "font-family": "sans-serif",
+    "font-size": "14px",
+    "color": "#222",
+    "margin": "1em",
+    "max-width": "1500px",
+    "#": ["$LoginPanel", "$AdminPanel"],
+
+    "background": "#f5f5f5",
+    "min-height": "100vh",
+
+    "$LoginPanel": {
+        "#element": "div",
+        "@id": "login-panel",
+        "max-width": "22em",
+        "margin": "4em auto",
+        "padding": "2em",
+        "border": "1px solid #ddd",
+        "border-radius": "6px",
+        "background": "#fafafa",
+        "#": ["$LoginTitle", "$UserField", "$PassField", "$LoginButton", "$LoginStatus"]
+    },
+
+    "$LoginTitle": {
+        "#element": "h2",
+        "#content": "Sign in",
+        "margin": "0 0 1em 0",
+        "font-weight": "400"
+    },
+
+    "$UserField": {
+        "#element": "input",
+        "@id": "user-field",
+        "@type": "text",
+        "@placeholder": "Username",
+        "@autocomplete": "username",
+        "display": "block",
+        "width": "100%",
+        "padding": "0.5em",
+        "margin-bottom": "0.5em",
+        "box-sizing": "border-box",
+        "font-size": "1em"
+    },
+
+    "$PassField": {
+        "#element": "input",
+        "@id": "pass-field",
+        "@type": "password",
+        "@placeholder": "Password",
+        "@autocomplete": "current-password",
+        "display": "block",
+        "width": "100%",
+        "padding": "0.5em",
+        "margin-bottom": "1em",
+        "box-sizing": "border-box",
+        "font-size": "1em"
+    },
+
+    "$LoginButton": {
+        "#element": "button",
+        "@id": "login-button",
+        "#content": "Sign in",
+        "padding": "0.5em 1.5em",
+        "font-size": "1em",
+        "cursor": "pointer"
+    },
+
+    "$LoginStatus": {
+        "#element": "div",
+        "@id": "login-status",
+        "color": "#c33",
+        "margin-top": "1em",
+        "min-height": "1.2em",
+        "font-size": "0.9em"
+    },
+
+    "$AdminPanel": {
+        "#element": "div",
+        "@id": "admin-panel",
+        "background": "white",
+        "border": "1px solid #ddd",
+        "border-radius": "6px",
+        "padding": "1em",
+        "margin-top": "0.5em",
+
+        "#": ["$Header", "$LogBody", "$EmptyState", "$Overlay"]
+    },
+
+    "$Header": {
+        "#element": "div",
+        "@id": "header",
+        "display": "flex",
+        "align-items": "baseline",
+        "gap": "1.5em",
+        "margin-bottom": "1em",
+
+        "#": ["$Title", "$AddButton", "$ExportButton", "$ExportStatus"]
+    },
+
+    "$Title":        { "#element": "h1", "@id": "title", "margin": "0", "font-size": "1.4em", "#content": "Service log" },
+    "$AddButton":    { "#element": "button", "@id": "add-button", "padding": "0.4em 1em", "font-size": "1em", "cursor": "pointer", "#content": "Add booking" },
+    "$ExportButton": { "#element": "button", "@id": "export-button", "padding": "0.4em 1em", "font-size": "1em", "cursor": "pointer", "#content": "Export" },
+    "$ExportStatus": { "#element": "div", "@id": "export-status", "font-size": "0.9em", "color": "#060", "min-height": "1.2em" },
+
+    "$LogBody": {
+        "#element": "div",
+        "@id": "log-body",
+        "margin-top": "0.5em"
+    },
+
+    "$EmptyState": {
+        "#element": "div",
+        "@id": "empty-state",
+        "padding": "3em",
+        "text-align": "center",
+        "color": "#888",
+        "display": "none",
+        "#": ["$EmptyMsg", "$LoadSampleBtn"],
+
+        "$EmptyMsg": {
+            "#element": "p",
+            "#content": "No bookings yet. Add your first booking or load sample data."
+        },
+
+        "$LoadSampleBtn": {
+            "#element": "button",
+            "@id": "load-sample-btn",
+            "padding": "0.5em 1.5em",
+            "font-size": "1em",
+            "cursor": "pointer",
+            "background": "#28a",
+            "color": "white",
+            "border": "0",
+            "border-radius": "4px"
+        }
+    },
+
+    "$Overlay": {
+        "#element": "div",
+        "@id": "overlay",
+        "position": "fixed",
+        "top": "0",
+        "left": "0",
+        "width": "100%",
+        "height": "100%",
+        "background": "rgba(0,0,0,0.4)",
+        "display": "flex",
+        "align-items": "flex-start",
+        "justify-content": "center",
+        "padding-top": "5vh",
+        "display": "none",
+        "z-index": "1000",
+
+        "$Modal": {
+            "#element": "div",
+            "background": "white",
+            "border-radius": "8px",
+            "padding": "1.5em",
+            "max-width": "700px",
+            "width": "90%",
+            "max-height": "85vh",
+            "overflow-y": "auto",
+            "box-shadow": "0 4px 30px rgba(0,0,0,0.3)",
+
+            "#": ["$ModalForm"],
+
+            "$ModalForm": {
+                "#element": "div",
+                "@id": "modal-form",
+
+                "#": ["$ModalTitle", "$KindButtons", "$FormFields", "$ModalStatus", "$Buttons"],
+
+                "$ModalTitle": {
+                "#element": "h2",
+                "@id": "modal-title",
+                "margin": "0 0 1em 0",
+                "font-weight": "400"
+                },
+
+                "$KindButtons": {
+                "#element": "div",
+                "display": "flex",
+                "gap": "0.4em",
+                "margin-bottom": "1em",
+
+                "#": ["$KindServiceBtn", "$KindExpenseBtn", "$KindSlideshowBtn"],
+
+                "$KindServiceBtn": {
+                    "#element": "button",
+                    "@id": "kind-service-btn",
+                    "padding": "0.3em 0.9em",
+                    "cursor": "pointer",
+                    "border": "0",
+                    "border-radius": "4px",
+                    "background": "#28a",
+                    "color": "white",
+                    "#content": "Service"
+                },
+                "$KindExpenseBtn": {
+                    "#element": "button",
+                    "@id": "kind-expense-btn",
+                    "padding": "0.3em 0.9em",
+                    "cursor": "pointer",
+                    "border": "0",
+                    "border-radius": "4px",
+                    "background": "#eee",
+                    "color": "#333",
+                    "#content": "Expense"
+                },
+                "$KindSlideshowBtn": {
+                    "#element": "button",
+                    "@id": "kind-slideshow-btn",
+                    "padding": "0.3em 0.9em",
+                    "cursor": "pointer",
+                    "border": "0",
+                    "border-radius": "4px",
+                    "background": "#eee",
+                    "color": "#333",
+                    "#content": "Slideshow"
+                }
+                },
+
+                "$FormFields": {
+                "#element": "div",
+                "@id": "form-fields",
+
+                "display": "grid",
+                "grid-template-columns": "1fr 1fr",
+                "gap": "0.6em 1em",
+
+                "#": ["$DateRow", "$TimeRow", "$NameRow", "$LocationRow", "$PostcodeRow",
+                       "$DistanceRow", "$ContactRow", "$ClientRow",
+                       "$DacastRow", "$StreamUrlRow", "$RecordingUrlRow",
+                       "$MileageRow", "$ExpenseRow", "$FeesRow",
+                       "$LinkSentRow", "$InvoicedRow", "$PaidRow",
+                       "$TitleRow", "$ContactNameRow", "$ContactPhoneRow", "$ContactEmailRow",
+                       "$RecordingTextRow", "$TributeUrlRow"],
+
+                "$DateRow": {
+                    "#element": "div",
+                    "#": ["$DateLabel", "$DateInput"],
+                    "$DateLabel":  { "#element": "label", "#content": "Date", "font-size": "0.85em", "color": "#555", "grid-column": "1" },
+                    "$DateInput":  { "#element": "input", "@id": "date-input", "@type": "date", "padding": "0.3em", "font-size": "1em", "grid-column": "2" }
+                },
+
+                "$TimeRow": {
+                    "#element": "div",
+                    "#": ["$TimeLabel", "$TimeInput"],
+                    "$TimeLabel":  { "#element": "label", "#content": "Time", "font-size": "0.85em", "color": "#555" },
+                    "$TimeInput":  { "#element": "input", "@id": "time-input", "@type": "time", "padding": "0.3em", "font-size": "1em" }
+                },
+
+                "$NameRow": {
+                    "#element": "div",
+                    "#": ["$NameLabel", "$NameInput"],
+                    "$NameLabel":  { "#element": "label", "#content": "Name / Deceased", "font-size": "0.85em", "color": "#555" },
+                    "$NameInput":  { "#element": "input", "@id": "name-input", "@type": "text", "@placeholder": "Full name", "padding": "0.3em", "font-size": "1em" }
+                },
+
+                "$LocationRow": {
+                    "#element": "div",
+                    "#": ["$LocationLabel", "$LocationInput"],
+                    "$LocationLabel":  { "#element": "label", "#content": "Location", "font-size": "0.85em", "color": "#555" },
+                    "$LocationInput":  { "#element": "input", "@id": "location-input", "@type": "text", "@placeholder": "Chapel, church, or venue", "padding": "0.3em", "font-size": "1em" }
+                },
+
+                "$PostcodeRow": {
+                    "#element": "div",
+                    "#": ["$PostcodeLabel", "$PostcodeInput"],
+                    "$PostcodeLabel": { "#element": "label", "#content": "Postcode", "font-size": "0.85em", "color": "#555" },
+                    "$PostcodeInput": { "#element": "input", "@id": "postcode-input", "@type": "text", "@placeholder": "e.g. LS1 2AB", "padding": "0.3em", "font-size": "1em" }
+                },
+
+                "$DistanceRow": {
+                    "#element": "div",
+                    "#": ["$DistanceLabel", "$DistanceInput"],
+                    "$DistanceLabel": { "#element": "label", "#content": "Distance (miles)", "font-size": "0.85em", "color": "#555" },
+                    "$DistanceInput": { "#element": "input", "@id": "distance-input", "@type": "text", "@placeholder": "e.g. 22.5", "padding": "0.3em", "font-size": "1em" }
+                },
+
+                "$ContactRow": {
+                    "#element": "div",
+                    "#": ["$ContactLabel", "$ContactInput"],
+                    "$ContactLabel": { "#element": "label", "#content": "Contact (service)", "font-size": "0.85em", "color": "#555" },
+                    "$ContactInput": { "#element": "input", "@id": "contact-input", "@type": "text", "@placeholder": "Contact person", "padding": "0.3em", "font-size": "1em" }
+                },
+
+                "$ClientRow": {
+                    "#element": "div",
+                    "#": ["$ClientLabel", "$ClientInput"],
+                    "$ClientLabel": { "#element": "label", "#content": "Client / Funeral director", "font-size": "0.85em", "color": "#555" },
+                    "$ClientInput": { "#element": "input", "@id": "client-input", "@type": "text", "@placeholder": "e.g. Mason & Sons", "padding": "0.3em", "font-size": "1em" }
+                },
+
+                "$TitleRow": {
+                    "#element": "div",
+                    "#": ["$TitleLabel", "$TitleField"],
+                    "$TitleLabel": { "#element": "label", "#content": "Page title (viewer)", "font-size": "0.85em", "color": "#555" },
+                    "$TitleField": { "#element": "input", "@id": "title-field", "@type": "text", "@placeholder": "e.g. Msza Żałobna", "padding": "0.3em", "font-size": "1em" }
+                },
+
+                "$DacastRow": {
+                    "#element": "div",
+                    "#": ["$DacastLabel", "$DacastInput"],
+                    "$DacastLabel": { "#element": "label", "#content": "Dacast ID", "font-size": "0.85em", "color": "#555" },
+                    "$DacastInput": { "#element": "input", "@id": "dacast-input", "@type": "text", "@placeholder": "account-live-content", "padding": "0.3em", "font-size": "1em" }
+                },
+
+                "$StreamUrlRow": {
+                    "#element": "div",
+                    "#": ["$StreamUrlLabel", "$StreamUrlInput"],
+                    "$StreamUrlLabel": { "#element": "label", "#content": "Stream URL", "font-size": "0.85em", "color": "#555" },
+                    "$StreamUrlInput": { "#element": "input", "@id": "stream-url-input", "@type": "text", "@placeholder": "srt://...", "padding": "0.3em", "font-size": "1em" }
+                },
+
+                "$RecordingUrlRow": {
+                    "#element": "div",
+                    "#": ["$RecordingUrlLabel", "$RecordingUrlInput"],
+                    "$RecordingUrlLabel": { "#element": "label", "#content": "Recording URL", "font-size": "0.85em", "color": "#555" },
+                    "$RecordingUrlInput": { "#element": "input", "@id": "recording-url-input", "@type": "url", "@placeholder": "https://drive.google.com/...", "padding": "0.3em", "font-size": "1em" }
+                },
+
+                "$ContactNameRow": {
+                    "#element": "div",
+                    "#": ["$ContactNameLabel", "$ContactNameInput"],
+                    "$ContactNameLabel": { "#element": "label", "#content": "Contact name (stream)", "font-size": "0.85em", "color": "#555" },
+                    "$ContactNameInput": { "#element": "input", "@id": "contact-name-input", "@type": "text", "@placeholder": "Next-of-kin or representative", "padding": "0.3em", "font-size": "1em" }
+                },
+
+                "$ContactPhoneRow": {
+                    "#element": "div",
+                    "#": ["$ContactPhoneLabel", "$ContactPhoneInput"],
+                    "$ContactPhoneLabel": { "#element": "label", "#content": "Contact phone", "font-size": "0.85em", "color": "#555" },
+                    "$ContactPhoneInput": { "#element": "input", "@id": "contact-phone-input", "@type": "tel", "@placeholder": "", "padding": "0.3em", "font-size": "1em" }
+                },
+
+                "$ContactEmailRow": {
+                    "#element": "div",
+                    "#": ["$ContactEmailLabel", "$ContactEmailInput"],
+                    "$ContactEmailLabel": { "#element": "label", "#content": "Contact email", "font-size": "0.85em", "color": "#555" },
+                    "$ContactEmailInput": { "#element": "input", "@id": "contact-email-input", "@type": "email", "@placeholder": "", "padding": "0.3em", "font-size": "1em" }
+                },
+
+                "$MileageRow": {
+                    "#element": "div",
+                    "#": ["$MileageLabel", "$MileageInput"],
+                    "$MileageLabel": { "#element": "label", "#content": "Mileage (tenths)", "font-size": "0.85em", "color": "#555" },
+                    "$MileageInput": { "#element": "input", "@id": "mileage-input", "@type": "number", "@min": "0", "padding": "0.3em", "font-size": "1em" }
+                },
+
+                "$ExpenseRow": {
+                    "#element": "div",
+                    "#": ["$ExpenseLabel", "$ExpenseInput"],
+                    "$ExpenseLabel": { "#element": "label", "#content": "Expense (pence)", "font-size": "0.85em", "color": "#555" },
+                    "$ExpenseInput": { "#element": "input", "@id": "expense-input", "@type": "number", "@min": "0", "padding": "0.3em", "font-size": "1em" }
+                },
+
+                "$FeesRow": {
+                    "#element": "div",
+                    "#": ["$FeesLabel", "$FeesInput"],
+                    "$FeesLabel": { "#element": "label", "#content": "Fees (pence)", "font-size": "0.85em", "color": "#555" },
+                    "$FeesInput": { "#element": "input", "@id": "fees-input", "@type": "number", "@min": "0", "padding": "0.3em", "font-size": "1em" }
+                },
+
+                "$LinkSentRow": {
+                    "#element": "div",
+                    "#": ["$LinkSentLabel", "$LinkSentInput"],
+                    "$LinkSentLabel": { "#element": "label", "#content": "Link sent", "font-size": "0.85em", "color": "#555" },
+                    "$LinkSentInput": { "#element": "input", "@id": "link-sent-input", "@type": "date", "padding": "0.3em", "font-size": "1em" }
+                },
+
+                "$InvoicedRow": {
+                    "#element": "div",
+                    "#": ["$InvoicedLabel", "$InvoicedInput"],
+                    "$InvoicedLabel": { "#element": "label", "#content": "Invoiced", "font-size": "0.85em", "color": "#555" },
+                    "$InvoicedInput": { "#element": "input", "@id": "invoiced-input", "@type": "date", "padding": "0.3em", "font-size": "1em" }
+                },
+
+                "$PaidRow": {
+                    "#element": "div",
+                    "#": ["$PaidLabel", "$PaidInput"],
+                    "$PaidLabel": { "#element": "label", "#content": "Paid", "font-size": "0.85em", "color": "#555" },
+                    "$PaidInput": { "#element": "input", "@id": "paid-input", "@type": "checkbox", "width": "1.3em", "height": "1.3em", "cursor": "pointer", "margin": "0.2em 0" }
+                },
+
+                "$RecordingTextRow": {
+                    "#element": "div",
+                    "grid-column": "1 / -1",
+                    "#": ["$RecordingTextLabel", "$RecordingTextInput"],
+                    "$RecordingTextLabel": { "#element": "label", "#content": "Recording description", "font-size": "0.85em", "color": "#555" },
+                    "$RecordingTextInput": { "#element": "textarea", "@id": "recording-text-input", "rows": "3", "padding": "0.3em", "font-size": "1em", "width": "100%", "box-sizing": "border-box" }
+                },
+
+                "$TributeUrlRow": {
+                    "#element": "div",
+                    "grid-column": "1 / -1",
+                    "#": ["$TributeUrlLabel", "$TributeUrlInput"],
+                    "$TributeUrlLabel": { "#element": "label", "#content": "Tribute video URL", "font-size": "0.85em", "color": "#555" },
+                    "$TributeUrlInput": { "#element": "input", "@id": "tribute-url-input", "@type": "url", "@placeholder": "https://drive.google.com/...", "padding": "0.3em", "font-size": "1em", "width": "100%", "box-sizing": "border-box" }
+                }
+                },
+
+                "$ModalStatus": {
+                "#element": "div",
+                "@id": "modal-status",
+                "color": "#c00",
+                "font-size": "0.9em",
+                "min-height": "1.2em",
+                "margin": "0.6em 0 0 0"
+                },
+
+                "$Buttons": {
+                "#element": "div",
+                "display": "flex",
+                "gap": "0.5em",
+                "margin-top": "1em",
+                "justify-content": "flex-end",
+
+                "#": ["$DeleteBtn", "$Spacer", "$CancelBtn", "$SaveBtn"],
+                "$DeleteBtn": { "#element": "button", "@id": "delete-btn", "padding": "0.4em 1em", "background": "#d33", "color": "white", "border": "0", "border-radius": "4px", "cursor": "pointer", "display": "none", "#content": "Delete" },
+                "$Spacer":    { "#element": "div", "flex": "1" },
+                "$CancelBtn": { "#element": "button", "@id": "cancel-btn", "padding": "0.4em 1em", "cursor": "pointer", "#content": "Cancel" },
+                "$SaveBtn":   { "#element": "button", "@id": "save-btn", "padding": "0.4em 1em", "background": "#28a", "color": "white", "border": "0", "border-radius": "4px", "cursor": "pointer", "#content": "Save" }
+                }
+        }
+    }
+}

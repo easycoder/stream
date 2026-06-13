@@ -16,10 +16,12 @@
         "align-items": "baseline",
         "gap": "1.5em",
         "margin-bottom": "1em",
-        "#": ["$Title", "$AddButton"],
+        "#": ["$Title", "$AddButton", "$ExportButton", "$ExportStatus"],
 
-        "$Title":     { "#element": "h1", "@id": "title", "margin": "0", "font-size": "1.4em", "#content": "Service log" },
-        "$AddButton": { "#element": "button", "@id": "add-button", "padding": "0.4em 1em", "font-size": "1em", "cursor": "pointer", "#content": "Add booking" }
+        "$Title":        { "#element": "h1", "@id": "title", "margin": "0", "font-size": "1.4em", "#content": "Service log" },
+        "$AddButton":    { "#element": "button", "@id": "add-button", "padding": "0.4em 1em", "font-size": "1em", "cursor": "pointer", "#content": "Add booking" },
+        "$ExportButton": { "#element": "button", "@id": "export-button", "padding": "0.4em 1em", "font-size": "1em", "cursor": "pointer", "#content": "Export" },
+        "$ExportStatus": { "#element": "div", "@id": "export-status", "font-size": "0.9em", "color": "#666" }
     },
 
     "$Log": {

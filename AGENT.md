@@ -1,4 +1,4 @@
-# AllSpeak Project — Claude Bootstrap
+# AllSpeak Project — Agent Bootstrap
 
 ## Language
 
@@ -94,7 +94,7 @@ Even with the reference in front of you, AI tools reliably get these wrong on Al
 
 - **`gosub Label`, not `Label()`.** AllSpeak has no callable function syntax.
 
-- **None of these exist:** `try`/`catch`, `break`, `continue`, `return X` (value), `await`, `import` (other languages' meaning).
+- **None of these exist:** `try`/`catch`, `break`, `continue`, `loop`, `return X` (value), `await`, `import` (other languages' meaning).
 
 - **Every variable must be declared before use.** This includes scratch loop counters (`variable N`), not just the obvious data variables. Forgetting to declare a loop counter is a common first-pass mistake. Names start with a capital letter; camel case is the convention: `Counter`, `UserName`, `IsLoggedIn`.
 
@@ -106,7 +106,7 @@ When in doubt, consult `learn/` rather than guessing.
 
 ## First-time setup
 
-> **Beginner tip:** If nothing happens when you start Claude, type **go**.
+> **Beginner tip:** If nothing happens when you start up, type **go**.
 
 **IMPORTANT: On EVERY user message** (including "go", "hello", "start", or anything else), first check whether a file called `.allspeak-init` exists in this directory. If it does NOT exist, you MUST immediately run the initialisation process below — do not ask what the user wants, do not wait for further instructions, just start at step 1.
 
@@ -253,6 +253,26 @@ A GUI project uses three files:
 ```
 
 In all templates, replace `<project>` with the project name (lowercase for filenames) and `<Project>` with the capitalised project name.
+
+---
+
+## Conversation logging
+
+At the start of each new session (or when the user asks for a new conversation), create a new conversation log file `conversation/conversation-NN.md` where `NN` is the next available number. Use the format:
+
+```
+# Conversation NN — Brief title
+
+Date: YYYY-MM-DD
+
+---
+
+## Summary
+
+...
+```
+
+Append to the file as the conversation progresses, labelling each entry with the speaker and date.
 
 ---
 

@@ -57,6 +57,8 @@
     button SaveBtn
     button CancelBtn
     button DeleteBtn
+    button ExportBtn
+    div ExportStatus
     div ModalStatus
 
     div DataRowDivs
@@ -215,7 +217,7 @@
     variable ManifestUrl
 
     variable OrigDistance
-!! @hash 24ee70a2
+!! @hash f8084dff
 !!!
 
 !! Boot the GUI: render the Webson layout, attach to the elements we will
@@ -265,7 +267,9 @@
     attach ModalStatus to `modal-status`
     attach EmptyState to `empty-state`
     attach LoadSampleBtn to `load-sample-btn`
-!! @hash bd72668d
+    attach ExportBtn to `export-button`
+    attach ExportStatus to `export-status`
+!! @hash cea39425
 !!!
 
 !! Cache the shared row-level inline styles.
@@ -308,12 +312,13 @@
     on click LinkSentBtn gosub OnToggleLinkSent
     on click InvoicedBtn gosub OnToggleInvoiced
     on click PaidBtn gosub OnTogglePaid
+    on click ExportBtn gosub OnExport
 
     gosub LoadConfig
     gosub Refresh
 
     stop
-!! @hash a06fae12
+!! @hash 3ba960cd
 !!!
 
 
@@ -1145,6 +1150,26 @@ OnLoadSample:
 !!!
 
 
+!! OnExport: ask the server to run build.as, which snapshots the current
+!! data into the deploy folder ready for hosting.
+!!
+!! The server's /build endpoint runs `allspeak build.as` as a subprocess and
+!! waits for it to finish before responding. The status div gives feedback
+!! in the header without a modal.
+
+OnExport:
+    set the content of ExportStatus to `Building...`
+    rest get TempStr from `/build` on failure
+    begin
+        set the content of ExportStatus to `Export failed — check the terminal.`
+        return
+    end
+    set the content of ExportStatus to `Export complete.`
+    return
+!! @hash 61bd7168
+!!!
+
+
 !! ComputeTodayIso: produce today's local date as a YYYY-MM-DD string in TodayIso.
 !!
 !! Uses the bare `the year` / `the month` / `the day number` accessors, which return the corresponding components of "now" when no `of <timestamp>` operand is supplied. `the month` is 0-indexed (Jan = 0), so we add 1 before formatting. Month and day are zero-padded so the resulting string sorts the same way the on-disk date strings do.
@@ -1313,10 +1338,11 @@ LoadConfig:
     begin
         set the style of AddButton to `display: none`
         set the style of SaveBtn to `display: none`
+        set the style of ExportBtn to `display: none`
         set the content of CancelBtn to `Close`
     end
     return
-!! @hash e45b08c5
+!! @hash b319ccc8
 !!!
 
 
