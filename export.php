@@ -3,10 +3,15 @@
 // Lists all records with financial data in a spreadsheet-friendly format.
 
 session_start();
-header('Content-Type: text/csv; charset=utf-8');
-header('Content-Disposition: attachment; filename="bookings.csv"');
 
 if (empty($_SESSION['user'])) {
+    http_response_code(401);
+    echo "Not authenticated";
+    exit;
+}
+
+header('Content-Type: text/csv; charset=utf-8');
+header('Content-Disposition: attachment; filename="bookings.csv"');
     http_response_code(401);
     echo "Not authenticated";
     exit;
