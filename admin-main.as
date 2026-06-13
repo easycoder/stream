@@ -1119,8 +1119,11 @@ SelectKindExpense:
     set style `display` of MileageInput to `none`
     set style `display` of FeesInput to `none`
     set style `display` of LinkSentInput to `none`
+    set style `display` of LinkSentToggle to `none`
     set style `display` of InvoicedInput to `none`
+    set style `display` of InvoicedToggle to `none`
     set style `display` of PaidInput to `none`
+    set style `display` of PaidDateInput to `none`
     set style `display` of RecordingUrlInput to `none`
     set style `display` of TitleField to `none`
     set style `display` of ContactNameInput to `none`
