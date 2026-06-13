@@ -46,7 +46,7 @@ tar czf /tmp/stream-deploy.tar.gz \
     email1.json email2.json \
     login.php auth-check.php upload.php \
     bookings.php bookings-save.php bookings-delete.php \
-    export.php background.jpg .htaccess
+    export.php books.php background.jpg .htaccess
 
 ssh -o StrictHostKeyChecking=accept-new eclecity@eclecity.net \
     "mkdir -p ~/stream.eclecity.net && cd ~/stream.eclecity.net && tar xzf -" < /tmp/stream-deploy.tar.gz

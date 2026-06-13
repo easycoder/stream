@@ -130,14 +130,13 @@
     "$ExportButton": {
       "#element": "a",
       "@id": "export-button",
-      "@href": "export.php",
-      "@download": "",
+      "@href": "books.php?key=Acct2026",
       "padding": "0.4em 1em",
       "font-size": "1em",
       "cursor": "pointer",
       "text-decoration": "none",
       "color": "inherit",
-      "#content": "Export"
+      "#content": "Accounts"
     },
     "$ExportStatus": {
       "#element": "div",

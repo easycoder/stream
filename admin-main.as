@@ -1970,14 +1970,10 @@ OnLoadSample:
 !!!
 
 
-!! OnExport: the Export button is an <a> pointing to export.php,
-!! so navigation happens natively. We just show a status message.
+!! OnExport: the button is an <a href="books.php?key=Acct2026"> so it navigates natively.
 
 OnExport:
-    set the content of ExportStatus to `Download started.`
-    location `export.php`
-    wait 3 seconds
-    set the content of ExportStatus to `Download problem — try signing out and back in.`
+    set the content of ExportStatus to `Opening accounts view...`
     return
 !! @hash placeholder
 !!!
