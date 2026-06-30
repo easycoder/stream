@@ -43,6 +43,7 @@ tar czf /tmp/stream-deploy.tar.gz \
     admin.html admin-main.as admin.json \
     index.html index-main.as index.json \
     stream.html stream-main.as stream.json \
+    allspeak.js \
     email1.json email2.json \
     login.php auth-check.php upload.php \
     bookings.php bookings-save.php bookings-delete.php \
