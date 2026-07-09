@@ -17,6 +17,7 @@
     input UserField
     input PassField
     button LoginButton
+    input RememberCheckbox
     div LoginStatus
 
     div AdminPanel
@@ -59,6 +60,7 @@
     input ContactPhoneInput
     input ContactEmailInput
     textarea RecordingTextInput
+    textarea NotesInput
     input TributeUrlInput
     button TributeUrlBtn
     input DocumentUrlInput
@@ -99,6 +101,7 @@
     div ContactPhoneRow
     div ContactEmailRow
     div RecordingTextRow
+    div NotesRow
     div RecordingUrlRow
     div TributeUrlRow
 
@@ -220,6 +223,7 @@
     variable BookingStamp
     variable WarnAmber
     variable TargetUrl
+    variable SavedCreds
 
 !! @hash placeholder
 
@@ -234,6 +238,7 @@
     attach UserField to `user-field`
     attach PassField to `pass-field`
     attach LoginButton to `login-button`
+    attach RememberCheckbox to `remember-checkbox`
     attach LoginStatus to `login-status`
 
     attach AdminPanel to `admin-panel`
@@ -280,6 +285,7 @@
     attach ContactPhoneRow to `contact-phone-row`
     attach ContactEmailRow to `contact-email-row`
     attach RecordingTextRow to `recording-text-row`
+    attach NotesRow to `notes-row`
     attach RecordingUrlRow to `recording-url-row`
     attach TributeUrlRow to `tribute-url-row`
     attach MileageInput to `mileage-input`
@@ -297,6 +303,7 @@
     attach ContactPhoneInput to `contact-phone-input`
     attach ContactEmailInput to `contact-email-input`
     attach RecordingTextInput to `recording-text-input`
+    attach NotesInput to `notes-input`
     attach TributeUrlInput to `tribute-url-input`
     attach TributeUrlBtn to `tribute-url-btn`
     attach DocumentUrlInput to `document-url-input`
@@ -319,7 +326,7 @@
 
 !! Build the grid template — 12 columns matching the columns we render.
 
-    put `1fr 0.7fr 2.5fr 2.5fr 0.7fr 0.4fr 1fr 1fr 0.6fr 0.6fr 0.5fr 0.5fr 0.5fr` into Grid
+    put `1fr 0.7fr 0.4fr 2.5fr 2.5fr 1fr 1fr 0.6fr 0.6fr 0.5fr 0.5fr 0.5fr` into Grid
 
     put `display: grid; grid-template-columns: ` cat Grid into RowStyleData
     put RowStyleData cat `; padding: 0.3em 0.4em; border-bottom: 1px solid #eee; cursor: pointer` into RowStyleData
@@ -360,9 +367,25 @@
     on click DocumentUrlBtn gosub OnOpenDocumentUrl
     on click DocumentUploadBtn gosub OnUploadDocument
 
-    set style `display` of AdminPanel to `none`
+!! Check browser storage for saved credentials. If present, populate the
+!! fields and auto-login so the user skips the login panel on return visits.
+
+    get SavedCreds from storage as `admin.credentials`
+    if SavedCreds is not empty
+    begin
+        put json SavedCreds into ResponseObj
+        put property `user` of ResponseObj into TempStr
+        set the content of UserField to TempStr
+        put property `pass` of ResponseObj into TempStr
+        set the content of PassField to TempStr
+        set attribute `checked` of RememberCheckbox to `checked`
+        set style `display` of AdminPanel to `none`
+        gosub OnLogin
+    end
+    else
+        set style `display` of AdminPanel to `none`
     stop
-!! @hash placeholder
+!! @hash 1d695aa0
 !!!
 
 
@@ -377,6 +400,7 @@ OnLogin:
     rest post BodyText to `login.php` giving ResponseJson on failure
     begin
         set the content of LoginStatus to `Could not reach server.`
+        set style `display` of AdminPanel to `none`
         return
     end
     put json ResponseJson into ResponseObj
@@ -384,13 +408,26 @@ OnLogin:
     if ResponseStatus is not `ok`
     begin
         set the content of LoginStatus to `Login failed.`
+        set style `display` of AdminPanel to `none`
         return
     end
     set style `display` of LoginPanel to `none`
     set style `display` of AdminPanel to `block`
+!! Save or clear credentials in browser storage based on the Remember me
+!! checkbox so the user can skip the login panel on their next visit.
+    put attribute `checked` of RememberCheckbox into TempStr
+    if TempStr is not empty
+    begin
+        put `{"user":"` cat the content of UserField into SavedCreds
+        put SavedCreds cat `","pass":"` cat the content of PassField into SavedCreds
+        put SavedCreds cat `"}` into SavedCreds
+        put SavedCreds into storage as `admin.credentials`
+    end
+    else
+        put `` into storage as `admin.credentials`
     gosub Refresh
     return
-!! @hash placeholder
+!! @hash dee88ebd
 !!!
 
 
@@ -566,7 +603,7 @@ Refresh:
 
     on click DataRowDivs gosub OnRowClick
     return
-!! @hash placeholder
+!! @hash 524fddb5
 !!!
 
 
@@ -626,7 +663,12 @@ EmitRow:
     create CellDiv in DataRowDivs
     set the content of CellDiv to BookingTime
 
-    ! Column 3: name
+    ! Column 3: expense flag (💰 only for expense rows)
+    create CellDiv in DataRowDivs
+    if Kind is `expense`
+        set the content of CellDiv to `💰`
+
+    ! Column 4: name
     create CellDiv in DataRowDivs
     if Kind is `expense`
     begin
@@ -638,47 +680,37 @@ EmitRow:
     else
         set the content of CellDiv to BookingName
 
-    ! Column 4: location
+    ! Column 5: location
     create CellDiv in DataRowDivs
     put property `location` of Row into TempStr
     if TempStr is not empty
         set the content of CellDiv to TempStr
 
-    ! Column 5: postcode
-    create CellDiv in DataRowDivs
-    put property `postcode` of Row into TempStr
-    set the content of CellDiv to TempStr
-
-    ! Column 6: expense flag (💰 only for expense rows)
-    create CellDiv in DataRowDivs
-    if Kind is `expense`
-        set the content of CellDiv to `💰`
-
-    ! Column 7: contact
+    ! Column 6: contact
     create CellDiv in DataRowDivs
     put property `contact` of Row into TempStr
     set the content of CellDiv to TempStr
 
-    ! Column 8: client
+    ! Column 7: client
     create CellDiv in DataRowDivs
     put property `client` of Row into BookingClient
     set the content of CellDiv to BookingClient
 
-    ! Column 9: expense
+    ! Column 8: expense
     create CellDiv in DataRowDivs
     set the style of CellDiv to CellRight
     put Expense into MoneyVal
     gosub FormatMoney
     set the content of CellDiv to MoneyStr
 
-    ! Column 10: fees
+    ! Column 9: fees
     create CellDiv in DataRowDivs
     set the style of CellDiv to CellRight
     put Fees into MoneyVal
     gosub FormatMoney
     set the content of CellDiv to MoneyStr
 
-    ! Column 11: link sent check — amber background if warning
+    ! Column 10: link sent check — amber background if warning
     create CellDiv in DataRowDivs
     set style `text-align` of CellDiv to `center`
     if WarnAmber is 1
@@ -689,7 +721,7 @@ EmitRow:
     if TempStr is not empty
         set the content of CellDiv to `✓`
 
-    ! Column 12: invoiced check — deep pink if invoiced but not paid
+    ! Column 11: invoiced check — deep pink if invoiced but not paid
     create CellDiv in DataRowDivs
     set style `text-align` of CellDiv to `center`
     put property `invoiced` of Row into TempStr
@@ -701,7 +733,7 @@ EmitRow:
     if TempStr is not empty
         set the content of CellDiv to `✓`
 
-    ! Column 13: paid check — deep pink if invoiced but not paid
+    ! Column 12: paid check — deep pink if invoiced but not paid
     create CellDiv in DataRowDivs
     set style `text-align` of CellDiv to `center`
     put property `invoiced` of Row into TempStr
@@ -724,7 +756,7 @@ EmitRow:
     create RowWrappers in LogBody
 
     return
-!! @hash placeholder
+!! @hash 2fdf62a5
 !!!
 
 
@@ -740,7 +772,7 @@ OnRowClick:
     gosub PopulateForm
     set style `display` of Overlay to `flex`
     return
-!! @hash placeholder
+!! @hash 8dbb5992
 !!!
 
 
@@ -768,9 +800,8 @@ EmitSubtotal:
     create CellDiv in SubDiv
     create CellDiv in SubDiv
     create CellDiv in SubDiv
+    create CellDiv in SubDiv
     set the content of CellDiv to MonthLabel
-    create CellDiv in SubDiv
-    create CellDiv in SubDiv
     create CellDiv in SubDiv
     create CellDiv in SubDiv
     create CellDiv in SubDiv
@@ -791,7 +822,7 @@ EmitSubtotal:
     create CellDiv in SubDiv
     create CellDiv in SubDiv
     return
-!! @hash placeholder
+!! @hash 2636e96c
 !!!
 
 
@@ -804,9 +835,8 @@ EmitGrandTotal:
     create CellDiv in GrandDiv
     create CellDiv in GrandDiv
     create CellDiv in GrandDiv
+    create CellDiv in GrandDiv
     set the content of CellDiv to `Grand total`
-    create CellDiv in GrandDiv
-    create CellDiv in GrandDiv
     create CellDiv in GrandDiv
     create CellDiv in GrandDiv
     create CellDiv in GrandDiv
@@ -827,7 +857,7 @@ EmitGrandTotal:
     create CellDiv in GrandDiv
     create CellDiv in GrandDiv
     return
-!! @hash placeholder
+!! @hash 1dd1db94
 !!!
 
 
@@ -868,7 +898,7 @@ FormatMoneyInner:
     put from MoneyPos of MoneyStr into CentsStr
     put `£` cat Whole cat `.` cat CentsStr into MoneyStr
     return
-!! @hash placeholder
+!! @hash 9bd90d06
 !!!
 
 
@@ -895,7 +925,7 @@ FormatMileage:
     put from MilePos of Mi into FracStr
     put Whole cat `.` cat FracStr into Mi
     return
-!! @hash placeholder
+!! @hash 617c6b8f
 !!!
 
 
@@ -923,7 +953,7 @@ FyAndMmFromDate:
         put FY cat `-` cat right 2 of `0` cat NextYr into FY
     end
     return
-!! @hash placeholder
+!! @hash 8e934167
 !!!
 
 
@@ -963,6 +993,7 @@ OnAdd:
     set the content of RecordingTextInput to `A fully edited tribute video will be available in a few days, to view or download at the discretion of the family. This will include some or all of the following: coverage of the departure, multiple camera angles and closer views of those speaking.
 
 In the meantime, here is a link to a recording of the stream, for those who may have missed it.`
+    set the content of NotesInput to ``
     set the content of TributeUrlInput to ``
     set attribute `disabled` of TributeUrlBtn to `disabled`
     set the content of DocumentUrlInput to ``
@@ -973,7 +1004,7 @@ In the meantime, here is a link to a recording of the stream, for those who may 
     gosub SelectKindService
     set style `display` of Overlay to `flex`
     return
-!! @hash placeholder
+!! @hash 8224f72e
 !!!
 
 
@@ -1099,6 +1130,9 @@ PopulateForm:
     put property `recording_text` of Row into TempStr
     set the content of RecordingTextInput to TempStr
 
+    put property `notes` of Row into TempStr
+    set the content of NotesInput to TempStr
+
     put property `tribute_url` of Row into TempStr
     set the content of TributeUrlInput to TempStr
     if TempStr is not empty
@@ -1114,7 +1148,7 @@ PopulateForm:
         set attribute `disabled` of DocumentUrlBtn to `disabled`
 
     return
-!! @hash placeholder
+!! @hash db18c02b
 !!!
 
 
@@ -1140,6 +1174,7 @@ SelectKindService:
     set style `display` of ContactPhoneInput to `inline-block`
     set style `display` of ContactEmailInput to `inline-block`
     set style `display` of RecordingTextInput to `inline-block`
+    set style `display` of NotesInput to `inline-block`
     set style `display` of TributeUrlInput to `inline-block`
     set style `display` of DocumentUrlInput to `inline-block`
     ! Show all rows for Service variant
@@ -1162,6 +1197,7 @@ SelectKindService:
     set style `display` of ContactPhoneRow to `flex`
     set style `display` of ContactEmailRow to `flex`
     set style `display` of RecordingTextRow to `flex`
+    set style `display` of NotesRow to `flex`
     set style `display` of RecordingUrlRow to `flex`
     set style `display` of TributeUrlRow to `flex`
     return
@@ -1171,8 +1207,9 @@ SelectKindExpense:
     set the style of KindServiceBtn to KindUnselectedStyle
     set the style of KindExpenseBtn to KindSelectedStyle
     set the style of KindSlideshowBtn to KindUnselectedStyle
-    ! Show only Name, Expense, Document rows — hide everything else
+    ! Show only Name, Expense, Document, Notes rows — hide everything else
     set style `display` of NameInput to `inline-block`
+    set style `display` of NotesInput to `inline-block`
     set style `display` of DocumentUrlInput to `inline-block`
     set style `display` of LocationRow to `none`
     set style `display` of PostcodeRow to `none`
@@ -1195,6 +1232,7 @@ SelectKindExpense:
     set style `display` of RecordingTextRow to `none`
     set style `display` of RecordingUrlRow to `none`
     set style `display` of TributeUrlRow to `none`
+    set style `display` of NotesRow to `flex`
     return
 
 SelectKindSlideshow:
@@ -1217,9 +1255,10 @@ SelectKindSlideshow:
     set style `display` of ContactPhoneInput to `none`
     set style `display` of ContactEmailInput to `none`
     set style `display` of RecordingTextInput to `none`
+    set style `display` of NotesInput to `inline-block`
     set style `display` of TributeUrlInput to `none`
     set style `display` of DocumentUrlInput to `none`
-    ! Slideshow: show Name, Location, Contact, Client, ClientEmail rows; hide everything else
+    ! Slideshow: show Name, Location, Contact, Client, ClientEmail, Notes rows; hide everything else
     set style `display` of LocationRow to `flex`
     set style `display` of ContactRow to `flex`
     set style `display` of ClientRow to `flex`
@@ -1241,8 +1280,9 @@ SelectKindSlideshow:
     set style `display` of RecordingTextRow to `none`
     set style `display` of RecordingUrlRow to `none`
     set style `display` of TributeUrlRow to `none`
+    set style `display` of NotesRow to `flex`
     return
-!! @hash placeholder
+!! @hash 91d75c7f
 !!!
 
 
@@ -1356,6 +1396,8 @@ OnSave:
     put BodyText cat `,` into BodyText
     gosub JsonAddString with `recording_text`
     put BodyText cat `,` into BodyText
+    gosub JsonAddString with `notes`
+    put BodyText cat `,` into BodyText
     gosub JsonAddString with `tribute_url`
     put BodyText cat `,` into BodyText
     gosub JsonAddString with `document_url`
@@ -1385,7 +1427,7 @@ OnSave:
     wait 3 seconds
     set the content of ModalStatus to ``
     return
-!! @hash placeholder
+!! @hash 26cdbb8e
 !!!
 
 
@@ -1401,7 +1443,7 @@ OnLinkSentToggle:
     else
         set the content of LinkSentInput to ``
     return
-!! @hash placeholder
+!! @hash 591f6b20
 !!!
 
 
@@ -1417,7 +1459,7 @@ OnInvoicedToggle:
     else
         set the content of InvoicedInput to ``
     return
-!! @hash placeholder
+!! @hash 65a58b33
 !!!
 
 
@@ -1433,7 +1475,7 @@ OnPaidToggle:
     else
         set the content of PaidDateInput to ``
     return
-!! @hash placeholder
+!! @hash 766bf318
 !!!
 
 
@@ -1446,7 +1488,7 @@ OnOpenStream:
     put `https://stream.eclecity.net/` cat TempStr into TargetUrl
     location TargetUrl
     return
-!! @hash placeholder
+!! @hash 97f8320a
 !!!
 
 
@@ -1457,7 +1499,7 @@ OnOpenRecordingUrl:
     if TargetUrl is not empty
         location TargetUrl
     return
-!! @hash placeholder
+!! @hash 5fff8256
 !!!
 
 
@@ -1468,7 +1510,7 @@ OnOpenTributeUrl:
     if TargetUrl is not empty
         location TargetUrl
     return
-!! @hash placeholder
+!! @hash 6a326d0b
 !!!
 
 
@@ -1479,7 +1521,7 @@ OnOpenDocumentUrl:
     if TargetUrl is not empty
         location TargetUrl
     return
-!! @hash placeholder
+!! @hash 8e8e7065
 !!!
 
 
@@ -1494,7 +1536,7 @@ OnUploadDocument:
     gosub EncodeUriComponent
     location DocumentUpPath
     return
-!! @hash placeholder
+!! @hash bef9ab7e
 !!!
 
 
@@ -1530,7 +1572,7 @@ EncodeUriComponent:
         add 1 to J
     end
     return
-!! @hash placeholder
+!! @hash 3d4cfcae
 !!!
 
 
@@ -1625,7 +1667,7 @@ OnEmail1:
     location MailToUri
     set the content of ModalStatus to ``
     return
-!! @hash placeholder
+!! @hash bfdcafa9
 !!!
 
 
@@ -1706,7 +1748,7 @@ OnEmail2:
     location MailToUri
     set the content of ModalStatus to ``
     return
-!! @hash placeholder
+!! @hash 55433b22
 !!!
 
 
@@ -1725,7 +1767,7 @@ TodayString:
         put `0` cat Dd into Dd
     put Yr cat `-` cat Mo cat `-` cat Dd into TodayStr
     return
-!! @hash placeholder
+!! @hash c9a4c8bf
 !!!
 
 
@@ -1734,7 +1776,7 @@ TodayString:
 OnCancel:
     set style `display` of Overlay to `none`
     return
-!! @hash placeholder
+!! @hash 4876f651
 !!!
 
 
@@ -1745,7 +1787,7 @@ OnDelete:
         return
     confirm `Delete this booking?` gosub DoDelete
     return
-!! @hash placeholder
+!! @hash c8ca79c7
 !!!
 
 
@@ -1775,7 +1817,7 @@ DoDelete:
     wait 3 seconds
     set the content of ModalStatus to ``
     return
-!! @hash placeholder
+!! @hash 333c2448
 !!!
 
 
@@ -1813,7 +1855,7 @@ MakeSlug:
     end
     ! TempStr is now the slug
     return
-!! @hash placeholder
+!! @hash 103c5b40
 !!!
 
 
@@ -1847,6 +1889,7 @@ JsonAddString:
     else if Key is `contact_telephone` put the content of ContactPhoneInput into TempStr2
     else if Key is `contact_email` put the content of ContactEmailInput into TempStr2
     else if Key is `recording_text` put the content of RecordingTextInput into TempStr2
+    else if Key is `notes` put the content of NotesInput into TempStr2
     else if Key is `tribute_url` put the content of TributeUrlInput into TempStr2
     else if Key is `document_url` put the content of DocumentUrlInput into TempStr2
     else if Key is `paidDate` put the content of PaidDateInput into TempStr2
@@ -1874,7 +1917,7 @@ JsonAddString:
 
     put BodyText cat TempStr2 cat `"` into BodyText
     return
-!! @hash placeholder
+!! @hash 5aad2d26
 !!!
 
 
@@ -1907,7 +1950,7 @@ JsonAddNumber:
         put `0` into TempStr2
     put BodyText cat TempStr2 into BodyText
     return
-!! @hash placeholder
+!! @hash 26ba0900
 !!!
 
 
@@ -1929,7 +1972,7 @@ ParseMileageToTenths:
     add FracStr to Whole
     put Whole into TempStr2
     return
-!! @hash placeholder
+!! @hash a369230f
 !!!
 
 
@@ -1953,7 +1996,7 @@ ParsePoundsToPence:
     add FracStr to Whole
     put Whole into TempStr2
     return
-!! @hash placeholder
+!! @hash 755d323d
 !!!
 
 
@@ -1966,7 +2009,7 @@ OnLoadSample:
     set the content of ExportStatus to `Sample data loaded.`
     gosub Refresh
     return
-!! @hash placeholder
+!! @hash aad3eb7f
 !!!
 
 
@@ -1976,5 +2019,5 @@ OnExport:
     set the content of ExportStatus to `Opening accounts view...`
     location `books.php?key=Acct2026`
     return
-!! @hash placeholder
+!! @hash adfebf8a
 !!!

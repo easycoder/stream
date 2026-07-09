@@ -1,0 +1,2 @@
+[permissions]
+allow = ["Edit", "Bash(cd /home/graham/dev/stream && python3 asdoc-check.py --write admin-main.as 2>&1)", "Bash(cd /home/graham/dev/stream && python3 asdoc-check.py --write admin-main.as 2>&1 || true)", "Bash(cd /home/graham/dev/stream && python3 -c \"\nimport sys\nsys.stdout.isatty = lambda: False\nexec(open('asdoc-check.py').read())\n\" --write admin-main.as 2>&1 || echo \"Script failed, checking hash state manually\")"]

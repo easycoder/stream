@@ -26,6 +26,7 @@
       "$LoginTitle",
       "$UserField",
       "$PassField",
+      "$RememberRow",
       "$LoginButton",
       "$LoginStatus"
     ]
@@ -58,9 +59,37 @@
     "display": "block",
     "width": "100%",
     "padding": "0.5em",
-    "margin-bottom": "1em",
+    "margin-bottom": "0.5em",
     "box-sizing": "border-box",
     "font-size": "1em"
+  },
+  "$RememberRow": {
+    "#element": "div",
+    "display": "flex",
+    "align-items": "center",
+    "gap": "0.4em",
+    "margin-bottom": "1em",
+    "#": [
+      "$RememberCheckbox",
+      "$RememberLabel"
+    ]
+  },
+  "$RememberCheckbox": {
+    "#element": "input",
+    "@id": "remember-checkbox",
+    "@type": "checkbox",
+    "width": "1.3em",
+    "height": "1.3em",
+    "cursor": "pointer",
+    "margin": "0"
+  },
+  "$RememberLabel": {
+    "#element": "label",
+    "@for": "remember-checkbox",
+    "#content": "Remember me",
+    "font-size": "0.9em",
+    "color": "#555",
+    "cursor": "pointer"
   },
   "$LoginButton": {
     "#element": "button",
@@ -359,7 +388,8 @@
             "$RecordingTextRow",
             "$RecordingUrlRow",
             "$TributeUrlRow",
-            "$DocumentRow"
+            "$DocumentRow",
+            "$NotesRow"
           ],
           "$DateRow": {
             "#element": "div",
@@ -1194,6 +1224,36 @@
             "align-items": "center",
             "gap": "0.5em"
           },
+          "$NotesRow": {
+            "#element": "div",
+            "@id": "notes-row",
+            "#": [
+              "$NotesLabel",
+              "$NotesInput"
+            ],
+            "$NotesLabel": {
+              "#element": "label",
+              "#content": "Notes",
+              "font-size": "0.85em",
+              "color": "#555",
+              "width": "120px",
+              "flex-shrink": "0"
+            },
+            "$NotesInput": {
+              "#element": "textarea",
+              "@id": "notes-input",
+              "height": "7em",
+              "padding": "0.3em",
+              "font-size": "1em",
+              "box-sizing": "border-box",
+              "flex": "1",
+              "min-width": "0",
+              "resize": "vertical"
+            },
+            "display": "flex",
+            "align-items": "flex-start",
+            "gap": "0.5em"
+          },
           "gap": "0.5em"
         },
         "$ModalStatus": {
@@ -1261,7 +1321,7 @@
       "#element": "div",
       "@id": "log-header",
       "display": "grid",
-      "grid-template-columns": "1fr 0.7fr 2.5fr 2.5fr 0.7fr 0.4fr 1fr 1fr 0.6fr 0.6fr 0.5fr 0.5fr 0.5fr",
+      "grid-template-columns": "1fr 0.7fr 0.4fr 2.5fr 2.5fr 1fr 1fr 0.6fr 0.6fr 0.5fr 0.5fr 0.5fr",
       "padding": "0.5em 0.4em",
       "position": "sticky",
       "top": "0",
@@ -1273,10 +1333,9 @@
       "#": [
         "$LHDate",
         "$LHTime",
+        "$LHFlag",
         "$LHName",
         "$LHLocation",
-        "$LHPostcode",
-        "$LHFlag",
         "$LHContact",
         "$LHClient",
         "$LHExpense",
@@ -1331,10 +1390,6 @@
       "$LHLocation": {
         "#element": "div",
         "#content": "Location"
-      },
-      "$LHPostcode": {
-        "#element": "div",
-        "#content": "PCode"
       },
       "$LHContact": {
         "#element": "div",
