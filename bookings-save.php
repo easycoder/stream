@@ -120,4 +120,15 @@ if (file_put_contents(
     exit;
 }
 
+// If old_path is present and differs from the new path, delete the stale file.
+// This handles the case where the slug changed because the name was edited.
+if (!empty($body['old_path']) && $body['old_path'] !== $relPath) {
+    if (preg_match('@^\d{4}/\d{2}/\d{2}/[A-Za-z0-9-]+\.json$@', $body['old_path'])) {
+        $oldFile = __DIR__ . '/data/' . $body['old_path'];
+        if (file_exists($oldFile)) {
+            unlink($oldFile);
+        }
+    }
+}
+
 echo json_encode(['status' => 'ok', 'path' => $relPath]);

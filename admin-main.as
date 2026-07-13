@@ -170,6 +170,8 @@
     variable EditFyStart
     variable EditSlugOld
     variable EditPath
+    variable OldSlug
+    variable SlugChanged
     variable IsCreate
     variable TempStr2
     variable TempOrig
@@ -1291,13 +1293,20 @@ SelectKindSlideshow:
 OnSave:
     set the content of ModalStatus to `Saving...`
 
-    ! Build slug from date + name if new
-    if IsCreate
+    ! Always rebuild slug from current date + name, so a name change updates it
+    ! on re-save.  When editing an existing record, save the old path if the slug
+    ! changed so the server can delete the stale file.
+    put EditSlugOld into OldSlug
+    put the content of DateInput into BookingDate
+    put the content of NameInput into BookingName
+    gosub MakeSlug
+    put TempStr into EditSlugOld
+    if IsCreate is 0
     begin
-        put the content of DateInput into BookingDate
-        put the content of NameInput into BookingName
-        gosub MakeSlug
-        put TempStr into EditSlugOld
+        if EditSlugOld is not OldSlug
+            put EditPath into SlugChanged
+        else
+            put `` into SlugChanged
     end
 
     !! Auto-fill mileage: if Mileage is 0 but Distance is set, double Distance for return trip
@@ -1401,6 +1410,10 @@ OnSave:
     gosub JsonAddString with `tribute_url`
     put BodyText cat `,` into BodyText
     gosub JsonAddString with `document_url`
+    if SlugChanged is not empty
+    begin
+        put BodyText cat `,"old_path":"` cat SlugChanged cat `"` into BodyText
+    end
     put BodyText cat `}` into BodyText
 
     rest post BodyText to `bookings-save.php` giving ResponseJson on failure
