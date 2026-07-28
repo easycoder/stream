@@ -124,7 +124,7 @@
     end
 !!!
 
-!! Two display modes share the same record. When `recording_url` is set — the live event is over and an edited or unedited recording has been uploaded (typically to Google Drive) — we hide the player and the body-text crawl and reveal a recording panel with the deceased's name, an explanatory paragraph, and a styled link. Recording mode always wins over live mode whenever the field is non-empty, so the page transitions from "watch live" to "watch the recording" the moment the admin saves the URL.
+!! Two display modes share the same record. When `recording_url` is set — the live event is over and an edited or unedited recording has been uploaded (typically to Google Drive) — we hide the player and the body-text crawl and reveal a recording panel with the person's name, an explanatory paragraph, and a styled link. Recording mode always wins over live mode whenever the field is non-empty, so the page transitions from "watch live" to "watch the recording" the moment the admin saves the URL.
 !!
 !! Otherwise we play live. The stored `dacast_id` has the form `<account>-live-<content>` (the literal separator `-live-` is six characters), and Dacast's iframe URL needs the two halves as separate path segments — so we locate `-live-` via `the position of`, treating a negative result as "not in this string" and therefore a malformed record, and split around it. The injected iframe styles deliberately keep the player full-bleed inside its box.
 
@@ -132,7 +132,7 @@
     put property `recording_url` of StreamRecord into RecordingUrl
     if RecordingUrl is not empty
     begin
-        put property `deceased` of StreamRecord into Deceased
+        put property `name` of StreamRecord into Deceased
         put property `recording_text` of StreamRecord into RecordingText
         set style `display` of VideoBox to `none`
         set style `display` of BodyTextDiv to `none`

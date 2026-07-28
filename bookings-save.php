@@ -73,8 +73,7 @@ $record = [
     'kind'             => $body['kind'],
     'date'             => $body['date'],
 
-    // Viewer compatibility fields (mirror the fields stream-main.as reads)
-    'deceased'         => $body['deceased']        ?? $body['name'] ?? '',
+    // Auto-compose datetime from date + time (the stream viewer uses this)
     'datetime'         => $body['datetime']        ?? (
         ($body['date'] ?? '') . 'T' . ($body['time'] ?? '00:00')
     ),
@@ -107,6 +106,7 @@ $record = [
     'contact_telephone'=> $body['contact_telephone'] ?? '',
     'contact_email'    => $body['contact_email']   ?? '',
     'recording_text'   => $body['recording_text']  ?? '',
+    'notes'            => $body['notes']           ?? '',
     'tribute_url'      => $body['tribute_url']     ?? '',
     'document_url'     => $body['document_url']    ?? '',
 ];

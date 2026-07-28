@@ -226,9 +226,10 @@
     variable WarnAmber
     variable TargetUrl
     variable SavedCreds
-
-!! @hash placeholder
-
+!! Build the grid template — 12 columns matching the columns we render.
+!! Wire up click handlers then show login.
+!! Check browser storage for saved credentials. If present, populate the
+!! fields and auto-login so the user skips the login panel on return visits.
 !!! Build the page: render the Webson layout, attach DOM handles, set up
 !!! style strings, then show the login panel.
 
@@ -326,7 +327,6 @@
     put `` into EditFyStart
     put 1 into IsCreate
 
-!! Build the grid template — 12 columns matching the columns we render.
 
     put `1fr 0.7fr 0.4fr 2.5fr 2.5fr 1fr 1fr 0.6fr 0.6fr 0.5fr 0.5fr 0.5fr` into Grid
 
@@ -346,7 +346,6 @@
     put `January,February,March,April,May,June,July,August,September,October,November,December` into MonthNames
     split MonthNames on `,`
 
-!! Wire up click handlers then show login.
 
     on click LoginButton gosub OnLogin
     on click AddButton gosub OnAdd
@@ -369,8 +368,6 @@
     on click DocumentUrlBtn gosub OnOpenDocumentUrl
     on click DocumentUploadBtn gosub OnUploadDocument
 
-!! Check browser storage for saved credentials. If present, populate the
-!! fields and auto-login so the user skips the login panel on return visits.
 
     get SavedCreds from storage as `admin.credentials`
     if SavedCreds is not empty
@@ -387,13 +384,12 @@
     else
         set style `display` of AdminPanel to `none`
     stop
-!! @hash 1d695aa0
+!! @hash 06785860
 !!!
-
-
 !! Login: POST credentials to login.php, on success show the admin panel
 !! and load data.
-
+!! Save or clear credentials in browser storage based on the Remember me
+!! checkbox so the user can skip the login panel on their next visit.
 OnLogin:
     set the content of LoginStatus to ``
     put `{"user":"` cat the content of UserField into BodyText
@@ -415,8 +411,6 @@ OnLogin:
     end
     set style `display` of LoginPanel to `none`
     set style `display` of AdminPanel to `block`
-!! Save or clear credentials in browser storage based on the Remember me
-!! checkbox so the user can skip the login panel on their next visit.
     put attribute `checked` of RememberCheckbox into TempStr
     if TempStr is not empty
     begin
@@ -429,12 +423,11 @@ OnLogin:
         put `` into storage as `admin.credentials`
     gosub Refresh
     return
-!! @hash dee88ebd
+!! @hash 1b1164b4
 !!!
-
-
 !! Refresh: fetch all bookings from the server and render the table.
-
+!! Pass 1: count rows and discover month boundaries so we can pre-size
+!! arrays (AllSpeak's cursor model requires this).
 Refresh:
     set the content of LogBody to ``
     set the content of ExportStatus to ``
@@ -458,8 +451,6 @@ Refresh:
     set style `display` of EmptyState to `none`
     set style `display` of LogBody to `block`
 
-!! Pass 1: count rows and discover month boundaries so we can pre-size
-!! arrays (AllSpeak's cursor model requires this).
 
     put 0 into I
     put `` into LastFy
@@ -605,12 +596,9 @@ Refresh:
 
     on click DataRowDivs gosub OnRowClick
     return
-!! @hash 524fddb5
+!! @hash 77be460a
 !!!
-
-
 !! EmitRow: render one data row from the current record in 'Row'.
-
 EmitRow:
     index DataRowDivs to I
     put property `date` of Row into BookingDate
@@ -758,13 +746,10 @@ EmitRow:
     create RowWrappers in LogBody
 
     return
-!! @hash 2fdf62a5
+!! @hash 04677113
 !!!
-
-
 !! OnRowClick: open the edit modal for the clicked row. We read the slug
 !! from the AllBookings array at the stored index.
-
 OnRowClick:
     put the index of DataRowDivs into J
     put element J of AllBookings into Row
@@ -774,12 +759,9 @@ OnRowClick:
     gosub PopulateForm
     set style `display` of Overlay to `flex`
     return
-!! @hash 8dbb5992
+!! @hash 66913a87
 !!!
-
-
 !! EmitSubtotal: render a monthly subtotal row.
-
 EmitSubtotal:
     if LastFy is empty
         return
@@ -824,12 +806,9 @@ EmitSubtotal:
     create CellDiv in SubDiv
     create CellDiv in SubDiv
     return
-!! @hash 2636e96c
+!! @hash 5c937da1
 !!!
-
-
 !! EmitGrandTotal: render the grand total row.
-
 EmitGrandTotal:
     create GrandDiv in LogBody
     set the style of GrandDiv to RowStyleGrand
@@ -859,14 +838,13 @@ EmitGrandTotal:
     create CellDiv in GrandDiv
     create CellDiv in GrandDiv
     return
-!! @hash 1dd1db94
+!! @hash ac90f52d
 !!!
-
-
 !! FormatMoney: convert integer pence to £XX.XX string.
 !! MoneyVal carries the value in (e.g. 1998); MoneyStr carries the result
 !! out (e.g. "£19.98"). Negative values produce "-£19.98".
-
+!! FormatMoneyInner: helper — TempStr in, MoneyStr out with £ prefix,
+!! using from/right/length for correct string splitting.
 FormatMoney:
     if MoneyVal is less than 0
     begin
@@ -879,8 +857,6 @@ FormatMoney:
     gosub FormatMoneyInner
     return
 
-!! FormatMoneyInner: helper — TempStr in, MoneyStr out with £ prefix,
-!! using from/right/length for correct string splitting.
 FormatMoneyInner:
     put TempStr cat `` into MoneyStr
     put the length of MoneyStr into MoneyLen
@@ -900,14 +876,11 @@ FormatMoneyInner:
     put from MoneyPos of MoneyStr into CentsStr
     put `£` cat Whole cat `.` cat CentsStr into MoneyStr
     return
-!! @hash 9bd90d06
+!! @hash ecf392c8
 !!!
-
-
 !! FormatMileage: convert integer tenths to XX.X string.
 !! MileageVal carries the value in (e.g. 444); Mi carries the result
 !! out (e.g. "44.4"). Zero produces empty string.
-
 FormatMileage:
     if MileageVal is 0
     begin
@@ -927,14 +900,11 @@ FormatMileage:
     put from MilePos of Mi into FracStr
     put Whole cat `.` cat FracStr into Mi
     return
-!! @hash 617c6b8f
+!! @hash 5ff742ce
 !!!
-
-
 !! FyAndMmFromDate: given BookingDate (YYYY-MM-DD), set FY and Mm.
 !! UK financial year: April = month 04 is FY start (e.g. 2026-27).
 !! FY = "2026-27", Mm = "04" (month number only, no hyphen).
-
 FyAndMmFromDate:
     put left 4 of BookingDate into FY          ! YYYY
     put from 5 of BookingDate into Mm          ! MM-DD (position 5 = month tens digit)
@@ -955,12 +925,9 @@ FyAndMmFromDate:
         put FY cat `-` cat right 2 of `0` cat NextYr into FY
     end
     return
-!! @hash 8e934167
+!! @hash d124bc39
 !!!
-
-
 !! OnAdd: open the modal in create mode.
-
 OnAdd:
     put 1 into IsCreate
     put `` into EditSlugOld
@@ -1006,12 +973,9 @@ In the meantime, here is a link to a recording of the stream, for those who may 
     gosub SelectKindService
     set style `display` of Overlay to `flex`
     return
-!! @hash 8224f72e
+!! @hash d9acd825
 !!!
-
-
 !! PopulateForm: fill the modal with the current Row's data.
-
 PopulateForm:
     set the content of ModalTitle to `Edit booking`
     set style `display` of DeleteBtn to `inline-block`
@@ -1150,12 +1114,9 @@ PopulateForm:
         set attribute `disabled` of DocumentUrlBtn to `disabled`
 
     return
-!! @hash db18c02b
+!! @hash 7bf1bd8e
 !!!
-
-
 !! Kind selection toggles: show/hide relevant form sections.
-
 SelectKindService:
     put `service` into Kind
     set the style of KindServiceBtn to KindSelectedStyle
@@ -1284,19 +1245,28 @@ SelectKindSlideshow:
     set style `display` of TributeUrlRow to `none`
     set style `display` of NotesRow to `flex`
     return
-!! @hash 91d75c7f
+!! @hash f2c4b270
 !!!
-
-
 !! OnSave: read form fields, build a JSON record, POST to bookings-save.php.
-
 OnSave:
     set the content of ModalStatus to `Saving...`
 
     ! Always rebuild slug from current date + name, so a name change updates it
-    ! on re-save.  When editing an existing record, save the old path if the slug
-    ! changed so the server can delete the stale file.
-    put EditSlugOld into OldSlug
+    ! on re-save.  When editing, derive the on-disk slug from the file path
+    ! (EditPath, the actual filename) rather than from the slug field in the JSON
+    ! content — a previous partial save may have updated the content slug without
+    ! renaming the file, and comparing against the filename catches that mismatch.
+    if IsCreate is 0
+    begin
+        put the position of the last `/` in EditPath into TempNum
+        add 1 to TempNum
+        put from TempNum of EditPath into TempStr2
+        put the position of `.` in TempStr2 into TempNum
+        if TempNum is not -1
+            put left TempNum of TempStr2 into OldSlug
+        else
+            put TempStr2 into OldSlug
+    end
     put the content of DateInput into BookingDate
     put the content of NameInput into BookingName
     gosub MakeSlug
@@ -1440,12 +1410,9 @@ OnSave:
     wait 3 seconds
     set the content of ModalStatus to ``
     return
-!! @hash 26cdbb8e
+!! @hash 05faebba
 !!!
-
-
 !! OnLinkSentToggle: when the toggle changes, set or clear the linkSent date.
-
 OnLinkSentToggle:
     put attribute `checked` of LinkSentToggle into TempStr
     if TempStr is not empty
@@ -1456,12 +1423,9 @@ OnLinkSentToggle:
     else
         set the content of LinkSentInput to ``
     return
-!! @hash 591f6b20
+!! @hash ad985367
 !!!
-
-
 !! OnInvoicedToggle: when the toggle changes, set or clear the invoiced date.
-
 OnInvoicedToggle:
     put attribute `checked` of InvoicedToggle into TempStr
     if TempStr is not empty
@@ -1472,12 +1436,9 @@ OnInvoicedToggle:
     else
         set the content of InvoicedInput to ``
     return
-!! @hash 65a58b33
+!! @hash 6b440dcf
 !!!
-
-
 !! OnPaidToggle: when the paid checkbox changes, set or clear the paidDate.
-
 OnPaidToggle:
     put attribute `checked` of PaidInput into TempStr
     if TempStr is not empty
@@ -1488,12 +1449,9 @@ OnPaidToggle:
     else
         set the content of PaidDateInput to ``
     return
-!! @hash 766bf318
+!! @hash 9ccbf75d
 !!!
-
-
 !! OnOpenStream: build the stream URL from form data and navigate there.
-
 OnOpenStream:
     put the content of DateInput into BookingDate
     put the content of NameInput into BookingName
@@ -1501,45 +1459,33 @@ OnOpenStream:
     put `https://stream.eclecity.net/` cat TempStr into TargetUrl
     location TargetUrl
     return
-!! @hash 97f8320a
+!! @hash 09e5e7e9
 !!!
-
-
 !! OnOpenRecordingUrl: navigate to the recording URL in the current tab.
-
 OnOpenRecordingUrl:
     put the content of RecordingUrlInput into TargetUrl
     if TargetUrl is not empty
         location TargetUrl
     return
-!! @hash 5fff8256
+!! @hash a48f14ed
 !!!
-
-
 !! OnOpenTributeUrl: navigate to the tribute video URL in the current tab.
-
 OnOpenTributeUrl:
     put the content of TributeUrlInput into TargetUrl
     if TargetUrl is not empty
         location TargetUrl
     return
-!! @hash 6a326d0b
+!! @hash 0d91077e
 !!!
-
-
 !! OnOpenDocumentUrl: navigate to the document URL in the current tab.
-
 OnOpenDocumentUrl:
     put the content of DocumentUrlInput into TargetUrl
     if TargetUrl is not empty
         location TargetUrl
     return
-!! @hash 8e8e7065
+!! @hash 765edc40
 !!!
-
-
 !! OnUploadDocument: open the upload page in a new tab, pre-filled with date and name.
-
 OnUploadDocument:
     put the content of DateInput into BookingDate
     put the content of NameInput into BookingName
@@ -1549,12 +1495,9 @@ OnUploadDocument:
     gosub EncodeUriComponent
     location DocumentUpPath
     return
-!! @hash bef9ab7e
+!! @hash d8e5b816
 !!!
-
-
 !! EncodeUriComponent: URL-encode the value in BookingName, appending to DocumentUpPath.
-
 EncodeUriComponent:
     put BookingName cat `` into TempStr
     put TempStr into TempOrig
@@ -1585,13 +1528,10 @@ EncodeUriComponent:
         add 1 to J
     end
     return
-!! @hash 3d4cfcae
+!! @hash 09845670
 !!!
-
-
 !! OnEmail1: fetch email template, substitute record data, build mailto: URI,
 !! and open in the default email client.
-
 OnEmail1:
     set the content of ModalStatus to `Loading template...`
     rest get EmailTemplate from `/email1.json` or begin
@@ -1680,13 +1620,10 @@ OnEmail1:
     location MailToUri
     set the content of ModalStatus to ``
     return
-!! @hash bfdcafa9
+!! @hash d509288f
 !!!
-
-
 !! OnEmail2: fetch email2 template (recording notification), substitute record
 !! data, build mailto: URI, and open in the default email client.
-
 OnEmail2:
     set the content of ModalStatus to `Loading template...`
     rest get EmailTemplate from `/email2.json` or begin
@@ -1761,12 +1698,9 @@ OnEmail2:
     location MailToUri
     set the content of ModalStatus to ``
     return
-!! @hash 55433b22
+!! @hash bff7d7f0
 !!!
-
-
 !! TodayString: compute today's date as YYYY-MM-DD into TodayStr.
-
 TodayString:
     put now into Now
     divide Now by 1000                     ! convert ms to seconds for date accessors
@@ -1780,32 +1714,23 @@ TodayString:
         put `0` cat Dd into Dd
     put Yr cat `-` cat Mo cat `-` cat Dd into TodayStr
     return
-!! @hash c9a4c8bf
+!! @hash 119640f6
 !!!
-
-
 !! OnCancel: close the modal without saving.
-
 OnCancel:
     set style `display` of Overlay to `none`
     return
-!! @hash 4876f651
+!! @hash fdcd1339
 !!!
-
-
 !! OnDelete: confirm then delete the current record.
-
 OnDelete:
     if EditSlugOld is empty
         return
     confirm `Delete this booking?` gosub DoDelete
     return
-!! @hash c8ca79c7
+!! @hash f544c164
 !!!
-
-
 !! DoDelete: POST to bookings-delete.php.
-
 DoDelete:
     put `{"path":"` cat EditPath cat `"}` into BodyText
     rest post BodyText to `bookings-delete.php` giving ResponseJson on failure
@@ -1830,14 +1755,11 @@ DoDelete:
     wait 3 seconds
     set the content of ModalStatus to ``
     return
-!! @hash 333c2448
+!! @hash 82b14c46
 !!!
-
-
 !! MakeSlug: produce a URL-safe slug from BookingDate and BookingName.
 !! Output format: YYMMDD-Firstname-Lastname (e.g. "260527-Eugenia-Manojlovic").
 !! Strips non-alphanumeric characters; replaces spaces with hyphens.
-
 MakeSlug:
     ! BookingDate is YYYY-MM-DD; extract YY, MM, DD by position.
     put from 2 of BookingDate into TempStr    ! 26-06-12
@@ -1868,13 +1790,10 @@ MakeSlug:
     end
     ! TempStr is now the slug
     return
-!! @hash 103c5b40
+!! @hash abefa5ea
 !!!
-
-
 !! JsonAddString: append "key":"value" to BodyText. Reads from the
 !! corresponding input field for the given key.
-
 JsonAddString:
     param 0 into Key
     put BodyText cat `"` cat Key into BodyText
@@ -1930,14 +1849,11 @@ JsonAddString:
 
     put BodyText cat TempStr2 cat `"` into BodyText
     return
-!! @hash 5aad2d26
+!! @hash 890d2825
 !!!
-
-
 !! JsonAddNumber: append "key":value to BodyText (no quotes around value).
 !! Mileage/Expense/Fees inputs are in display format (miles/pounds);
 !! convert back to tenths/pence before serializing.
-
 JsonAddNumber:
     param 0 into Key
     put BodyText cat `"` cat Key cat `":` into BodyText
@@ -1963,13 +1879,10 @@ JsonAddNumber:
         put `0` into TempStr2
     put BodyText cat TempStr2 into BodyText
     return
-!! @hash 26ba0900
+!! @hash e1b11866
 !!!
-
-
 !! ParseMileageToTenths: convert display miles string (e.g. "44.4") to
 !! integer tenths (e.g. 444). Input in TempStr2, result in TempStr2.
-
 ParseMileageToTenths:
     put position of `.` in TempStr2 into Dot
     if Dot is -1
@@ -1985,13 +1898,10 @@ ParseMileageToTenths:
     add FracStr to Whole
     put Whole into TempStr2
     return
-!! @hash a369230f
+!! @hash a98b69ec
 !!!
-
-
 !! ParsePoundsToPence: convert display pounds string (e.g. "19.98" or "100")
 !! to integer pence (e.g. 1998 or 10000). Input in TempStr2, result in TempStr2.
-
 ParsePoundsToPence:
     put position of `.` in TempStr2 into Dot
     if Dot is -1
@@ -2009,12 +1919,9 @@ ParsePoundsToPence:
     add FracStr to Whole
     put Whole into TempStr2
     return
-!! @hash 755d323d
+!! @hash a1fa2e96
 !!!
-
-
 !! OnLoadSample: seed with demo data. POSTs sample records to the server.
-
 OnLoadSample:
     set the content of ExportStatus to `Loading sample data...`
     ! POST each sample row individually
@@ -2022,15 +1929,12 @@ OnLoadSample:
     set the content of ExportStatus to `Sample data loaded.`
     gosub Refresh
     return
-!! @hash aad3eb7f
+!! @hash 09261603
 !!!
-
-
 !! OnExport: navigate to the read-only accounts page.
-
 OnExport:
     set the content of ExportStatus to `Opening accounts view...`
     location `books.php?key=Acct2026`
     return
-!! @hash adfebf8a
+!! @hash f1b9f36c
 !!!
