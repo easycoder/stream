@@ -118,6 +118,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .url { background: #eef; padding: 0.5em; border: 1px solid #aac; border-radius: 4px; word-break: break-all; font-family: monospace; font-size: 1.1em; }
         .ok { color: #080; font-weight: bold; }
         .btn { display: inline-block; margin-top: 1em; padding: 0.5em 1em; background: #28a; color: #fff; border: 0; border-radius: 4px; text-decoration: none; cursor: pointer; font-size: 1em; }
+        .btn-quiet { background: #888; }
     </style></head><body>';
     echo '<div class="box">';
     echo '<p class="ok">✓ Upload complete</p>';
@@ -126,7 +127,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     echo '<p><strong>URL (copy this):</strong></p>';
     echo '<div class="url">' . htmlspecialchars($fileUrl) . '</div>';
     echo '<p><button class="btn" onclick="navigator.clipboard.writeText(\'' . htmlspecialchars($fileUrl, ENT_QUOTES) . '\').then(()=>this.textContent=\'Copied!\')">Copy URL</button>';
-    echo ' <a class="btn" href="' . htmlspecialchars($fileUrl) . '" target="_blank">View file</a></p>';
+    echo ' <a class="btn" href="' . htmlspecialchars($fileUrl) . '" target="_blank">View file</a>';
+    echo ' <a class="btn btn-quiet" href="admin.html" onclick="if (window.history.length > 2) { window.history.go(-2); return false; }">Back to admin</a></p>';
+    echo '<script>try{localStorage.setItem(\'stream.pendingDocumentUrl\', ' . json_encode($fileUrl) . ');}catch(e){}</script>';
     echo '</div></body></html>';
     exit;
 }
@@ -187,6 +190,8 @@ $presetName = isset($_GET['name']) ? htmlspecialchars(trim($_GET['name'])) : '';
         cursor: pointer;
     }
     .btn:hover { background: #1a7; }
+    .btn-quiet { background: #888; }
+    .btn-quiet:hover { background: #666; }
     .note { margin-top: 1.5em; font-size: 0.85em; color: #888; border-top: 1px solid #eee; padding-top: 1em; }
 </style>
 </head>
@@ -198,13 +203,14 @@ $presetName = isset($_GET['name']) ? htmlspecialchars(trim($_GET['name'])) : '';
     <input type="date" id="date" name="date" value="<?php echo $presetDate; ?>" required>
 
     <label for="filename">Filename</label>
-    <input type="text" id="filename" name="filename" value="<?php echo $presetName; ?>" placeholder="e.g. 260813 Print cartridge" required>
+    <input type="text" id="filename" name="filename" value="<?php echo $presetName; ?>" placeholder="e.g. 260911-1430-Streaming-license" required>
     <div class="hint">The full filename as it will appear in the folder. The original file extension is added automatically.</div>
 
     <label for="file">File</label>
     <input type="file" id="file" name="file" required>
 
     <button type="submit" class="btn">Upload</button>
+    <button type="button" class="btn btn-quiet" onclick="if (window.history.length > 1) { window.history.back(); } else { window.location.href = 'admin.html'; }">Cancel</button>
 </form>
 <div class="note">
     After upload, the page will show a URL. Copy it and paste it into the

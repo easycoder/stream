@@ -35,6 +35,7 @@
     input DateInput
     input TimeInput
     input NameInput
+    label NameLabel
     input LocationInput
     input PostcodeInput
     input DistanceInput
@@ -127,7 +128,11 @@
     variable ClientCompanyVal
     variable TributeUrlVal
     variable DocumentUrlVal
+    variable UploadedDocUrl
     variable DocumentUpPath
+    variable UploadFileName
+    variable HhStr
+    variable MmStr
     variable ToField
     variable CcField
     variable SubjectField
@@ -259,6 +264,7 @@
     attach DateInput to `date-input`
     attach TimeInput to `time-input`
     attach NameInput to `name-input`
+    attach NameLabel to `name-label`
     attach LocationInput to `location-input`
     attach PostcodeInput to `postcode-input`
     attach DistanceInput to `distance-input`
@@ -367,6 +373,7 @@
     on click TributeUrlBtn gosub OnOpenTributeUrl
     on click DocumentUrlBtn gosub OnOpenDocumentUrl
     on click DocumentUploadBtn gosub OnUploadDocument
+    on change DocumentUrlInput gosub OnDocumentUrlChanged
 
 
     get SavedCreds from storage as `admin.credentials`
@@ -383,8 +390,9 @@
     end
     else
         set style `display` of AdminPanel to `none`
+    fork to WatchForUploadedDocument
     stop
-!! @hash 06785860
+!! @hash ddbc8f2f
 !!!
 !! Login: POST credentials to login.php, on success show the admin panel
 !! and load data.
@@ -759,7 +767,7 @@ OnRowClick:
     gosub PopulateForm
     set style `display` of Overlay to `flex`
     return
-!! @hash 66913a87
+!! @hash d12bb316
 !!!
 !! EmitSubtotal: render a monthly subtotal row.
 EmitSubtotal:
@@ -1116,12 +1124,16 @@ PopulateForm:
     return
 !! @hash 7bf1bd8e
 !!!
-!! Kind selection toggles: show/hide relevant form sections.
+!! Kind selection toggles: show/hide the sections each kind needs, and relabel the shared Name field.
+!!
+!! An expense has no deceased name: that field carries the purchased item's description, so the label and placeholder switch to Item / Description.
 SelectKindService:
     put `service` into Kind
     set the style of KindServiceBtn to KindSelectedStyle
     set the style of KindExpenseBtn to KindUnselectedStyle
     set the style of KindSlideshowBtn to KindUnselectedStyle
+    set the content of NameLabel to `Name / Deceased`
+    set attribute `placeholder` of NameInput to `Full name`
     set style `display` of NameInput to `inline-block`
     set style `display` of LocationInput to `inline-block`
     set style `display` of PostcodeInput to `inline-block`
@@ -1170,6 +1182,8 @@ SelectKindExpense:
     set the style of KindServiceBtn to KindUnselectedStyle
     set the style of KindExpenseBtn to KindSelectedStyle
     set the style of KindSlideshowBtn to KindUnselectedStyle
+    set the content of NameLabel to `Item`
+    set attribute `placeholder` of NameInput to `Description`
     ! Show only Name, Expense, Document, Notes rows — hide everything else
     set style `display` of NameInput to `inline-block`
     set style `display` of NotesInput to `inline-block`
@@ -1203,6 +1217,8 @@ SelectKindSlideshow:
     set the style of KindServiceBtn to KindUnselectedStyle
     set the style of KindExpenseBtn to KindUnselectedStyle
     set the style of KindSlideshowBtn to KindSelectedStyle
+    set the content of NameLabel to `Name / Deceased`
+    set attribute `placeholder` of NameInput to `Full name`
     set style `display` of NameInput to `inline-block`
     set style `display` of LocationInput to `inline-block`
     set style `display` of PostcodeInput to `none`
@@ -1245,7 +1261,7 @@ SelectKindSlideshow:
     set style `display` of TributeUrlRow to `none`
     set style `display` of NotesRow to `flex`
     return
-!! @hash f2c4b270
+!! @hash d661b7cb
 !!!
 !! OnSave: read form fields, build a JSON record, POST to bookings-save.php.
 OnSave:
@@ -1485,50 +1501,94 @@ OnOpenDocumentUrl:
     return
 !! @hash 765edc40
 !!!
-!! OnUploadDocument: open the upload page in a new tab, pre-filled with date and name.
+!! OnUploadDocument: open the upload page in a new tab, pre-filled with the date and a filename built from the date, time and description.
 OnUploadDocument:
     put the content of DateInput into BookingDate
     put the content of NameInput into BookingName
-    ! Build the upload page URL with date and name pre-filled
-    put `/upload.php?date=` cat BookingDate into DocumentUpPath
-    put DocumentUpPath cat `&name=` into DocumentUpPath
-    gosub EncodeUriComponent
+    gosub BuildUploadFileName
+    ! UploadFileName is already URL-safe, so it drops straight into the query string.
+    put `/upload.php?date=` cat BookingDate cat `&name=` cat UploadFileName into DocumentUpPath
     location DocumentUpPath
     return
-!! @hash d8e5b816
+!! @hash eb20dfd4
 !!!
-!! EncodeUriComponent: URL-encode the value in BookingName, appending to DocumentUpPath.
-EncodeUriComponent:
-    put BookingName cat `` into TempStr
-    put TempStr into TempOrig
-    put `` into BookingName
+!! BuildUploadFileName: compose the upload filename from the date, time and description already in the form.
+!!
+!! The result reads YYMMDD-HHMM-Description, e.g. `260911-1430-Streaming-license`. Date and time are optional, so a half-filled form still yields a usable name. Only letters and digits survive, spaces become hyphens, and everything else is dropped — the same cleaning MakeSlug applies, which is what makes the value safe to put straight into the upload URL's query string without percent-encoding.
+BuildUploadFileName:
+    put `` into UploadFileName
+
+    if BookingDate is not empty
+        ! BookingDate is YYYY-MM-DD; take YY MM DD by position.
+        put from 2 of BookingDate into TempStr
+        put left 2 of TempStr into YYStr
+        put from 5 of BookingDate into TempStr
+        put left 2 of TempStr into Mo
+        put from 8 of BookingDate into TempStr
+        put left 2 of TempStr into Dd
+        put YYStr cat Mo cat Dd into UploadFileName
+
+    put the content of TimeInput into TempStr2
+    if TempStr2 is not empty and UploadFileName is not empty
+        ! TimeInput is HH:MM; keep just the hours and the minutes.
+        put left 2 of TempStr2 into HhStr
+        put from 3 of TempStr2 into MmStr
+        put left 2 of MmStr into MmStr
+        put UploadFileName cat `-` cat HhStr cat MmStr into UploadFileName
+
+    ! Clean the description into TempStr: keep alnum, spaces become hyphens.
+    put `` into TempStr
+    put BookingName into TempStr2
+    put the length of TempStr2 into SortK
     put 0 into J
-    put the length of TempOrig into SortK
     while J is less than SortK
     begin
-        put left 1 of from J of TempOrig into Ch
-        if Ch is ` `
-            put BookingName cat `+` into BookingName
-        else if Ch is not less than `A` and Ch is not greater than `Z`
-            put BookingName cat Ch into BookingName
+        put char J of TempStr2 into Ch
+        if Ch is not less than `A` and Ch is not greater than `Z`
+            put TempStr cat Ch into TempStr
         else if Ch is not less than `a` and Ch is not greater than `z`
-            put BookingName cat Ch into BookingName
+            put TempStr cat Ch into TempStr
         else if Ch is not less than `0` and Ch is not greater than `9`
-            put BookingName cat Ch into BookingName
-        else if Ch is `-` or Ch is `_` or Ch is `.`
-            put BookingName cat Ch into BookingName
-        else
-            ! Percent-encode other chars
-            put BookingName cat `%` into BookingName
-            put the value of Ch into TempNum
-            put TempNum into TempStr2
-            if TempNum is less than 16
-                put BookingName cat `0` into BookingName
-            put BookingName cat TempStr2 into BookingName
+            put TempStr cat Ch into TempStr
+        else if Ch is ` `
+            put TempStr cat `-` into TempStr
         add 1 to J
     end
+
+    if TempStr is not empty
+        if UploadFileName is not empty
+            put UploadFileName cat `-` into UploadFileName
+        put UploadFileName cat TempStr into UploadFileName
     return
-!! @hash 09845670
+!! @hash e4e491fe
+!!!
+!! WatchForUploadedDocument: poll browser storage for a document path handed over by the upload page.
+!!
+!! The upload page is a separate document and cannot touch this form directly, so it leaves the path in storage and this forked thread collects it. Polling means the hand-over lands whether the admin page was restored from the browser's back/forward cache or reloaded from scratch. The key is cleared on pickup, so a path is collected once.
+WatchForUploadedDocument:
+    while true
+    begin
+        wait 1 second
+        get UploadedDocUrl from storage as `stream.pendingDocumentUrl`
+        if UploadedDocUrl is not empty
+        begin
+            set the content of DocumentUrlInput to UploadedDocUrl
+            remove attribute `disabled` of DocumentUrlBtn
+            put `` into storage as `stream.pendingDocumentUrl`
+        end
+    end
+!! @hash 89553489
+!!!
+!! OnDocumentUrlChanged: keep the View button in step with the Document field.
+!!
+!! Previously the button only recalculated when the form was populated, so it could sit inactive after a URL had been typed or pasted in.
+OnDocumentUrlChanged:
+    if the content of DocumentUrlInput is not empty
+        remove attribute `disabled` of DocumentUrlBtn
+    else
+        set attribute `disabled` of DocumentUrlBtn to `disabled`
+    return
+!! @hash de8f0716
 !!!
 !! OnEmail1: fetch email template, substitute record data, build mailto: URI,
 !! and open in the default email client.
@@ -1790,7 +1850,7 @@ MakeSlug:
     end
     ! TempStr is now the slug
     return
-!! @hash abefa5ea
+!! @hash 4afc88bd
 !!!
 !! JsonAddString: append "key":"value" to BodyText. Reads from the
 !! corresponding input field for the given key.

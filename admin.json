@@ -456,6 +456,7 @@
             ],
             "$NameLabel": {
               "#element": "label",
+              "@id": "name-label",
               "#content": "Name / Deceased",
               "width": "120px",
               "flex-shrink": "0",
