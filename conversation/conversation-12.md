@@ -107,17 +107,45 @@ Finished off:
   decide on.
 - Wrote this log.
 
+## Assistant (2026-09-16) — cleanup round
+
+Graham: "Best to clean up now."
+
+Checked the `stream-main.as` drift against history before touching it, which
+changed the answer. The feature was **not** accidentally lost: conversation 08
+records an explicit request — "Remove the '← Editor' button from the stream
+viewer page" — and the assistant removed `$BackButton`, the variable, the
+attach, the `CheckAuth` call and the `CheckAuth` subroutine. So the correct
+cleanup was to correct the *docs*, not restore the feature.
+
+- `stream-main.as` — corrected the opening doc block to state that the page is
+  public and calls no auth endpoint, removed the three leftover variables
+  (`AuthJson`, `AuthInfo`, `Authed`), and added the four missing `@hash` lines,
+  which is why the drift had gone undetected.
+- `admin-main.as` — removed three declaration-only variables of the same class
+  (`DocumentUrlVal`, `BookingDacast`, `BookingRecordingUrl`), each read and
+  written nowhere in the project.
+- Committed as `4bed315` and `5f7b052`.
+
+Verified: `asdoc-check.py` reports 0 error / 0 warning / 0 info on both files
+(47 sections); no declaration-only variables remain in any of the four scripts;
+zero dangling references to any of the seven removed names; label resolution
+clean and `begin`/`end` balanced in all four (admin 66/66, stream 8/8,
+account 73/73).
+
 ## Assistant (2026-09-16) — open items, not fixed
 
-- **`stream-main.as` has doc-block drift.** The opening block promises
-  "then fire `gosub CheckAuth` to opportunistically reveal the back-to-editor
-  link for a logged-in admin", and `AuthJson` / `AuthInfo` / `Authed` are
-  still declared — but no `gosub CheckAuth` call and no `CheckAuth` label
-  exist anywhere in the file. The viewer is effectively public-only.
-  Separately, the file's four doc blocks have no `@hash` line, so
-  `asdoc-check.py` cannot detect code drift there and reports them
-  (informationally) on every run. Pre-existing; unrelated to this session's
-  fix, so left alone.
+- **`admin-main.as` has an undocumented 228-line prelude.** Sections start at
+  line 239; lines 1–238 (`script Admin`, every `div` handle and all ~127
+  `variable` declarations) sit outside any `!! … !!!` doc block. The file does
+  open with a `!` comment header explaining its purpose and the money/mileage
+  conventions, so the intent is recorded — just in the older comment style.
+  `account-main.as` (first block at 15), `stream-main.as` (3) and `asedit.as`
+  (1) all have their preludes covered, so `admin-main.as` is the outlier.
+  Left alone: wrapping it means choosing how to group the declarations and
+  writing prose that asserts intent, which is Graham's call rather than a
+  mechanical fix. Note this is also why removing those three dead variables
+  raised no hash drift — that region isn't hashed.
 - **The heartbeat assumes the tab's timers keep running.** A backgrounded tab
   is throttled by the browser, and a discarded/frozen tab (or one restored
   from the back/forward cache) will not ping at all. The 10-minute interval
@@ -131,3 +159,6 @@ Finished off:
   `allspeak server.as -t admin` session would settle both.
 - The remote `session.gc_maxlifetime` was not checked. If DreamHost sets it
   below ~20 minutes, the 10-minute ping is the wrong number.
+- `reasonix.toml` still carries an unrelated auto-added tool-permission blob,
+  left uncommitted.
+
