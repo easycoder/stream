@@ -2,7 +2,7 @@
 
 !! Public viewer for one stream. The URL is `/<slug>` (e.g. `/260529-Jane-Doe`), rewritten by .htaccess to land at `stream.html`; we read the path, look up the matching record on disk, and either embed the live Dacast iframe or — when a recording has been uploaded — replace the player with a link to it. There is no list view here: this script handles exactly one stream at a time, identified entirely by the slug in the URL.
 !!
-!! Bootstrap order matters. Render the Webson layout first so every DOM slot exists, attach handles for the ones we write into, scale the body text down on portrait-orientation mobile (otherwise the body-text crawl wraps to single-word lines), then fire `gosub CheckAuth` to opportunistically reveal the back-to-editor link for a logged-in admin. The auth check is non-blocking — every failure path leaves the link hidden, which is the safe default for a public page.
+!! Bootstrap order matters. Render the Webson layout first so every DOM slot exists, attach handles for the ones we write into, and scale the body text down on portrait-orientation mobile (otherwise the body-text crawl wraps to single-word lines). This page is public and carries no editor affordance: the "← Editor" button that an auth check used to reveal here was removed on request, and the viewer no longer calls any auth endpoint.
     script Stream
 
     div Body
@@ -20,9 +20,6 @@
     variable RecordingText
     variable LinkHtml
     variable Title
-    variable AuthJson
-    variable AuthInfo
-    variable Authed
     variable Layout
     variable Path
     variable Slug
@@ -66,6 +63,7 @@
         set style `font-size` of RecordingPanel to `0.65em`
     end
 
+!! @hash 2f7b9cda
 !!!
 
 !! Turn the URL path into a data filename. The slug shape is fixed: `YYMMDD-<name-bits>` — six digits then a hyphen — and the digits double as the date that maps to the directory shard `data/YYYY/MM/DD/<slug>.json`. The .htaccess rewrite only routes digit-prefixed paths here, so the `FirstChar` range guard exists for direct hits on `stream.html` with a hand-typed bad query rather than for normal traffic; on a bare host with no slug we bail out with a "No stream specified." message.
@@ -122,6 +120,7 @@
     begin
         set the content of TitleSlot to Title
     end
+!! @hash 169edbb3
 !!!
 
 !! Two display modes share the same record. When `recording_url` is set — the live event is over and an edited or unedited recording has been uploaded (typically to Google Drive) — we hide the player and the body-text crawl and reveal a recording panel with the person's name, an explanatory paragraph, and a styled link. Recording mode always wins over live mode whenever the field is non-empty, so the page transitions from "watch live" to "watch the recording" the moment the admin saves the URL.
@@ -172,6 +171,7 @@
     set the content of VideoBox to IframeHtml
 
     stop
+!! @hash 4d35e97a
 !!!
 
 !! Switch the page into error mode by hiding the video frame and revealing the (initially empty) error box. Each caller writes its own specific message into `ErrorBox` immediately after returning, so this routine intentionally doesn't set the text — the split lets every error site reuse the display toggle without coupling to a single fixed message. Callers always pair this with `stop`, which is why the empty-box moment is never visible to the user.
@@ -179,4 +179,5 @@ ShowError:
     set style `display` of VideoBox to `none`
     set style `display` of ErrorBox to `block`
     return
+!! @hash 86fbbadb
 !!!
