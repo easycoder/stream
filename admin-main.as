@@ -127,7 +127,6 @@
     variable ClientRepVal
     variable ClientCompanyVal
     variable TributeUrlVal
-    variable DocumentUrlVal
     variable UploadedDocUrl
     variable DocumentUpPath
     variable UploadFileName
@@ -161,8 +160,6 @@
     variable FY
     variable NextYr
     variable Mm
-    variable BookingDacast
-    variable BookingRecordingUrl
     variable Invoiced
     variable Paid
     variable Fees
