@@ -231,10 +231,20 @@
     variable WarnAmber
     variable TargetUrl
     variable SavedCreds
+    variable LoginBody
+    variable SaveStatus
+    variable SaveFailed
+    variable SessionState
+    variable SessionRecovered
+    variable HeartbeatJson
+    variable HeartbeatObj
+    variable PingJson
 !! Build the grid template — 12 columns matching the columns we render.
 !! Wire up click handlers then show login.
 !! Check browser storage for saved credentials. If present, populate the
 !! fields and auto-login so the user skips the login panel on return visits.
+!! A heartbeat thread is forked alongside the upload watcher so the session
+!! survives however long the tab is left open — see Heartbeat.
 !!! Build the page: render the Webson layout, attach DOM handles, set up
 !!! style strings, then show the login panel.
 
@@ -390,9 +400,10 @@
     end
     else
         set style `display` of AdminPanel to `none`
+    fork to Heartbeat
     fork to WatchForUploadedDocument
     stop
-!! @hash ddbc8f2f
+!! @hash 222036df
 !!!
 !! Login: POST credentials to login.php, on success show the admin panel
 !! and load data.
@@ -400,10 +411,8 @@
 !! checkbox so the user can skip the login panel on their next visit.
 OnLogin:
     set the content of LoginStatus to ``
-    put `{"user":"` cat the content of UserField into BodyText
-    put BodyText cat `","pass":"` cat the content of PassField into BodyText
-    put BodyText cat `"}` into BodyText
-    rest post BodyText to `login.php` giving ResponseJson on failure
+    gosub BuildLoginBody
+    rest post LoginBody to `login.php` giving ResponseJson on failure
     begin
         set the content of LoginStatus to `Could not reach server.`
         set style `display` of AdminPanel to `none`
@@ -431,7 +440,7 @@ OnLogin:
         put `` into storage as `admin.credentials`
     gosub Refresh
     return
-!! @hash 1b1164b4
+!! @hash ec85b4e5
 !!!
 !! Refresh: fetch all bookings from the server and render the table.
 !! Pass 1: count rows and discover month boundaries so we can pre-size
@@ -1402,17 +1411,25 @@ OnSave:
     end
     put BodyText cat `}` into BodyText
 
-    rest post BodyText to `bookings-save.php` giving ResponseJson on failure
+    gosub PostSave
+
+    ! Every non-2xx reply reaches the runtime as one undifferentiated failure,
+    ! so a failed save has to be diagnosed before it can be described. Ask the
+    ! server whether this session is still valid: if it expired while the tab
+    ! sat idle, sign in again from the credentials already in the login fields
+    ! and retry the save, so a long-idle tab quietly carries on working.
+    if SaveFailed is not empty
     begin
-        set the content of ModalStatus to `Save failed — could not reach server.`
-        wait 3 seconds
-        set the content of ModalStatus to ``
-        return
+        gosub CheckSession
+        if SessionState is `expired`
+        begin
+            gosub RecoverSession
+            if SessionRecovered is not empty
+                gosub PostSave
+        end
     end
 
-    put json ResponseJson into ResponseObj
-    put property `status` of ResponseObj into ResponseStatus
-    if ResponseStatus is `ok`
+    if SaveStatus is `ok`
     begin
         set the content of ModalStatus to `Saved ✓`
         wait 3 seconds
@@ -1422,12 +1439,89 @@ OnSave:
         return
     end
 
-    set the content of ModalStatus to `Save failed: ` cat ResponseStatus
+    if SaveStatus is not empty
+        set the content of ModalStatus to `Save failed: ` cat SaveStatus
+    else if SessionState is `expired`
+        set the content of ModalStatus to `Save failed — session expired, please sign in again.`
+    else if SessionState is `valid`
+        set the content of ModalStatus to `Save failed — the server rejected the save.`
+    else
+        set the content of ModalStatus to `Save failed — could not reach server.`
     wait 3 seconds
     set the content of ModalStatus to ``
     return
-!! @hash 05faebba
+!! @hash 2f0ab35c
 !!!
+!! PostSave: POST the assembled record and report the outcome.
+!!
+!! Split out of OnSave because a save may legitimately be attempted twice: once with the session the page was loaded with, then again after that session has been re-created. SaveStatus carries the response's own status field; when the request never got a 2xx reply SaveStatus is left empty and SaveFailed is set, leaving the caller to work out why.
+PostSave:
+    put `` into SaveStatus
+    put `` into SaveFailed
+    rest post BodyText to `bookings-save.php` giving ResponseJson on failure
+    begin
+        put `yes` into SaveFailed
+        return
+    end
+    put json ResponseJson into ResponseObj
+    put property `status` of ResponseObj into SaveStatus
+    return
+!! @hash c4ffd2c5
+!!!
+
+!! CheckSession: ask the server whether this session is still valid.
+!!
+!! An expired session and an unreachable server look identical from a failed POST — the runtime reports any non-2xx as the same undifferentiated failure and discards the body. The heartbeat endpoint always answers when it can be reached, so a reply settles it: `authenticated: no` means the session went away while the tab sat idle, while no reply at all means the network. Sets SessionState to `valid`, `expired` or `unreachable`.
+CheckSession:
+    put `unreachable` into SessionState
+    rest get HeartbeatJson from `heartbeat.php` on failure
+    begin
+        return
+    end
+    put json HeartbeatJson into HeartbeatObj
+    put property `authenticated` of HeartbeatObj into TempStr
+    if TempStr is `yes`
+        put `valid` into SessionState
+    else
+        put `expired` into SessionState
+    return
+!! @hash 39917b80
+!!!
+
+!! RecoverSession: sign in again after the session expired, without troubling the user.
+!!
+!! The login fields still hold the credentials the page was loaded with, so repeating the login POST re-creates the session and the caller can retry the write that failed. Restoring the login panel on failure is the one case the user has to know about, because the credentials are no longer good.
+RecoverSession:
+    put `` into SessionRecovered
+    gosub BuildLoginBody
+    rest post LoginBody to `login.php` giving ResponseJson on failure
+    begin
+        return
+    end
+    put json ResponseJson into ResponseObj
+    put property `status` of ResponseObj into ResponseStatus
+    if ResponseStatus is not `ok`
+    begin
+        set the content of LoginStatus to `Login failed — please sign in again.`
+        set style `display` of LoginPanel to `block`
+        return
+    end
+    put `yes` into SessionRecovered
+    return
+!! @hash 159be724
+!!!
+
+!! BuildLoginBody: compose the login POST body from the login fields.
+!!
+!! Shared by OnLogin and RecoverSession. It writes to LoginBody rather than BodyText for a reason: mid-save, BodyText is holding the record that is about to be re-posted, and the retry depends on it surviving the recovery intact.
+BuildLoginBody:
+    put `{"user":"` cat the content of UserField into LoginBody
+    put LoginBody cat `","pass":"` cat the content of PassField into LoginBody
+    put LoginBody cat `"}` into LoginBody
+    return
+!! @hash d85a4629
+!!!
+
 !! OnLinkSentToggle: when the toggle changes, set or clear the linkSent date.
 OnLinkSentToggle:
     put attribute `checked` of LinkSentToggle into TempStr
@@ -1579,6 +1673,20 @@ WatchForUploadedDocument:
     end
 !! @hash 89553489
 !!!
+!! Heartbeat: keep the server-side session alive while the page stays open.
+!!
+!! PHP collects a session that has gone unwritten for session.gc_maxlifetime — 24 minutes by default — and the admin tab makes no requests at all while it sits idle. Left open over lunch, it comes back to a session the server has forgotten, and the next save is refused. This forked thread stamps the session every ten minutes, comfortably inside that window, so the tab stays loadable however long it is left open.
+!!
+!! The ping shares the endpoint the save path uses to tell an expired session from an unreachable server (see CheckSession), which is why the reply is fetched rather than discarded. A failed ping is ignored: a single blip must not kill the heartbeat for the rest of the page's life, and the save path re-checks when it matters.
+Heartbeat:
+    while true
+    begin
+        wait 10 minutes
+        rest get PingJson from `heartbeat.php` on failure set PingJson to ``
+    end
+!! @hash eb197cb0
+!!!
+
 !! OnDocumentUrlChanged: keep the View button in step with the Document field.
 !!
 !! Previously the button only recalculated when the form was populated, so it could sit inactive after a URL had been typed or pasted in.

@@ -3,7 +3,8 @@
 #
 # Remote layout:
 #   /                 <- AllSpeak triples (HTML, .json layouts, -main.as scripts)
-#   /*.php            <- backend endpoints (login, bookings list/save/delete)
+#   /*.php            <- backend endpoints (login, session heartbeat/auth probe,
+#                        bookings list/save/delete)
 #   /.htaccess        <- URL rewrites for /admin and /{slug}
 #   /data/YYYY/MM/DD/ <- per-booking JSON files, written server-side. NEVER touched by deploy.
 #
@@ -45,7 +46,7 @@ tar czf /tmp/stream-deploy.tar.gz \
     stream.html stream-main.as stream.json \
     allspeak.js \
     email1.json email2.json \
-    login.php auth-check.php upload.php \
+    login.php auth-check.php upload.php heartbeat.php \
     bookings.php bookings-save.php bookings-delete.php \
     export.php books.php background.jpg .htaccess
 
