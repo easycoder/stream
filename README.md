@@ -21,10 +21,10 @@ of the build, including detours, dead ends and refactors.
 From the project directory:
 
 ```
-allspeak server.as -t account
+allspeak server.allspeak -t account
 ```
 
-`server.as` starts a local HTTP server (default port 8080) and opens the
+`server.allspeak` starts a local HTTP server (default port 8080) and opens the
 default browser to `http://localhost:8080/account.html`. Closing the
 terminal (Ctrl+C) closes the app.
 
@@ -32,13 +32,13 @@ To open the AllSpeak editor in a second tab alongside the app — useful
 when working on the code:
 
 ```
-allspeak server.as -t edit,account
+allspeak server.allspeak -t edit,account
 ```
 
 A different port can be set as the last argument:
 
 ```
-allspeak server.as -t account 9000
+allspeak server.allspeak -t account 9000
 ```
 
 ## First run — sample data
@@ -56,12 +56,12 @@ serve as examples to delete or overwrite.
 | File / folder        | Purpose                                                                |
 | -------------------- | ---------------------------------------------------------------------- |
 | `account.html`       | Minimal launcher — loads the AllSpeak runtime and bootstraps the app.  |
-| `account-main.as`    | Main app script — rendering, table, modal, save/load logic.            |
+| `account-main.allspeak` | Main app script — rendering, table, modal, save/load logic.            |
 | `account.json`       | Webson layout describing the page structure and styles.                |
 | `sample.json`        | The fictional dataset offered by the **Load sample data** button.      |
-| `server.as`          | Generic AllSpeak dev server — serves files, exposes `/list`/`/read`/`/write`. |
-| `seed.as`            | Reference example of a CSV-to-JSON importer; adapt to your own spreadsheet. |
-| `asedit.as`, `asedit.json`, `edit.html` | Browser-based AllSpeak code editor (developer convenience). |
+| `server.allspeak`    | Generic AllSpeak dev server — serves files, exposes `/list`/`/read`/`/write`. |
+| `seed.allspeak`      | Reference example of a CSV-to-JSON importer; adapt to your own spreadsheet. |
+| `asedit.allspeak`, `asedit.json`, `edit.html` | Browser-based AllSpeak code editor (developer convenience).            |
 | `asdoc-check.py`     | Tool that refreshes `@hash` lines in doc blocks after edits.           |
 | `CLAUDE.md`          | Bootstrap instructions for AI-assisted development.                    |
 | `.allspeak-init`     | Marks the project as initialised so the AI bootstrap skips the setup wizard. |

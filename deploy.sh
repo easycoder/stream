@@ -2,7 +2,7 @@
 # Deploy the stream.eclecity.net site to DreamHost.
 #
 # Remote layout:
-#   /                 <- AllSpeak triples (HTML, .json layouts, -main.as scripts)
+#   /                 <- AllSpeak triples (HTML, .json layouts, -main.allspeak scripts)
 #   /*.php            <- backend endpoints (login, session heartbeat/auth probe,
 #                        bookings list/save/delete)
 #   /.htaccess        <- URL rewrites for /admin and /{slug}
@@ -12,15 +12,15 @@
 #
 # Local-only files that must NOT be uploaded:
 #   .credentials              dev-only plaintext fallback for login (if present)
-#   server.as                 AllSpeak dev server
+#   server.allspeak           AllSpeak dev server
 #   edit.html, asedit.*       browser editor for local AllSpeak development
 #   .code-version             tracks the dev server's self-update cycle
 #   .allspeak-init            marker file for the AllSpeak project bootstrap
 #   allspeak-en.zip           local AllSpeak distribution archive
 #   AI.md, .gitignore, deploy.sh  repo metadata
 #   conversation/             build transcripts
-#   seed.as, sample.json      one-time helpers
-#   build.as                  replaced by export.php
+#   seed.allspeak, sample.json one-time helpers
+#   build.allspeak            replaced by export.php
 # These are excluded by listing only the production files explicitly below.
 
 set -euo pipefail
@@ -41,9 +41,9 @@ echo "Deploying stream.eclecity.net from ${LOCAL}..."
 
 tar czf /tmp/stream-deploy.tar.gz \
     -C "$LOCAL" \
-    admin.html admin-main.as admin.json \
-    index.html index-main.as index.json \
-    stream.html stream-main.as stream.json \
+    admin.html admin-main.allspeak admin.json \
+    index.html index-main.allspeak index.json \
+    stream.html stream-main.allspeak stream.json \
     allspeak.js \
     email1.json email2.json \
     login.php auth-check.php upload.php heartbeat.php \

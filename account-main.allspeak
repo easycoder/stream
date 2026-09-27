@@ -1,7 +1,7 @@
-!   account-main.as
+!   account-main.allspeak
 !   Service-log GUI for the account project (Phase 6: add / edit / delete).
 !
-!   Loaded by account.html via server.as. Renders the page from account.json,
+!   Loaded by account.html via server.allspeak. Renders the page from account.json,
 !   then walks /data/<FY>/<MM>.json to populate the log. Clicking a row opens
 !   the modal pre-filled for editing; the Add button opens it empty. Saving
 !   POSTs the affected month back to /write/data/<FY>/<MM>.json and reloads.
@@ -1150,10 +1150,10 @@ OnLoadSample:
 !!!
 
 
-!! OnExport: ask the server to run build.as, which snapshots the current
+!! OnExport: ask the server to run build.allspeak, which snapshots the current
 !! data into the deploy folder ready for hosting.
 !!
-!! The server's /build endpoint runs `allspeak build.as` as a subprocess and
+!! The server's /build endpoint runs `allspeak build.allspeak` as a subprocess and
 !! waits for it to finish before responding. The status div gives feedback
 !! in the header without a modal.
 
@@ -1310,7 +1310,7 @@ OnToggleInvoiced:
 !! Three modes the app supports, switched entirely by config:
 !!   1. Live local server (default if no config.json is present): reads from
 !!      /list/data and /read/data/..., writes to /write/data/... — same as
-!!      the original behaviour, served by server.as.
+!!      the original behaviour, served by server.allspeak.
 !!   2. Static read-only deploy: reads from a flat manifest (data/index.json)
 !!      and a relative dataReadBase like `data`. No writes; the Add button
 !!      and the modal's Save/Delete buttons are hidden. Suited to hosting

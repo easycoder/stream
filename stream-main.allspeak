@@ -1,4 +1,4 @@
-!   stream-main.as
+!   stream-main.allspeak
 
 !! Public viewer for one stream. The URL is `/<slug>` (e.g. `/260529-Jane-Doe`), rewritten by .htaccess to land at `stream.html`; we read the path, look up the matching record on disk, and either embed the live Dacast iframe or — when a recording has been uploaded — replace the player with a link to it. There is no list view here: this script handles exactly one stream at a time, identified entirely by the slug in the URL.
 !!

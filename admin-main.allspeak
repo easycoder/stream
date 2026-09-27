@@ -1,4 +1,4 @@
-!   admin-main.as
+!   admin-main.allspeak
 !   Merged admin panel for stream.eclecity.net.
 !   Combines the service log (account) with stream management (streams)
 !   into a single interface. Login-protected; data stored as per-event

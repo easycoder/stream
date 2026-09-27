@@ -1,5 +1,5 @@
 # stream.eclecity.net — URL routing for the AllSpeak front end.
-# The .as / .json / .php / .html files are served directly when
+# The .allspeak / .json / .php / .html files are served directly when
 # requested by name. The two named endpoints below are rewritten
 # to their underlying .html launchers.
 

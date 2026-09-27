@@ -1,4 +1,4 @@
-!   seed.as
+!   seed.allspeak
 !   One-shot CSV → monthly JSON seed importer for the account project.
 !
 !   Reads account.csv, parses each row, classifies it as `service` or `expense`
@@ -7,7 +7,7 @@
 !   the row's date, and writes each row to data/<FY>/<MM>.json using the
 !   `append to json file` primitive.
 !
-!   Usage:  allspeak seed.as
+!   Usage:  allspeak seed.allspeak
 !   Re-run: delete the data/ directory first.
 !
 !   Kept in the public repo as a reference example of converting an existing
@@ -331,7 +331,7 @@ BuildService:
 !!
 !! Expense rows have no name/location/time/distance/contact/client; the
 !! Mileage/Item column carries a free-form description (e.g. "Fees"). The
-!! `paid` and `linkSent` columns are now booleans (see account-main.as),
+!! `paid` and `linkSent` columns are now booleans (see account-main.allspeak),
 !! so the CSV's old monetary-paid field is dropped on import — the user
 !! marks paid status individually in the GUI.
 
