@@ -5,6 +5,15 @@
 
 RewriteEngine On
 
+# Layout and script files are rebuilt on every deploy. DreamHost's default is a
+# two-day cache, which lets a browser pair a new script with an old layout (or
+# the reverse) after an update — force revalidation instead.
+<IfModule mod_headers.c>
+    <FilesMatch "\.(json|allspeak)$">
+        Header set Cache-Control "no-cache, must-revalidate"
+    </FilesMatch>
+</IfModule>
+
 # Serve real files and directories as-is
 RewriteCond %{REQUEST_FILENAME} -f [OR]
 RewriteCond %{REQUEST_FILENAME} -d

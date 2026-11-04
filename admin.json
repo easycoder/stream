@@ -125,7 +125,9 @@
       "$Header",
       "$LogTableWrap",
       "$EmptyState",
-      "$Overlay"
+      "$Overlay",
+      "$LocationOverlay",
+      "$LocationEditOverlay"
     ],
     "$Header": {
       "#element": "div",
@@ -363,34 +365,149 @@
           "display": "flex",
           "flex-direction": "column",
           "#": [
-            "$DateRow",
-            "$TimeRow",
-            "$NameRow",
-            "$LocationRow",
-            "$PostcodeRow",
-            "$DistanceRow",
-            "$ContactRow",
-            "$ClientRow",
-            "$ClientEmailRow",
-            "$StreamUrlRow",
-            "$DacastRow",
-            "$MileageRow",
-            "$ExpenseRow",
-            "$FeesRow",
-            "$LinkSentRow",
-            "$InvoicedRow",
-            "$PaidRow",
-            "$TitleRow",
-            "$ContactNameRow",
-            "$ContactRelationRow",
-            "$ContactPhoneRow",
-            "$ContactEmailRow",
-            "$RecordingTextRow",
-            "$RecordingUrlRow",
-            "$TributeUrlRow",
-            "$DocumentRow",
-            "$NotesRow"
+            "$TabBar",
+            "$GeneralPanel",
+            "$ContactsPanel",
+            "$DataPanel",
+            "$TextPanel"
           ],
+          "$TabBar": {
+            "#element": "div",
+            "@id": "form-tabs",
+            "display": "flex",
+            "gap": "0.2em",
+            "border-bottom": "2px solid #ddd",
+            "margin-bottom": "1em",
+            "#": [
+              "$GeneralTabBtn",
+              "$ContactsTabBtn",
+              "$DataTabBtn",
+              "$TextTabBtn"
+            ],
+            "$GeneralTabBtn": {
+              "#element": "button",
+              "@id": "general-tab-btn",
+              "@type": "button",
+              "padding": "0.4em 1em",
+              "margin-bottom": "-2px",
+              "border": "1px solid #ccc",
+              "border-bottom": "2px solid #28a",
+              "border-radius": "4px 4px 0 0",
+              "background": "#fff",
+              "color": "#28a",
+              "font-weight": "bold",
+              "cursor": "pointer",
+              "#content": "General"
+            },
+            "$ContactsTabBtn": {
+              "#element": "button",
+              "@id": "contacts-tab-btn",
+              "@type": "button",
+              "padding": "0.4em 1em",
+              "margin-bottom": "-2px",
+              "border": "1px solid transparent",
+              "border-bottom": "2px solid transparent",
+              "border-radius": "4px 4px 0 0",
+              "background": "#eee",
+              "color": "#555",
+              "cursor": "pointer",
+              "#content": "Contacts"
+            },
+            "$DataTabBtn": {
+              "#element": "button",
+              "@id": "data-tab-btn",
+              "@type": "button",
+              "padding": "0.4em 1em",
+              "margin-bottom": "-2px",
+              "border": "1px solid transparent",
+              "border-bottom": "2px solid transparent",
+              "border-radius": "4px 4px 0 0",
+              "background": "#eee",
+              "color": "#555",
+              "cursor": "pointer",
+              "#content": "Data"
+            },
+            "$TextTabBtn": {
+              "#element": "button",
+              "@id": "text-tab-btn",
+              "@type": "button",
+              "padding": "0.4em 1em",
+              "margin-bottom": "-2px",
+              "border": "1px solid transparent",
+              "border-bottom": "2px solid transparent",
+              "border-radius": "4px 4px 0 0",
+              "background": "#eee",
+              "color": "#555",
+              "cursor": "pointer",
+              "#content": "Text"
+            }
+          },
+          "$GeneralPanel": {
+            "#element": "div",
+            "@id": "general-panel",
+            "display": "flex",
+            "flex-direction": "column",
+            "#": [
+              "$DateRow",
+              "$TimeRow",
+              "$NameRow",
+              "$LocationRow",
+              "$PostcodeRow",
+              "$DistanceRow",
+              "$MileageRow",
+              "$ExpenseRow",
+              "$FeesRow"
+            ]
+          },
+          "$ContactsPanel": {
+            "#element": "div",
+            "@id": "contacts-panel",
+            "display": "none",
+            "flex-direction": "column",
+            "#": [
+              "$ContactRow",
+              "$ClientRow",
+              "$ClientEmailRow",
+              "$ContactsSeparator",
+              "$ContactNameRow",
+              "$ContactRelationRow",
+              "$ContactPhoneRow",
+              "$ContactEmailRow"
+            ],
+            "$ContactsSeparator": {
+              "#element": "div",
+              "@id": "contacts-separator",
+              "border-top": "1px solid #ddd",
+              "margin": "0.6em 0"
+            }
+          },
+          "$DataPanel": {
+            "#element": "div",
+            "@id": "data-panel",
+            "display": "none",
+            "flex-direction": "column",
+            "#": [
+              "$StreamUrlRow",
+              "$DacastRow",
+              "$RecordingUrlRow",
+              "$TributeUrlRow",
+              "$DocumentRow",
+              "$LinkSentRow",
+              "$InvoicedRow",
+              "$PaidRow"
+            ]
+          },
+          "$TextPanel": {
+            "#element": "div",
+            "@id": "text-panel",
+            "display": "none",
+            "flex-direction": "column",
+            "#": [
+              "$TitleRow",
+              "$RecordingTextRow",
+              "$NotesRow"
+            ]
+          },
           "$DateRow": {
             "#element": "div",
             "display": "flex",
@@ -496,11 +613,15 @@
               "#element": "input",
               "@id": "location-input",
               "@type": "text",
-              "@placeholder": "Chapel, church, or venue",
+              "@placeholder": "Choose a location",
+              "@readonly": "readonly",
+              "@title": "Click to choose a location",
               "flex": "1",
               "min-width": "0",
               "padding": "0.3em",
-              "font-size": "1em"
+              "font-size": "1em",
+              "background": "#f5f5f5",
+              "cursor": "pointer"
             }
           },
           "$PostcodeRow": {
@@ -528,7 +649,7 @@
               "flex": "1",
               "min-width": "0"
             },
-            "display": "flex",
+            "display": "none",
             "align-items": "center",
             "gap": "0.5em"
           },
@@ -557,7 +678,7 @@
               "flex": "1",
               "min-width": "0"
             },
-            "display": "flex",
+            "display": "none",
             "align-items": "center",
             "gap": "0.5em"
           },
@@ -849,7 +970,9 @@
               "@type": "checkbox",
               "width": "1.3em",
               "height": "1.3em",
-              "cursor": "pointer"
+              "cursor": "pointer",
+              "margin": "0.2em 0",
+              "flex-shrink": "0"
             },
             "display": "flex",
             "align-items": "center",
@@ -1315,6 +1438,316 @@
             "#content": "Save"
           },
           "align-items": "center"
+        }
+      }
+    },
+    "$LocationOverlay": {
+      "#element": "div",
+      "@id": "location-overlay",
+      "display": "none",
+      "position": "fixed",
+      "top": "0",
+      "left": "0",
+      "width": "100%",
+      "height": "100%",
+      "background": "rgba(0,0,0,0.4)",
+      "align-items": "flex-start",
+      "justify-content": "center",
+      "padding-top": "5vh",
+      "z-index": "1100",
+      "#": [
+        "$LocationWindow"
+      ],
+      "$LocationWindow": {
+        "#element": "div",
+        "background": "white",
+        "border-radius": "8px",
+        "padding": "1.5em",
+        "width": "680px",
+        "max-width": "90%",
+        "display": "flex",
+        "flex-direction": "column",
+        "box-shadow": "0 4px 30px rgba(0,0,0,0.3)",
+        "#": [
+          "$LocationHeader",
+          "$LocationList",
+          "$LocationStatus",
+          "$LocationButtons"
+        ],
+        "$LocationHeader": {
+          "#element": "div",
+          "display": "flex",
+          "align-items": "center",
+          "gap": "0.5em",
+          "margin-bottom": "1em",
+          "#": [
+            "$LocationTitle",
+            "$LocationAddBtn"
+          ],
+          "$LocationTitle": {
+            "#element": "h2",
+            "@id": "location-title",
+            "margin": "0",
+            "font-weight": "400",
+            "flex": "1",
+            "#content": "Locations"
+          },
+          "$LocationAddBtn": {
+            "#element": "button",
+            "@id": "location-add-btn",
+            "@type": "button",
+            "padding": "0.3em 0.9em",
+            "font-size": "0.85em",
+            "cursor": "pointer",
+            "border": "0",
+            "border-radius": "4px",
+            "background": "#28a",
+            "color": "white",
+            "#content": "New location"
+          }
+        },
+        "$LocationList": {
+          "#element": "div",
+          "@id": "location-list",
+          "display": "flex",
+          "flex-direction": "column",
+          "gap": "0.2em",
+          "max-height": "55vh",
+          "overflow-y": "auto",
+          "border": "1px solid #ddd",
+          "border-radius": "4px",
+          "padding": "0.4em"
+        },
+        "$LocationStatus": {
+          "#element": "div",
+          "@id": "location-status",
+          "min-height": "1.2em",
+          "font-size": "0.9em",
+          "color": "#c00",
+          "margin": "0.5em 0 0 0"
+        },
+        "$LocationButtons": {
+          "#element": "div",
+          "display": "flex",
+          "gap": "0.5em",
+          "justify-content": "flex-end",
+          "margin-top": "0.6em",
+          "#": [
+            "$LocationCancelBtn",
+            "$LocationSaveBtn"
+          ],
+          "$LocationCancelBtn": {
+            "#element": "button",
+            "@id": "location-cancel-btn",
+            "padding": "0.4em 1em",
+            "cursor": "pointer",
+            "#content": "Cancel"
+          },
+          "$LocationSaveBtn": {
+            "#element": "button",
+            "@id": "location-save-btn",
+            "padding": "0.4em 1em",
+            "background": "#28a",
+            "color": "white",
+            "border": "0",
+            "border-radius": "4px",
+            "cursor": "pointer",
+            "#content": "Save"
+          }
+        }
+      }
+    },
+    "$LocationEditOverlay": {
+      "#element": "div",
+      "@id": "location-edit-overlay",
+      "display": "none",
+      "position": "fixed",
+      "top": "0",
+      "left": "0",
+      "width": "100%",
+      "height": "100%",
+      "background": "rgba(0,0,0,0.5)",
+      "align-items": "flex-start",
+      "justify-content": "center",
+      "padding-top": "12vh",
+      "z-index": "1200",
+      "#": [
+        "$LocationEditWindow"
+      ],
+      "$LocationEditWindow": {
+        "#element": "div",
+        "background": "white",
+        "border-radius": "8px",
+        "padding": "1.5em",
+        "width": "480px",
+        "max-width": "90%",
+        "box-shadow": "0 4px 30px rgba(0,0,0,0.3)",
+        "#": [
+          "$LocationEditTitle",
+          "$LocNameRow",
+          "$LocPostcodeRow",
+          "$LocDistanceRow",
+          "$LocNotesRow",
+          "$LocationEditStatus",
+          "$LocationEditButtons"
+        ],
+        "$LocationEditTitle": {
+          "#element": "h2",
+          "@id": "location-edit-title",
+          "margin": "0 0 1em 0",
+          "font-weight": "400",
+          "#content": "New location"
+        },
+        "$LocNameRow": {
+          "#element": "div",
+          "display": "flex",
+          "align-items": "center",
+          "gap": "0.5em",
+          "margin-bottom": "0.4em",
+          "#": [
+            "$LocNameLabel",
+            "$LocNameInput"
+          ],
+          "$LocNameLabel": {
+            "#element": "label",
+            "#content": "Name",
+            "width": "100px",
+            "flex-shrink": "0",
+            "font-size": "0.85em",
+            "color": "#555"
+          },
+          "$LocNameInput": {
+            "#element": "input",
+            "@id": "location-name-input",
+            "@type": "text",
+            "flex": "1",
+            "min-width": "0",
+            "padding": "0.3em",
+            "font-size": "1em"
+          }
+        },
+        "$LocPostcodeRow": {
+          "#element": "div",
+          "display": "flex",
+          "align-items": "center",
+          "gap": "0.5em",
+          "margin-bottom": "0.4em",
+          "#": [
+            "$LocPostcodeLabel",
+            "$LocPostcodeInput"
+          ],
+          "$LocPostcodeLabel": {
+            "#element": "label",
+            "#content": "Postcode",
+            "width": "100px",
+            "flex-shrink": "0",
+            "font-size": "0.85em",
+            "color": "#555"
+          },
+          "$LocPostcodeInput": {
+            "#element": "input",
+            "@id": "location-postcode-input",
+            "@type": "text",
+            "flex": "1",
+            "min-width": "0",
+            "padding": "0.3em",
+            "font-size": "1em"
+          }
+        },
+        "$LocDistanceRow": {
+          "#element": "div",
+          "display": "flex",
+          "align-items": "center",
+          "gap": "0.5em",
+          "margin-bottom": "0.4em",
+          "#": [
+            "$LocDistanceLabel",
+            "$LocDistanceInput"
+          ],
+          "$LocDistanceLabel": {
+            "#element": "label",
+            "#content": "Distance",
+            "width": "100px",
+            "flex-shrink": "0",
+            "font-size": "0.85em",
+            "color": "#555"
+          },
+          "$LocDistanceInput": {
+            "#element": "input",
+            "@id": "location-distance-input",
+            "@type": "text",
+            "flex": "1",
+            "min-width": "0",
+            "padding": "0.3em",
+            "font-size": "1em"
+          }
+        },
+        "$LocNotesRow": {
+          "#element": "div",
+          "display": "flex",
+          "align-items": "flex-start",
+          "gap": "0.5em",
+          "margin-bottom": "0.4em",
+          "#": [
+            "$LocNotesLabel",
+            "$LocNotesInput"
+          ],
+          "$LocNotesLabel": {
+            "#element": "label",
+            "#content": "Notes",
+            "width": "100px",
+            "flex-shrink": "0",
+            "font-size": "0.85em",
+            "color": "#555"
+          },
+          "$LocNotesInput": {
+            "#element": "textarea",
+            "@id": "location-notes-input",
+            "height": "5em",
+            "padding": "0.3em",
+            "font-size": "1em",
+            "box-sizing": "border-box",
+            "flex": "1",
+            "min-width": "0",
+            "resize": "vertical"
+          }
+        },
+        "$LocationEditStatus": {
+          "#element": "div",
+          "@id": "location-edit-status",
+          "min-height": "1.2em",
+          "font-size": "0.9em",
+          "color": "#c00",
+          "margin": "0.4em 0 0 0"
+        },
+        "$LocationEditButtons": {
+          "#element": "div",
+          "display": "flex",
+          "gap": "0.5em",
+          "justify-content": "flex-end",
+          "margin-top": "0.8em",
+          "#": [
+            "$LocationEditCancelBtn",
+            "$LocationEditSaveBtn"
+          ],
+          "$LocationEditCancelBtn": {
+            "#element": "button",
+            "@id": "location-edit-cancel-btn",
+            "padding": "0.4em 1em",
+            "cursor": "pointer",
+            "#content": "Cancel"
+          },
+          "$LocationEditSaveBtn": {
+            "#element": "button",
+            "@id": "location-edit-save-btn",
+            "padding": "0.4em 1em",
+            "background": "#28a",
+            "color": "white",
+            "border": "0",
+            "border-radius": "4px",
+            "cursor": "pointer",
+            "#content": "Save"
+          }
         }
       }
     },

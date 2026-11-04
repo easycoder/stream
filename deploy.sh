@@ -21,6 +21,7 @@
 #   conversation/             build transcripts
 #   seed.allspeak, sample.json one-time helpers
 #   build.allspeak            replaced by export.php
+#   locations.json            server-generated venue list; locations.php creates it
 # These are excluded by listing only the production files explicitly below.
 
 set -euo pipefail
@@ -48,6 +49,7 @@ tar czf /tmp/stream-deploy.tar.gz \
     email1.json email2.json \
     login.php auth-check.php upload.php heartbeat.php \
     bookings.php bookings-save.php bookings-delete.php \
+    locations.php \
     export.php books.php background.jpg .htaccess
 
 ssh -o StrictHostKeyChecking=accept-new eclecity@eclecity.net \

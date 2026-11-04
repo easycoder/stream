@@ -1,281 +1,322 @@
-# AllSpeak Project — Agent Bootstrap
+# Agent Entry Instructions
 
-## Language
+Any AI agent working in this repository must read the onboarding files before making changes.
 
-This is an **English** AllSpeak project. Communicate with the user in English. Generate AllSpeak scripts using English keywords.
+Required first read:
+1. `AI/README.md`
+2. Follow the mandatory order listed there, starting with `AI/ALLSPEAK_CODING_GUIDELINES.md`.
+
+If the task is to get oriented rather than to change something, read `resources/md/ai-article.md` first: it is the project's quick brief — what AllSpeak is, how the two runtimes and the editor fit together, and the review workflow everything else serves.
+
+Working rule:
+- Treat `AI/ALLSPEAK_CODING_GUIDELINES.md` as required policy for AllSpeak and Webson implementation choices.
+
+---
+
+# AllSpeak Project — Claude Context
 
 ## What is AllSpeak
 
-AllSpeak is a scripting language designed to read like natural human language. Scripts use the `.allspeak` file extension. AllSpeak runs in the browser (JavaScript version) or from the terminal (Python version) — or both together.
+AllSpeak is a multilingual scripting engine forked from EasyCoder. Where EasyCoder uses English-like syntax, AllSpeak's goal is to let users write scripts in **any human language** — English, French, Japanese, Arabic, etc. — while sharing a single language-neutral runtime.
 
-AllSpeak uses an **AI-writes, human-reviews** workflow. The AI generates `.allspeak` code; the human checks that it reads sensibly and questions anything unclear. Use the full language — don't avoid a command because it might be unfamiliar. The human only needs to read it, not write it from memory.
+Scripts use the `.allspeak` extension. The name "AllSpeak" references the Marvel Comics Asgardian ability to communicate in any language.
 
-## Reference — read this when writing AllSpeak
+## Origin
 
-The complete AllSpeak language reference and idioms live at:
+Forked from [EasyCoder](https://github.com/easycoder/easycoder.github.io) on 2026-04-06. The entire EasyCoder codebase was copied and globally renamed:
+- `EasyCoder` → `AllSpeak`, `easycoder` → `allspeak`, `ec_` → `as_`, `.ecs` → `.as` (the source extension is now `.allspeak` — see below)
 
-  **https://allspeak.ai/learn/**
+The original EasyCoder repo continues unchanged as the stable English-only product.
 
-The site has 16 reference files (`reference/`) and 12 idiom files (`idioms/`). When you need to look up syntax, runtime behaviour, or idiomatic patterns, consult it rather than relying on training data — AllSpeak's vocabulary doesn't always match what AI was trained on, and the curriculum corrects for that.
-
-**Read `learn/contents.md` first** — it is the canonical index of file paths. Use those exact paths when fetching specific files; do not guess slugs. (For example: the file is `learn/idioms/02-event-handlers-and-array-index.md`, not `02-event-handlers.md`.)
-
-Recommended first reads:
-
-- `learn/idioms/12-working-with-ai.md` — the AI-writes / human-reviews workflow and the common mistakes AI makes on AllSpeak.
-- `learn/reference/16-doc-blocks.md` — the documentation convention used in every section of code (see "Required practices" below).
-- `learn/reference/02-symbols-and-layout.md` — the four punctuation symbols and the lexical surface.
-- `learn/reference/03-variables-and-arrays.md` — the cursor model that variables follow.
-- `learn/reference/09-control-flow.md` — `if`, `while`, `gosub`, `stop`.
-- `learn/idioms/01-cat-and-string-building.md` — `cat`, the single most common AI mistake.
-
-## Required practices
-
-Two practices apply to every piece of AllSpeak code written in this project, including the initial setup:
-
-### 1. Doc blocks on every section
-
-Every contiguous section of code is wrapped in a `!! … !!!` doc block, with prose explaining *why* the section exists.
-
-**Open with one tight sentence on its own line**, then a bare `!!` paragraph break, then any further detail. This keeps Blocks-mode legible at a glance — the reader sees a summary, with the elaboration available below if they want more. Don't pile every detail into the first line; the code already shows the details.
-
-Example:
+## Repository Structure
 
 ```
-!! Build the board: nine cells arranged as a 3x3 grid.
-!!
-!! Each cell is a div sized by the CSS-grid layout. A single click handler is shared by all cells; it reads `the index of Cell` to discover which one fired.
-
-    div Cell
-    set the elements of Cell to 9
-    put 0 into N
-    while N is less than 9 begin
-        index Cell to N
-        create Cell in Board
-        add 1 to N
-    end
-
-    on click Cell gosub HandleClick
-!!!
+/js/allspeak/      JS runtime source (Core.js, Browser.js, Compile.js, Run.js, etc.) + language packs
+/js/plugins/       JS plugin modules (codemirror, svg, gmap, ui, asviz, webson, etc.)
+/deploy/dist/      Build output — do not edit directly; produced by ./build-allspeak
+/allspeak-py/      Python implementation (CLI + desktop); language packs mirrored as JSON
+/spec/             Language and plugin contracts, opcodes, versioning policy
+/conformance/      Cross-implementation test suite (.allspeak tests + expected JSON output)
+/vendor/           Third-party libraries (showdown, codemirror)
+/resources/        Website assets; resources/md/ holds the article material
+/codex/<lang>/     Tutorial curriculum (codex/<lang>/code/step*.allspeak) per language
+/learn/<lang>/     Language reference and idiom collections, per language
+/starter/<lang>/   Source for the per-language AI-agent starter packs
+/tools/            Doc-block analysers and other dev scripts
+/primer/           Primer materials for AI-assisted project starts
+/examples/         Demo apps
 ```
 
-Add doc blocks **as you write** — not after. The prose forces you to state intent in plain language, which surfaces mistakes (a doc block saying "creates 9 cells" while the code creates 1 makes the mismatch obvious before you ever run it). See `learn/reference/16-doc-blocks.md` for the full convention.
+### Canonical source — this repo owns these files
 
-After any code edit, run:
+This repository is the **primary source of truth** for the JS runtime (`js/allspeak/`), the editor (`viz.allspeak`), the doc-block analysers (`tools/asdoc-check*.py/.allspeak`), and the learning material (`learn/`). Other projects may mirror or symlink these files locally (e.g. the doclets project symlinks `allspeak-js/*.js` here via `relink-allspeak.sh` and keeps copies of `viz.allspeak` / `asdoc-check.py`).
 
-```
-python3 asdoc-check.py --write <file>
-```
+- Make changes to shared files **here first**, then let consumer projects pick up the mirror.
+- **A tool that an agent can use to speed development or improve reliability is published, not shipped in the packs.** `https://allspeak.ai/code/tools/` carries nine of them: the analyser (`tools/asdoc-check.py`), the visualiser's own instruments (`tools/plotview-check.js`, `tools/viz-align-measure.py`), the two recorder checks (`tools/guard-check.js`, `tools/capture-check.js`), the two runtime checks (`tools/encoding-check.js`, `tools/flush-check.js`) and the two vocabulary checks (`tools/attr-check.js`, `tools/opcode-check.js`). An agent working in a project fetches the one it needs — into its own scratch directory, not into the project — and each starter `AGENTS.md` says so. **The list is `./build-starters`' loop, not this sentence**: that script fails if one of them has gone missing from this repository, and `./deploy-allspeak`'s `cp` line is what publishes them — one set, current for every project, instead of a copy per pack that goes stale unannounced. (This replaced the rule that they ship *in* the packs, which is what made a superseded check possible to run without anything noticing.) **And published does not mean runnable from a pack** — see the next line, which is true of most of this set, not only of the newest two.
+- **A tool that needs this repo's sources has to say so.** The starter packs are clients of the CDN, not checkouts, so they carry no `js/` — which means a tool that runs the runtime (the Graph pane's harness, for one) cannot work from a pack, and should fail with that sentence rather than a missing-file stack trace.
+- **`various/` is gitignored, so it is not a home for anything that has to travel.** Dev rigs that answer *this* repo's questions live there; a tool worth keeping or shipping belongs in `tools/`.
+- **Never "fix" a shared file in a consumer project's copy** — that silently forks the mirror and the divergence is hard to spot later.
+- If you're working in a consumer project and need a change to a file this repo owns, switch to this repo (a separate agent session anchored here) rather than editing the copy in place.
 
-This refreshes the `@hash` lines in each block so that future edits can detect drift between prose and code.
+## Working in non-English languages (FR / IT / DE / …)
 
-### 2. Consult `learn/` before writing, not after
+When writing or debugging `.allspeak` scripts in a non-English language, the English-only utility scripts (`server.allspeak`, `viz.allspeak`) are **not** a reliable vocabulary reference. Use these instead:
 
-Before producing code that uses a feature you haven't already used in this project, fetch the relevant `learn/` file. Don't guess from training data — fetch the reference, read it, then write. This is especially true for: `cat` placement, failure clauses (`or` vs `on failure`), arrays of DOM elements (`create` must be inside a loop with the cursor set, not outside), and `set the content of` with markdown.
+- **Canonical keyword/token map per language:** `js/allspeak/LanguagePack_<lang>.js` — e.g. `LanguagePack_fr.js`, `LanguagePack_it.js`, `LanguagePack_de.js`. Each entry lists the keyword, its grammar patterns, and accepted spelling variants (with/without accents).
+- **Idiomatic working examples:** `codex/<lang>/code/step*.allspeak` — full tutorial scripts already written in the target language.
 
-## Common mistakes to avoid
+Note: the `patterns` strings in language packs are descriptive hints, not strict grammars. The compiler in `Core.js` may accept tokens not listed in a pattern (e.g. `attends N millis` works in French even though `millis` isn't in the FR `wait` pattern, because `Core.js` `Wait.compile` reads the scale word loosely). When in doubt, check the relevant `compile:` function in `Core.js`, then confirm with a working example under `codex/<lang>/code/`.
 
-Even with the reference in front of you, AI tools reliably get these wrong on AllSpeak. Keep them in mind:
+Don't ask the user for the equivalent of an English keyword in another language — look it up in the language pack first.
 
-- **`cat` is infix.** It goes BETWEEN two values, never before the first.
-  - ✓ `put \`Hello, \` cat Name cat \`!\` into Greeting`
-  - ✗ `put cat \`Hello, \` cat Name into Greeting` (leading `cat` — parse error)
-  - ✗ `put \`Hello, \` Name \`!\` into Greeting` (missing `cat` — no implicit concatenation)
+## Architecture — The Multilingual Goal
 
-- **No `for` or `for each` loops.** Use `while` with a counter, or a label-driven loop. See `learn/idioms/03-looping-patterns.md`.
+The key architectural challenge is separating **language-neutral runtime** from **language-specific front-ends**.
 
-- **Arithmetic uses keywords, not operators.** `add 1 to Counter`, not `Counter += 1` or `Counter = Counter + 1`.
+### What is language-neutral (the engine)
+- Runtime execution: `Run.js`, `Value.js`, `Condition.js`, `Compare.js`
+- DOM/browser interaction: `Browser.js` (the runtime parts)
+- Data handling: `JSON.js`, `REST.js`, `MQTT.js`, `Webson.js`
+- Plugin execution logic
 
-- **No parentheses for grouping.** `(A + B) * C` doesn't exist. Compute into a temporary variable.
+### What must become language-specific (the front-ends)
+- Keyword definitions and grammar patterns in `Core.js` and `Browser.js`
+- The compiler/parser: `Compile.js`
+- Error messages
+- Plugin keyword definitions
 
-- **No `else if` shortcut.** `if … else if … else …` works (it's `else` followed by another `if`), but `elif` doesn't exist. No `case` / `switch` either.
+### Design
+- **Declarative language definitions** — each human language maps its keywords/grammar to the internal command set via a language-pack file (`js/allspeak/LanguagePack_<lang>.js`, mirrored as JSON for Python under `allspeak-py/allspeak/languages/<lang>.json`).
+- **Table-driven compilation** — the compiler resolves source tokens through `AllSpeak_Language.word()` / `reverseWord()` rather than hardcoding English keywords. `Core.js`, `Browser.js`, and `Compile.js` all go through this layer.
+- **One runtime, many front-ends** — a French `.allspeak` script and an English `.allspeak` script compile to the same internal representation and run on the same engine.
 
-- **Two failure clauses with different behaviour.** `or` runs the clause then stops the thread. `on failure` runs the clause then continues. See `learn/reference/10-errors-and-recovery.md`.
+### Current state
+The JS multilingual layer is implemented and in active use: language packs ship for EN, FR, IT, and DE, and the JS runtime resolves keywords through the language layer throughout. The Python runtime has the same loader (`as_language.py`) and JSON packs, but i18n coverage is incomplete — see the project memory notes on Python and JS i18n gaps for known issues.
 
-- **`gosub Label`, not `Label()`.** AllSpeak has no callable function syntax.
+## Two Implementations
 
-- **None of these exist:** `try`/`catch`, `break`, `continue`, `loop`, `return X` (value), `await`, `import` (other languages' meaning).
+| | JS | Python |
+|--|--|--|
+| Source | `/js/allspeak/` | `/allspeak-py/allspeak/` |
+| Build output | `deploy/dist/allspeak.js`, `deploy/dist/allspeak-min.js` | pip package |
+| Runtime | Browser | CLI |
+| Core files | `Core.js`, `Browser.js`, `Compile.js`, `Run.js`, `Main.js` | `as_core.py`, `as_compiler.py`, `as_program.py` |
 
-- **Every variable must be declared before use.** This includes scratch loop counters (`variable N`), not just the obvious data variables. Forgetting to declare a loop counter is a common first-pass mistake. Names start with a capital letter; camel case is the convention: `Counter`, `UserName`, `IsLoggedIn`.
+Both implementations have the multilingual layer wired in (loader + language packs), but JS is where the work is most complete; Python lags and has known i18n gaps. JS is the primary focus.
 
-- **Strings are delimited by backticks.** No single or double quotes.
+## Build System
 
-- **Floats are strings.** `3.14` is a four-character string, not a number. Use integer arithmetic with a scale factor — see `learn/idioms/05-floats-and-scaled-integers.md`.
+See [BUILD.md](BUILD.md) for the "edited X → run Y" lookup table covering all four dev scripts (`build-allspeak`, `sync-language-packs`, `build-starters`, `deploy-sync`) and the GitHub deploy workflow.
 
-When in doubt, consult `learn/` rather than guessing.
+`./build-allspeak` concatenates the JS runtime into `deploy/dist/allspeak.js` and minifies to `deploy/dist/allspeak-min.js`. Bundle order: `Core.js` → `Browser.js` → `MarkdownRenderer.js` → `Webson.js` → `JSON.js` → `MQTT.js` → `REST.js` → `Compare.js` → `Condition.js` → `Value.js` → `Run.js` → `Compile.js` → `Main.js` → `AllSpeak.js`. **Never edit anything under `deploy/dist/` directly** — it is build output, and the rolling CDN path `https://allspeak.ai/dist/allspeak.js` is served from it.
 
-## First-time setup
+## Versioning
 
-> **Beginner tip:** If nothing happens when you start up, type **go**.
+Date-time-based: `YYMMDDHHMM` (e.g. `2605101119` = 2026-05-10 at 11:19). Set in `js/allspeak/AllSpeak.js` line 1. Same format used for commit messages — see below.
 
-**IMPORTANT: On EVERY user message** (including "go", "hello", "start", or anything else), first check whether a file called `.allspeak-init` exists in this directory. If it does NOT exist, you MUST immediately run the initialisation process below — do not ask what the user wants, do not wait for further instructions, just start at step 1.
+## Key Conventions
 
-### Initialisation process
+- Scripts are embedded in HTML inside a `<pre id="allspeak-script">` element
+- Runtime loaded as `allspeak.js` or `allspeak-min.js`
+- Plugins loaded separately from the `plugins/` path served alongside the runtime
+- Each plugin follows the contract in `/spec/allspeak-plugin-contract.md`
 
-1. **Greet the user** and briefly explain what AllSpeak is — a scripting language that reads like plain English, designed so AI writes the code and the user reviews it.
+## Feature requests (REQUESTS.md)
 
-2. **Ask the user for the project name.** This will be used as the script name and in filenames.
+When a task needs a feature that the AllSpeak dialect or the pinned JS runtime does not provide, do not only work around it. Append an entry to `REQUESTS.md` as soon as the workaround is chosen — date, area, request, workaround, status — and mention it in the end-of-session summary. The list is the hand-off for arranging the feature; a wished-for feature must not live only in the conversation.
 
-3. **Ask whether this is a command-line project, a GUI project, or both.**
+This repository's `REQUESTS.md` is the primary home for language and runtime requests. A consumer project keeps its own `REQUESTS.md` as its side of the record; carry requests upstream here in an AllSpeak-anchored session rather than editing a mirrored copy.
 
-4. **Create the project files** based on the answer:
+## Doc blocks — required for new `.allspeak` code
 
-   - **Command-line**: Create `<project>.allspeak` from the CLI template below.
-   - **GUI**: Create `<project>.html`, `<project>-main.allspeak`, and `<project>.json` from the GUI templates below.
-   - **Both**: Create all files.
+Every section of new `.allspeak` code must be wrapped in a doc block:
 
-5. **Create `.allspeak-init`** containing the project name and type (cli/gui/both) so this setup is not repeated.
-
-6. **Explain to the user how to run their project:**
-
-   - **CLI**: Run with `allspeak <project>.allspeak`.
-   - **GUI**: Run with `allspeak server.allspeak -t <project> [port]` (default port `8080`). `server.allspeak` starts a local HTTP server, then opens the user's default browser to `http://localhost:<port>/<project>.html` automatically. The browser tab is the app's UI; closing the server (Ctrl+C) closes the app. This single command is what gets baked into Start-menu shortcuts. The AllSpeak runtime is still loaded from the CDN; `server.allspeak` only serves project files.
-
-7. **Walk the user through how the files work together.** For GUI projects, explain:
-
-   - The HTML file is just a launcher — it loads the AllSpeak runtime and runs a tiny bootstrap script that fetches the main `.allspeak` file.
-   - The `.allspeak` file is the program logic. It creates a body element, fetches the `.json` layout, and uses `render` to turn the JSON into real page elements. It then `attach`es to those elements by their `@id` to interact with them.
-   - The `.json` file defines the page layout using Webson — a JSON format where keys like `#element` create HTML elements, `@id` (and any `@<name>`) set attributes, `#content` sets text, `$Name` defines named components, `#` lists children, and any other key is a CSS style. Full details in `learn/reference/14-browser-and-webson.md`.
-   - This separation means the layout can be changed without touching the code, and vice versa.
-
-   For CLI projects, explain that the `.allspeak` file is a standalone script run from the terminal, and walk through what each line does.
-
-8. **Explain the included editor.** The project directory includes `edit.html`, `asedit.allspeak`, and `asedit.json`, which provide a browser-based code editor with syntax highlighting. To work on the project with the editor open alongside it (a developer convenience), run:
-
-   `allspeak server.allspeak -t edit,<project> [port]`
-
-   This opens two browser tabs — `edit.html` and `<project>.html` — both served by the same `server.allspeak` instance. The editor lets you open, edit, and save `.allspeak`, `.json`, `.html` and other project files. End users only ever need `allspeak server.allspeak -t <project> [port]`; the `edit,` prefix is a developer convenience.
-
-9. **Ask what they'd like to build.** From here, just respond to what the user wants.
-
----
-
-**If `.allspeak-init` DOES exist**, skip initialisation and proceed normally. Read `.allspeak-init` to learn the project name and type.
-
----
-
-## CLI template
-
-```
-!   <project>.allspeak
-
-    script <Project>
-
-!! Entry point: log a greeting and exit. Replace this with the project's actual logic, keeping each contiguous code section wrapped in its own doc block.
-
-    variable Message
-    put `Hello from <Project>` into Message
-    log Message
-
-    exit
-!!!
-```
-
-## GUI template
-
-A GUI project uses three files:
-
-- **`<project>.html`** — minimal HTML launcher
-- **`<project>-main.allspeak`** — AllSpeak script (code)
-- **`<project>.json`** — Webson layout (UI definition as JSON)
-
-### `<project>.html`
-
-```html
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><Project></title>
-</head>
-<body>
-    <pre id="allspeak-script" style="display:none">
-    variable Script
-    rest get Script from `<project>-main.allspeak`
-    run Script
-    </pre>
-    <script>
-    (function() {
-        var t = Date.now();
-        var s = document.createElement('script');
-        s.src = 'allspeak.js?v=' + t;
-        s.onload = function() { AllSpeak_Startup(); };
-        document.head.appendChild(s);
-    })();
-    </script>
-</body>
-</html>
-```
-
-### `<project>-main.allspeak`
-
-```
-!   <project>-main.allspeak
-
-    script <Project>
-
-!! Boot the GUI: render the Webson layout into the body and attach to the elements the rest of the script will manipulate. Each subsequent section of code should get its own doc block.
-
-    div Body
-    variable Layout
-
-    create Body
-    rest get Layout from `<project>.json`
-    render Layout in Body
-
-    div Display
-    attach Display to `display`
-    set the content of Display to `Hello from <Project>`
-
-    stop
-!!!
-```
-
-### `<project>.json`
-
-```json
-{
-    "#doc": "<Project> layout",
-    "#element": "div",
-    "@id": "page",
-    "font-family": "sans-serif",
-    "margin": "2em",
-    "#": ["$Display"],
-
-    "$Display": {
-        "#element": "div",
-        "@id": "display",
-        "padding": "1em",
-        "border": "1px solid #ccc",
-        "min-height": "4em"
-    }
-}
-```
-
-In all templates, replace `<project>` with the project name (lowercase for filenames) and `<Project>` with the capitalised project name.
-
----
-
-## Conversation logging
-
-At the start of each new session (or when the user asks for a new conversation), create a new conversation log file `conversation/conversation-NN.md` where `NN` is the next available number. Use the format:
-
-```
-# Conversation NN — Brief title
-
-Date: YYYY-MM-DD
-
----
-
-## Summary
-
-...
-```
-
-Append to the file as the conversation progresses, labelling each entry with the speaker and date.
-
----
-
-## Language extension policy
-
-If a needed construct does not exist in AllSpeak, **do not invent syntax**. Instead, pause and propose a new command to the user, keeping it consistent with AllSpeak's English-like style.
+    !! A brief synopsis, and it is the section's title.
+    !!
+    !! What this section does and why it exists. One paragraph = one line;
+    !! a bare `!!` line separates paragraphs.
+    SomeLabel:
+        ! the code
+        return
+    !! @hash <managed>      ← inserted by the analyser (don't write by hand)
+    !! @verified <managed>  ← set by a reviewer's sign-off
+    !!!                     ← required terminator (three bangs)
+
+**A block contains its code.** The first line is its **title**, which is what the
+Blocks view lists down the left, so it must be a short synopsis and not the
+opening paragraph of the prose — `tools/asdoc-check.py` warns past 100
+characters. The `@` attributes and the `!!!` are the block's **tail**, so they
+come *after* the code: a terminator written before its code closes the section
+early, the editor shows a block with no script under it, and the code falls
+through the gap. The analyser reports that as `code-outside-section`.
+
+Rules:
+- Lead with the **why** or the design constraint, not a paraphrase of the code.
+- **Use the convention properly or not at all.** A file with no doc blocks is opt-out and says nothing either way; a file that has one must keep to the convention throughout, because half a file of blocks is what makes the editor's view misleading. Existing files that break this are being fixed as they are found — `python3 tools/asdoc-check.py <path>` lists them.
+- **One paragraph = one line.** Each paragraph of prose is a single `!! ...` line, however long. Bare `!!` separates paragraphs. Don't insert hard line breaks for visual wrapping — they render badly in Blocks mode (which word-wraps the doc pane) and they fight you when editing. The flat-mode editor will show very long source lines; that's accepted, since the prose is meant to be read in Blocks mode and AI tools don't care about line length.
+- Don't start a prose line with `@hash` or `@verified` — the parser treats those as metadata. Quote them ("@verified") if you must mention the names.
+- After any code change inside a block, refresh hashes with `python3 tools/asdoc-check.py --write <file>`. Verifies that go stale show up as warnings — review the change and re-verify (viz's Blocks mode has a one-click "Mark verified" button).
+- **Explanatory comments belong in the block's prose, not in its code.** The code region carries short remarks — one to four lines, read *at* the statement they are about — and nothing longer. Anything that is design reasoning, a measurement, a trap or a history goes into the block's prose as an **appendix entry**, and its place in the code is a marker:
+
+        !! Appendix
+        !!
+        !! §1 A note, as one paragraph on one line.
+        !!
+        !! §2 Another note.
+            ! §1
+            put 14 into VizDotSize
+
+  `§N` numbers **within the block**: §1 is the first appendix entry of *the block you are reading*, which is unambiguous in Blocks mode (one block on screen, its code beside its prose). A reference to another block's entry therefore names the site rather than the number — *"see the note where the mark's size is set"* — because every block numbers from §1. A marker belongs **inline** on the label or statement below it (`VizAlertFinish: ! §3`, `while N is less than Limit ! §7`) where that is safe, and on a `! §N` line of its own otherwise; never inline onto a line carrying an `@` attribute, because `!` ends an attribute. A `! ---- the scrollbars ----` signpost is navigation and stays in the code where it points. A block whose code region is empty takes its paragraphs as prose, with no numbering and nothing to point into.
+- **This is standard style for this repository's scripts**, and the reason is the reader: code and documentation cannot be read at the same time, and a comment that cannot be taken in at a glance disrupts the picture the code is meant to form. The prose still reaches the reader, in the pane beside the code, and an AI reading the file follows the markers. `various/docmove.py` — a dev rig, present only in this checkout — does the move for a file, keeping the code byte-identical and self-checking that every moved paragraph arrived.
+
+Both implementations of the analyser validate the same convention:
+- `tools/asdoc-check.py` — Python CLI, recursive over a directory
+- `tools/asdoc-check-cli.allspeak` — runs under the Python AllSpeak runtime
+- (browser-side parsing also lives inline in `viz.allspeak` for the editor)
+
+Spec & history: `prompt-260509.md`.
+
+## Code review while documenting
+
+When adding doc blocks to existing code, treat it as a review pass, not just a documentation pass. While reading each section closely enough to write its prose, also surface anything that looks off:
+
+- **Unreachable symbols** — subroutines or labels with no caller; variables declared but never assigned, or assigned but never read.
+- **Dead code** — branches that can never be taken; lines after an unconditional `stop`/`exit`/`return` that nothing jumps to.
+- **Suspicious patterns** — duplicated logic that might want consolidating; hardcoded values that look like they should be variables; hidden coupling between sections (one writes a global the other quietly depends on).
+- **Doc/code disagreement** — comments, names, or nearby docs that contradict what the code actually does.
+
+Surface findings as a short list at the **start** of your response, separately from the doc-block edits. Don't silently fix them — let the user decide.
+
+The point of the doc-block convention is to force close reading; reporting what that reading turned up is the natural payoff.
+
+## Diagnostics while debugging
+
+Reach for a log before reaching for a theory. `log` writes to the browser console, and the same line prints in the terminal runtime, so a script can tell you what it is actually doing rather than what you assume it is doing.
+
+The reason to prefer a log over a dialog box is not that it is cheap — it is that it is **copyable**. A copied line can be quoted into a conversation, a bug report or a commit message, compared against earlier output, and read by somebody else; a dialog box leaves you to paraphrase it from memory, and that is where wrong ideas take hold. A stuck afternoon usually ends the moment the numbers become copyable.
+
+Be liberal with them, and cheerful about intrusive ones — they are not permanent. Remove each one once the question it was asked has an answer, and have each line name its own subject (`records: 8  flags: 1`) so the copy still makes sense on its own.
+
+## Traps worth knowing before editing
+
+Standing knowledge rather than next steps, which is why they live here and not in `TODO*.md`. Every one of these has cost real time in this project.
+
+- **`or` on a `rest get` stops the thread.** The rest of the section is abandoned; use `on failure` to continue.
+- **A line at the top of a draw that *resets* a variable is a trap for everything below it, and the cost is silent.** `viz-graph.allspeak`'s load block began with `put json of \`[]\` into VizEvents` — its guard for showing nothing when no recording is loaded — and it ran on **every** draw, so the pane's kept set was emptied *before* the clip block read it, and every clip walked the whole recording (2,273 records, 11.3 s, unchanged however far it was narrowed). The swap refilled `VizEvents` later in the same draw, so the *picture* was always right and nothing looked wrong; only the cost was. **Three attempts at the filter were then spent on false hypotheses about `has element`**, which was telling the truth throughout: the set really was empty. **Measure the value, not the idiom** — one probe logging `VizEvents`' own text length settled it in a single run (it read `2`: the two characters of `[]`).
+- **`element N of X` parses the whole array, and stringifies the element it returns.** A json variable is
+  held as *text*, so every indexed read is `JSON.parse(<the whole array>)[N]` — plus `JSON.stringify` when
+  the element is an object, which every trace record is. Measured 2026-10-06 on a 435 KB recording (2,300
+  anchor/transfer records): **~15 ms per access**, so `~35 s` for one loop over the recording, and the
+  visualiser's pane walks it several times a draw. **Any loop over a json array is therefore quadratic in
+  what it walks**, and the two things that follow from it are worth the sentence: a recording has to be
+  *read once* and a filtered copy *cached* (`json add` parses and re-stringifies the array it appends to,
+  so building that copy one record at a time is quadratic as well), and in the visualiser the **number of
+  records walked** is the cost that matters, not the number of marks drawn — which is why the clip is the
+  only lever the language offers and why a gesture that walks the whole recording cannot be made quick by
+  drawing fewer marks.
+- **A status code does not mean the file arrived.** The dev server answers an unknown path with `200`, the editor's own page, and the MIME guessed from the extension — so a fetch checks its body for a leading `<`.
+- **A variable must be declared before the statement that *writes* it**, not merely before the section that reads it: the compiler is single-pass. A declaration below the point where a handler is *registered* is not there yet.
+- **A duplicate declaration is an error.**
+- **`index X to N` selects a *slot*; `item N of X` reads from inside a JSON array.** `put V into item N of X` is not a valid target.
+- **`cat`'s right-hand side is the whole rest of the expression.** `left 1 of X cat '.' cat right 3 of X` parses as `left 1 of (X cat '.' cat right 3 of X)`. Build it in steps.
+- **A number that arrived as text stays text, and text compares lexically** — `9` is not less than `10`. Convert with `the value of`, or `add 0 to` when it is already in a variable.
+- **A handler is registered by executing the line.** An `on message` written after the `stop` that ends a script's linear flow is never registered, and a check that calls the handler by name will not notice.
+- **An element the drawing builds cannot be written to before the drawing builds it.** `VizBusy` is created inside `Draw`'s build block, and `VizBusyNotice` — which writes it — runs *before* `VizRequest` calls `Draw`, so the first drawing of a run writes to `null` and throws. **It is invisible twice over, which is why it has survived since 2026-10-06**: with no recording the flow stops at `GraphNone` before the draw and the notice's message is all that is shown, and with one the build has happened by the time the notice is reached. It is what `viz-modes-check` dies on at the end, and a live browser reproduces it exactly (`VizBusyNotice` called by hand → `Cannot set properties of null (setting 'innerHTML')`). **The general rule: a message that has to be read *while* a long job runs belongs in a page element the page built, not in the drawing the job is building** — which is what the alert panel (`se-alert`) is for.
+- **`svg` is the one element type the plugin registers without the `dom` extra**, so `the width of` will not compile for it — the pane maps the pointer from the panel's corner instead.
+- **CORS on allspeak.ai is by file type:** `.js` and `.css` carry it, `.allspeak` does not, which is why the editor reaches a project as a script (`dist/viz.js`) rather than a fetch.
+- **A guard that protects a tool must not be put on a recorder that watches a service.** The recorder's
+  budget and ceiling exist so the *editor* cannot be hung by a script it was handed; the thing being
+  watched in a controller must not be *stopped* by the act of watching it. Measured 2026-10-12, the day
+  the recording flag was built: with the guard on, a twelve-cycle controller with a three-second wait
+  between cycles was killed by the recorder twenty seconds in, and `--record=`'s helper printed
+  `viz: stopped: wall` — asking for a recording ended the heating system. The flag recorder takes no
+  guard and is bounded by a cap on what it may collect instead. **And the check for it had to be built to
+  fail**: the first version ran a script far too quick to reach a twenty-second ceiling and passed against
+  the guarded recorder, so the check now sets `DEFAULT_BUDGET_NS` and `DEFAULT_CEILING_NS` to a nanosecond
+  — a recorder that reads them dies at its first command.
+- **Never redirect stderr on a check whose stderr is its verdict.**
+- **A check on a boundary must carry what the boundary carries** — the JSON string, the registered handler — and set up what the real path sets up. Two green harnesses have sat over browser faults for want of this.
+- **A value computed before the pass that measures it silently uses the previous draw's number.** The first render looks right and every later one does not.
+- **An HTTP client's default charset is latin-1, not UTF-8.** `response.text` decodes a `text/*` response with the charset it declares and, with none declared — which is how a plain web server serves its own pages — assumes ISO-8859-1, so a UTF-8 page arrives with every accent and em dash doubled (`—` → `â€"`). The Python runtime's URL fetches now decode UTF-8 explicitly, like the browser's `fetch().text()` always did; `tools/encoding-check.js` holds that, and asserts its own premise (a response with no charset) before it asserts anything about the runtime.
+- **An `attr` record exists only for a program the runtime *compiled*, so a marker must be read from the
+  tokens.** The model reports the attributes it finds on the compiled program — so a script the runtime cannot
+  compile yields **none**, and a script carrying `@py` is by definition one the JavaScript runtime cannot
+  compile (`dictionary`, `list`). A tool that needs the marker, the editor included, must therefore be given it
+  from the *token stream*: the model reports `flavour | py | from=script` for exactly this reason. Measured
+  2026-10-05: `@py` on line 1 with `dictionary` at line 9 modelled to `commands=0` and no `attr` records at all,
+  so the editor's Record fell through to the project's answer and refused a script it had been built to run.
+  **The general shape: a reader that asks a compiled program about the source cannot see anything that stops it
+  compiling — and those are exactly the things a tool is usually asked about.**
+- **`set the content of` writes `innerHTML`, so a message meant for a person must not carry markup.** The
+  Launch message told a reader the attribute to write as `add '@app <page>' on a line of its own`, and `<page>`
+  was parsed as an HTML tag and never rendered — so what appeared was `add '@app ' on a line of its own`: the
+  one thing the sentence exists for, silently gone. Measured 2026-10-05, from Graham's own status line. A
+  **placeholder in angle brackets wants a concrete example instead** (`@app mypage.html`), which reads better and
+  cannot be eaten. **And the check could not see it**: the harness's stub element stores the string it is
+  assigned while a browser parses it, so an assertion on such a message has to be on what a reader *gets* —
+  untested, the first version of the new assertion passed on the broken text (`@app \S+` matches `@app '`,
+  because a quote is not a space).
+- **`the text of` an element reads it by the *symbol's declared type*, not by the element's tag.** A `div` symbol takes `innerHTML.split('\n').join('')` — every newline removed — so a 2,700-line module read through one arrives as a *single line*, and if its first line is a `!!` doc comment the whole module comments itself out and compiles as `1 lines (0 tokens)`. A `pre` symbol keeps the newlines but returns *escaped* markup, because that branch reads `innerHTML`. A `textarea` symbol reads `value`, which is the text and nothing else — that is what carries a script from an element into `run`.
+- **The editor's Graph pane and its sidebar reach a project *inside the page*.** No pack carries `viz-graph.allspeak`/`viz-side.allspeak` any more, and the site's `.allspeak` carries no CORS, so the *dev server* fetches both and writes them into `#editor-graph`/`#editor-side`. Nothing filled those two elements until 2026-10-04: the pane came up empty, the console stayed clean, and resizing did nothing.
+- **`0 tokens` in a `Compiled …` line is a finding, not noise.** It cost a round on 2026-10-04: the editor's parse reporting an empty source was the whole clue to a blank Graph pane, and it was twice dismissed as startup chatter.
+- **A check file that stops half-way still reads as coverage.** `tools/viz-modes-check.js` reports 56 checks and contains 74: the Record section's first act draws in the pane, the pane's first draw throws on `VizBusy` (its element is written before `Draw`'s build creates it), and everything below that line never runs — including a whole flavour section a reader would take as covered. Measured 2026-10-11, when a new check was written into the dead part and silently did not run. **Compare what a check file *reports* against what it *contains*, and when adding a check, put it where the file actually reaches.** The `VizBusy` fault itself is Graham's open item, and reviving 22 checks is the reason to fix it.
+- **Measure a visual fault from a screenshot before reading the code**, and check the instrument's own constants first.
+- **`on click document` is not "any click", and it reads as though it were.** `Browser.js`'s `clickDocument`
+  installs its listener on the document, but the handler is run only inside a test on the event's `<a href>` —
+  *and only when that href begins with the current page's URL*, because the feature exists for the editor's own
+  file links. So a handler registered that way fires for a click on an internal link and for nothing else:
+  measured 2026-10-12, a click on `Blocks` left a panel registered that way standing. **Measure the gesture, in
+  a browser, before believing a one-line dismissal.** What did work: `on click <element>` on the element itself
+  (per-element `targetPc`, checked directly on the DOM node) and a `gosub` as the first line of each button's
+  handler.
+- **A check that runs real handlers changes the editor for every check after it.** The first version of the
+  welcome check ran seven button handlers to prove each dismissed the panel — which opened the file browser and
+  started a new file, and the *sidebar* checks further down began failing with a panel that had never been
+  built. Where a check must ask about a class of handlers, ask the **source** (`scriptElement.innerText`) and
+  run only the handlers that are provably harmless; and when a browser can watch the gesture, that is the
+  instrument for the gesture.
+- **A response is not out until the request thread has written it, and `exit` does not wait.** `return X to Files` hands the response over; a command that ends the process on the next line wins the race, so the caller gets a *closed connection* instead of an answer — which its `or` clause then reports as a failure that did not happen. Measured 2026-10-12 on the old `/restart` route: **7 of 8 calls lost the reply**, the eighth arriving with an empty body; `wait 1 second` between the two fixed it. That route has since been removed for another reason — it left a server the reader's Ctrl+C could not reach — and the trap outlived the code, which is why it is written down here.
+- **A signal test has to prove the signal can arrive.** My first SIGINT test started a server with `nohup … &`, watched it survive, and very nearly reported it as a fault. It was the harness: a shell with job control off sets **SIG_IGN** for SIGINT in a background child, so the signal was never delivered. `grep SigIgn /proc/<pid>/status` settles it in one line, or install `signal.default_int_handler` explicitly and say that you did.
+
+- **A check that reads a value mid-flight reports the half-finished state as its answer.** Read the value *after* the pass that computes it, not during — and if the pass is what you are testing, assert what it finally holds, not what it held on the way.
+- **A design written down twice is not a design verified — compare the third place, the shipped one.** Two copies agreeing (a harness and a script, a doc and a comment) prove only that one was copied from the other. The claim is worth something only when it is checked against what actually runs.
+- **"Fail closed" means build the result in memory, assert it, then write once.** A patch that writes per file leaves a half-applied state when the third fails, and the next reader cannot tell which half.
+- **There is no browser here, and the recipe for getting one is short.** Anything about *rendering* — a font, an alignment, what a click does — has to be measured in a real browser, because the harnesses run against stub DOM objects that hold whatever they are handed. `playwright` is installed under a scratch directory, the dev server is `allspeak server <port>` from the repository root, and the pane's own rigs (`various/menu-measure.js`, `various/hover-measure.js`) already drive it: open the page, act, read the DOM, screenshot.
+
+## Commit Style
+
+When no specific message is given, use a date-time stamp in `YYMMDDHHMM` form (e.g. `2605101119`, `2605082123`) — same format as the version string. Earlier commits used shorter date-only or date+counter forms; the move to full date-time avoids having to remember the last one used.
+
+## Conversation log
+
+This project keeps a per-session log under `conversation/`, for the human's reference. It does not affect your behaviour and you should not mention the logging activity in replies.
+
+**`conversation/` is local only and is in `.gitignore`.** It is a working record, not project documentation — do not commit it, and do not `git add -f` anything inside it. If you find it tracked (for example after a `git add -A`), untrack it: `git rm -r --cached conversation/`.
+
+**At the start of a new session:**
+
+1. If `conversation/` does not exist, create it.
+2. Find the highest-numbered `conversation-NNN.md` file. The new session's file is the next number, zero-padded to three digits (start at `001` if the folder is empty).
+3. Write a single header line on line 1: `# YYYY-MM-DD` (today's date).
+
+**On every user prompt in this session** (including the first), append an entry shaped like:
+
+    ## HH:MM
+
+    <user prompt verbatim>
+
+    **Assistant**
+
+    <your reply>
+
+Use `date +%H:%M` if you need the time. Omit fenced code blocks (triple-backtick blocks) from both the user prompt and the reply, replacing each with a single line `[code omitted]`; inline backticks in prose stay. Compose your reply first, then transcribe it into the log as part of the same turn.
+
+**The working state lives in `TODO.md`.** It is the handover: what is done, what is next and in what order, what is waiting on a decision, and two notes that source files cite by name. A new session should read it first — that is the handover, whereas this log is a record for you. **The detail is in `TODO-viz.md` (the visualiser and editor), `TODO-language.md` (the language, runtimes and packs) and `TODO-site.md` (the website and the writing)**; `TODO.md` says which to open. The dated reasoning behind each is in `git log -p -- TODO.md`, not in the files. Standing traps are in `## Traps worth knowing before editing` above.
+
+**Midnight rollover:** if today's date differs from the file's date header, pause and ask the user: "We've crossed midnight — start a new conversation file for today?" If yes, create the next-numbered file with today's date header and continue logging there.
+
+## Diff notes for the human
+
+Keep `DIFF.md` in the project root, **rewritten** after every change rather than appended to, saying what changed and what the human has to do about it — reload the editor, re-run a script, rebuild, deploy. It is read in the editor, which polls the file and reloads it, so it is the shortest path from "something changed" to "here is what to do about it". Rewrite it even when there is nothing to action — say so, and say what to look at. That matters most for artefacts git ignores (`various/`), where no other channel reports the change.
+
+Keep it short, and lead with the action. It is **not** a changelog: it describes this change only, and the previous contents are not worth keeping — git has them.

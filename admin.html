@@ -7,7 +7,9 @@
 <body>
     <pre id="allspeak-script" style="display:none">
     variable Script
-    rest get Script from `admin-main.allspeak`
+    variable CacheBuster
+    put random 999999999 into CacheBuster
+    rest get Script from `admin-main.allspeak?cb=` cat CacheBuster
     run Script
     </pre>
     <script>

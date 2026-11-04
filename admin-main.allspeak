@@ -105,6 +105,36 @@
     div NotesRow
     div RecordingUrlRow
     div TributeUrlRow
+    button GeneralTabBtn
+    button ContactsTabBtn
+    button DataTabBtn
+    button TextTabBtn
+    div GeneralPanel
+    div ContactsPanel
+    div DataPanel
+    div TextPanel
+    div LocationOverlay
+    div LocationEditOverlay
+    div LocationList
+    div LocationStatus
+    div LocationEditTitle
+    div LocationEditStatus
+    button LocationAddBtn
+    button LocationCancelBtn
+    button LocationSaveBtn
+    button LocationEditCancelBtn
+    button LocationEditSaveBtn
+    input LocNameInput
+    input LocPostcodeInput
+    input LocDistanceInput
+    textarea LocNotesInput
+    div LocRowDivs
+    div LocPickDivs
+    div LocNameDivs
+    div LocMetaDivs
+    button LocNewBtns
+    button LocEditBtns
+    button LocDelBtns
 
     variable RowStyleData
     variable RowStyleSub
@@ -113,6 +143,43 @@
     variable CellRight
     variable KindSelectedStyle
     variable KindUnselectedStyle
+    variable TabActiveStyle
+    variable TabInactiveStyle
+    variable ActiveFormTab
+    variable LocationsLoaded
+    variable LocCount
+    variable LocNames
+    variable LocPostcodes
+    variable LocDistances
+    variable LocNotes
+    variable LocOrigNames
+    variable LocResponse
+    variable LocItem
+    variable LocEditIndex
+    variable LocEditIsNew
+    variable LocDeleteIndex
+    variable LocBody
+    variable LocSaveStatus
+    variable LocSaveFailed
+    variable LocResponseJson
+    variable LocResponseObj
+    variable LocRenamed
+    variable LocNameVal
+    variable LocPostcodeVal
+    variable LocDistanceVal
+    variable LocNotesVal
+    variable LocFrom
+    variable LocTo
+    variable LocCompare
+    variable LocMeta
+    variable LocRowStyle
+    variable LocPickStyle
+    variable LocNameStyle
+    variable LocMetaStyle
+    variable LocBtnStyle
+    variable LocDelBtnStyle
+    variable LocRenameCount
+    variable LocDuplicate
     variable AllBookings
     variable EmailTemplate
     variable StreamUrl
@@ -246,7 +313,8 @@
 !!! style strings, then show the login panel.
 
     create Body
-    rest get Layout from `admin.json`
+    put random 999999999 into CacheBuster
+    rest get Layout from `admin.json?cb=` cat CacheBuster
     render Layout in Body
 
     attach LoginPanel to `login-panel`
@@ -304,6 +372,29 @@
     attach NotesRow to `notes-row`
     attach RecordingUrlRow to `recording-url-row`
     attach TributeUrlRow to `tribute-url-row`
+    attach GeneralTabBtn to `general-tab-btn`
+    attach ContactsTabBtn to `contacts-tab-btn`
+    attach DataTabBtn to `data-tab-btn`
+    attach TextTabBtn to `text-tab-btn`
+    attach GeneralPanel to `general-panel`
+    attach ContactsPanel to `contacts-panel`
+    attach DataPanel to `data-panel`
+    attach TextPanel to `text-panel`
+    attach LocationOverlay to `location-overlay`
+    attach LocationEditOverlay to `location-edit-overlay`
+    attach LocationList to `location-list`
+    attach LocationStatus to `location-status`
+    attach LocationEditTitle to `location-edit-title`
+    attach LocationEditStatus to `location-edit-status`
+    attach LocationAddBtn to `location-add-btn`
+    attach LocationCancelBtn to `location-cancel-btn`
+    attach LocationSaveBtn to `location-save-btn`
+    attach LocationEditCancelBtn to `location-edit-cancel-btn`
+    attach LocationEditSaveBtn to `location-edit-save-btn`
+    attach LocNameInput to `location-name-input`
+    attach LocPostcodeInput to `location-postcode-input`
+    attach LocDistanceInput to `location-distance-input`
+    attach LocNotesInput to `location-notes-input`
     attach MileageInput to `mileage-input`
     attach ExpenseInput to `expense-input`
     attach FeesInput to `fees-input`
@@ -356,6 +447,23 @@
     put `padding: 0.3em 0.9em; cursor: pointer; border: 0; border-radius: 4px; background: #28a; color: white` into KindSelectedStyle
     put `padding: 0.3em 0.9em; cursor: pointer; border: 0; border-radius: 4px; background: #eee; color: #333` into KindUnselectedStyle
 
+    put `padding: 0.4em 1em; margin-bottom: -2px; border: 1px solid #ccc; border-bottom: 2px solid #28a; border-radius: 4px 4px 0 0; background: #fff; color: #28a; font-weight: bold; cursor: pointer` into TabActiveStyle
+    put `padding: 0.4em 1em; margin-bottom: -2px; border: 1px solid transparent; border-bottom: 2px solid transparent; border-radius: 4px 4px 0 0; background: #eee; color: #555; cursor: pointer` into TabInactiveStyle
+    put `general` into ActiveFormTab
+
+    put `display: flex; align-items: center; gap: 0.4em; padding: 0.3em 0.4em; border-bottom: 1px solid #eee` into LocRowStyle
+    put `flex: 1; min-width: 0; cursor: pointer; padding: 0.2em 0.3em; border-radius: 4px` into LocPickStyle
+    put `font-weight: bold` into LocNameStyle
+    put `font-size: 0.85em; color: #666; white-space: pre-wrap; word-break: break-word` into LocMetaStyle
+    put `padding: 0.2em 0.6em; font-size: 0.8em; cursor: pointer; border: 1px solid #aaa; border-radius: 4px; background: #eee; color: #333; flex-shrink: 0` into LocBtnStyle
+    put `padding: 0.2em 0.6em; font-size: 0.8em; cursor: pointer; border: 1px solid #d33; border-radius: 4px; background: #fdd; color: #900; flex-shrink: 0` into LocDelBtnStyle
+    put 0 into LocationsLoaded
+    set LocNames to array
+    set LocPostcodes to array
+    set LocDistances to array
+    set LocNotes to array
+    set LocOrigNames to array
+
     put `January,February,March,April,May,June,July,August,September,October,November,December` into MonthNames
     split MonthNames on `,`
 
@@ -381,6 +489,16 @@
     on click DocumentUrlBtn gosub OnOpenDocumentUrl
     on click DocumentUploadBtn gosub OnUploadDocument
     on change DocumentUrlInput gosub OnDocumentUrlChanged
+    on click GeneralTabBtn gosub ShowGeneralTab
+    on click ContactsTabBtn gosub ShowContactsTab
+    on click DataTabBtn gosub ShowDataTab
+    on click TextTabBtn gosub ShowTextTab
+    on click LocationInput gosub OnOpenLocations
+    on click LocationAddBtn gosub OnLocationNew
+    on click LocationCancelBtn gosub OnCloseLocations
+    on click LocationSaveBtn gosub OnSaveLocations
+    on click LocationEditCancelBtn gosub OnCloseLocationEditor
+    on click LocationEditSaveBtn gosub OnSaveLocationRecord
 
 
     get SavedCreds from storage as `admin.credentials`
@@ -400,7 +518,7 @@
     fork to Heartbeat
     fork to WatchForUploadedDocument
     stop
-!! @hash 222036df
+!! @hash dc89fbeb
 !!!
 !! Login: POST credentials to login.php, on success show the admin panel
 !! and load data.
@@ -946,6 +1064,9 @@ OnAdd:
     put 1 into IsCreate
     put `` into EditSlugOld
     put `` into EditPath
+    set style `display` of LocationOverlay to `none`
+    set style `display` of LocationEditOverlay to `none`
+    put 0 into LocationsLoaded
     set the content of DateInput to ``
     set the content of TimeInput to ``
     set the content of NameInput to ``
@@ -984,16 +1105,21 @@ In the meantime, here is a link to a recording of the stream, for those who may 
     set the content of ModalTitle to `Add booking`
     set style `display` of DeleteBtn to `none`
     set the content of ModalStatus to ``
+    put `general` into ActiveFormTab
     gosub SelectKindService
     set style `display` of Overlay to `flex`
     return
-!! @hash d9acd825
+!! @hash 549811d3
 !!!
 !! PopulateForm: fill the modal with the current Row's data.
 PopulateForm:
     set the content of ModalTitle to `Edit booking`
     set style `display` of DeleteBtn to `inline-block`
+    set style `display` of LocationOverlay to `none`
+    set style `display` of LocationEditOverlay to `none`
+    put 0 into LocationsLoaded
 
+    put `general` into ActiveFormTab
     put property `kind` of Row into Kind
     if Kind is `service`
         gosub SelectKindService
@@ -1128,11 +1254,15 @@ PopulateForm:
         set attribute `disabled` of DocumentUrlBtn to `disabled`
 
     return
-!! @hash 7bf1bd8e
+!! @hash 81a64af4
 !!!
-!! Kind selection toggles: show/hide the sections each kind needs, and relabel the shared Name field.
+!! Kind selection: show the sections each kind needs and relabel the shared Name field.
 !!
 !! An expense has no deceased name: that field carries the purchased item's description, so the label and placeholder switch to Item / Description.
+!!
+!! Postcode and Distance are never shown in the main form — the location picker fills them behind the scenes — so their rows stay hidden for every kind and are not part of these toggles.
+!!
+!! Each selector finishes by calling SyncTabsToKind, which hides any form tab the kind leaves blank — an expense has no Contacts fields, a slideshow has no Data fields — so a tab is never an empty page.
 SelectKindService:
     put `service` into Kind
     set the style of KindServiceBtn to KindSelectedStyle
@@ -1142,8 +1272,6 @@ SelectKindService:
     set attribute `placeholder` of NameInput to `Full name`
     set style `display` of NameInput to `inline-block`
     set style `display` of LocationInput to `inline-block`
-    set style `display` of PostcodeInput to `inline-block`
-    set style `display` of DistanceInput to `inline-block`
     set style `display` of ContactInput to `inline-block`
     set style `display` of ClientInput to `inline-block`
     set style `display` of ClientEmailInput to `inline-block`
@@ -1160,8 +1288,6 @@ SelectKindService:
     set style `display` of DocumentUrlInput to `inline-block`
     ! Show all rows for Service variant
     set style `display` of LocationRow to `flex`
-    set style `display` of PostcodeRow to `flex`
-    set style `display` of DistanceRow to `flex`
     set style `display` of ContactRow to `flex`
     set style `display` of ClientRow to `flex`
     set style `display` of ClientEmailRow to `flex`
@@ -1181,6 +1307,7 @@ SelectKindService:
     set style `display` of NotesRow to `flex`
     set style `display` of RecordingUrlRow to `flex`
     set style `display` of TributeUrlRow to `flex`
+    gosub SyncTabsToKind
     return
 
 SelectKindExpense:
@@ -1195,8 +1322,6 @@ SelectKindExpense:
     set style `display` of NotesInput to `inline-block`
     set style `display` of DocumentUrlInput to `inline-block`
     set style `display` of LocationRow to `none`
-    set style `display` of PostcodeRow to `none`
-    set style `display` of DistanceRow to `none`
     set style `display` of ContactRow to `none`
     set style `display` of ClientRow to `none`
     set style `display` of ClientEmailRow to `none`
@@ -1216,6 +1341,7 @@ SelectKindExpense:
     set style `display` of RecordingUrlRow to `none`
     set style `display` of TributeUrlRow to `none`
     set style `display` of NotesRow to `flex`
+    gosub SyncTabsToKind
     return
 
 SelectKindSlideshow:
@@ -1227,8 +1353,6 @@ SelectKindSlideshow:
     set attribute `placeholder` of NameInput to `Full name`
     set style `display` of NameInput to `inline-block`
     set style `display` of LocationInput to `inline-block`
-    set style `display` of PostcodeInput to `none`
-    set style `display` of DistanceInput to `none`
     set style `display` of ContactInput to `inline-block`
     set style `display` of ClientInput to `inline-block`
     set style `display` of ClientEmailInput to `inline-block`
@@ -1248,8 +1372,6 @@ SelectKindSlideshow:
     set style `display` of ContactRow to `flex`
     set style `display` of ClientRow to `flex`
     set style `display` of ClientEmailRow to `flex`
-    set style `display` of PostcodeRow to `none`
-    set style `display` of DistanceRow to `none`
     set style `display` of DacastRow to `none`
     set style `display` of StreamUrlRow to `none`
     set style `display` of MileageRow to `none`
@@ -1266,8 +1388,510 @@ SelectKindSlideshow:
     set style `display` of RecordingUrlRow to `none`
     set style `display` of TributeUrlRow to `none`
     set style `display` of NotesRow to `flex`
+    gosub SyncTabsToKind
     return
-!! @hash d661b7cb
+!! @hash 9bc71c7f
+!!!
+!! Form tabs: the kind buttons and the Save/Cancel/Delete row belong to the whole modal; only the field panel switches.
+!!
+!! A tab click names the panel it wants and hands over to ShowActiveTab, which hides the other three so exactly one panel is on screen. Tab styles live in TabActiveStyle/TabInactiveStyle rather than the JSON so the highlight and the panel visibility are decided in one place.
+!!
+!! SyncTabsToKind runs whenever the kind changes: an expense has no Contacts fields and a slideshow no Data fields, so those tab buttons disappear, and the modal falls back to General if it was sitting on the tab that just went away.
+ShowGeneralTab:
+    put `general` into ActiveFormTab
+    gosub ShowActiveTab
+    return
+
+ShowContactsTab:
+    put `contacts` into ActiveFormTab
+    gosub ShowActiveTab
+    return
+
+ShowDataTab:
+    put `data` into ActiveFormTab
+    gosub ShowActiveTab
+    return
+
+ShowTextTab:
+    put `text` into ActiveFormTab
+    gosub ShowActiveTab
+    return
+
+ShowActiveTab:
+    set style `display` of GeneralPanel to `none`
+    set style `display` of ContactsPanel to `none`
+    set style `display` of DataPanel to `none`
+    set style `display` of TextPanel to `none`
+    set the style of GeneralTabBtn to TabInactiveStyle
+    set the style of ContactsTabBtn to TabInactiveStyle
+    set the style of DataTabBtn to TabInactiveStyle
+    set the style of TextTabBtn to TabInactiveStyle
+    if ActiveFormTab is `general`
+    begin
+        set style `display` of GeneralPanel to `flex`
+        set the style of GeneralTabBtn to TabActiveStyle
+    end
+    if ActiveFormTab is `contacts`
+    begin
+        set style `display` of ContactsPanel to `flex`
+        set the style of ContactsTabBtn to TabActiveStyle
+    end
+    if ActiveFormTab is `data`
+    begin
+        set style `display` of DataPanel to `flex`
+        set the style of DataTabBtn to TabActiveStyle
+    end
+    if ActiveFormTab is `text`
+    begin
+        set style `display` of TextPanel to `flex`
+        set the style of TextTabBtn to TabActiveStyle
+    end
+    ! Keep empty tabs out of sight for the kinds that have no fields for them.
+    if Kind is `expense`
+        set style `display` of ContactsTabBtn to `none`
+    if Kind is `slideshow`
+        set style `display` of DataTabBtn to `none`
+    return
+
+SyncTabsToKind:
+    if Kind is `expense`
+    begin
+        if ActiveFormTab is `contacts`
+            put `general` into ActiveFormTab
+    end
+    if Kind is `slideshow`
+    begin
+        if ActiveFormTab is `data`
+            put `general` into ActiveFormTab
+    end
+    gosub ShowActiveTab
+    return
+!! @hash ab0c004e
+!!!
+!! Locations: the saved venues opened by clicking the read-only Location field.
+!!
+!! The list is staged in memory — LocNames, LocPostcodes, LocDistances and LocNotes — so New, Edit and Delete change only those arrays until the window's Save posts the whole list. Clicking a row applies its Name, Postcode and Distance to the booking and closes the window; the venue's own Notes stay with the venue.
+!!
+!! The first open fetches locations.php, which builds locations.json from the existing booking files if it does not exist yet. A rename is remembered against the name the record was loaded with (LocOrigNames) and sent with the save, which is what lets the server perform the global search/replace across booking files.
+OnOpenLocations:
+    set the content of LocationStatus to ``
+    if LocationsLoaded is 0
+        gosub LoadLocations
+    else
+        gosub RenderLocations
+    set style `display` of LocationOverlay to `flex`
+    return
+
+LoadLocations:
+    put random 999999999 into CacheBuster
+    rest get LocResponse from `locations.php?cb=` cat CacheBuster on failure
+    begin
+        put 0 into LocCount
+        set LocNames to array
+        set LocPostcodes to array
+        set LocDistances to array
+        set LocNotes to array
+        set LocOrigNames to array
+        set the elements of LocRowDivs to 0
+        set the elements of LocPickDivs to 0
+        set the elements of LocNameDivs to 0
+        set the elements of LocMetaDivs to 0
+        set the elements of LocNewBtns to 0
+        set the elements of LocEditBtns to 0
+        set the elements of LocDelBtns to 0
+        set the content of LocationList to ``
+        set style `color` of LocationStatus to `#c00`
+        set the content of LocationStatus to `Could not load locations.`
+        return
+    end
+    put json count of LocResponse into LocCount
+    set LocNames to array
+    set LocPostcodes to array
+    set LocDistances to array
+    set LocNotes to array
+    set LocOrigNames to array
+    put 0 into I
+    while I is less than LocCount
+    begin
+        put element I of LocResponse into LocItem
+        put property `name` of LocItem into TempStr
+        set element I of LocNames to TempStr
+        set element I of LocOrigNames to TempStr
+        put property `postcode` of LocItem into TempStr
+        set element I of LocPostcodes to TempStr
+        put property `distance` of LocItem into TempStr
+        set element I of LocDistances to TempStr
+        put property `notes` of LocItem into TempStr
+        set element I of LocNotes to TempStr
+        add 1 to I
+    end
+    put 1 into LocationsLoaded
+    gosub RenderLocations
+    return
+
+RenderLocations:
+    set the content of LocationList to ``
+    if LocCount is 0
+    begin
+        set style `color` of LocationStatus to `#666`
+        set the content of LocationStatus to `No saved locations yet — use New location to add one.`
+        return
+    end
+    set the content of LocationStatus to ``
+    set the elements of LocRowDivs to LocCount
+    set the elements of LocPickDivs to LocCount
+    set the elements of LocNameDivs to LocCount
+    set the elements of LocMetaDivs to LocCount
+    set the elements of LocNewBtns to LocCount
+    set the elements of LocEditBtns to LocCount
+    set the elements of LocDelBtns to LocCount
+    put 0 into I
+    while I is less than LocCount
+    begin
+        index LocRowDivs to I
+        create LocRowDivs in LocationList
+        set the style of LocRowDivs to LocRowStyle
+
+        index LocPickDivs to I
+        create LocPickDivs in LocRowDivs
+        set the style of LocPickDivs to LocPickStyle
+
+        index LocNameDivs to I
+        create LocNameDivs in LocPickDivs
+        set the style of LocNameDivs to LocNameStyle
+        put element I of LocNames into TempStr
+        set the content of LocNameDivs to TempStr
+
+        index LocMetaDivs to I
+        create LocMetaDivs in LocPickDivs
+        set the style of LocMetaDivs to LocMetaStyle
+        gosub BuildLocMeta
+
+        index LocNewBtns to I
+        create LocNewBtns in LocRowDivs
+        set the content of LocNewBtns to `New`
+        set the style of LocNewBtns to LocBtnStyle
+
+        index LocEditBtns to I
+        create LocEditBtns in LocRowDivs
+        set the content of LocEditBtns to `Edit`
+        set the style of LocEditBtns to LocBtnStyle
+
+        index LocDelBtns to I
+        create LocDelBtns in LocRowDivs
+        set the content of LocDelBtns to `Delete`
+        set the style of LocDelBtns to LocDelBtnStyle
+
+        add 1 to I
+    end
+    on click LocPickDivs gosub OnLocationPick
+    on click LocNewBtns gosub OnLocationNew
+    on click LocEditBtns gosub OnLocationEdit
+    on click LocDelBtns gosub OnLocationDelete
+    return
+
+BuildLocMeta:
+    put `` into LocMeta
+    put element I of LocPostcodes into TempStr
+    if TempStr is not empty
+        put TempStr into LocMeta
+    put element I of LocDistances into TempStr
+    if TempStr is not empty
+    begin
+        if LocMeta is not empty
+            put LocMeta cat ` • ` into LocMeta
+        put LocMeta cat TempStr cat ` miles` into LocMeta
+    end
+    put element I of LocNotes into TempStr
+    if TempStr is not empty
+    begin
+        if LocMeta is not empty
+            put LocMeta cat ` • ` into LocMeta
+        put LocMeta cat TempStr into LocMeta
+    end
+    set the content of LocMetaDivs to LocMeta
+    return
+
+OnLocationPick:
+    put the index of LocPickDivs into J
+    put element J of LocNames into TempStr
+    set the content of LocationInput to TempStr
+    put element J of LocPostcodes into TempStr
+    set the content of PostcodeInput to TempStr
+    put element J of LocDistances into TempStr
+    set the content of DistanceInput to TempStr
+    set style `display` of LocationOverlay to `none`
+    return
+
+OnLocationNew:
+    put -1 into LocEditIndex
+    put 1 into LocEditIsNew
+    set the content of LocationEditTitle to `New location`
+    set the content of LocNameInput to ``
+    set the content of LocPostcodeInput to ``
+    set the content of LocDistanceInput to ``
+    set the content of LocNotesInput to ``
+    set the content of LocationEditStatus to ``
+    set style `display` of LocationEditOverlay to `flex`
+    return
+
+OnLocationEdit:
+    put the index of LocEditBtns into LocEditIndex
+    put element LocEditIndex of LocNames into LocNameVal
+    if LocNameVal is empty
+    begin
+        gosub OnLocationNew
+        return
+    end
+    put 0 into LocEditIsNew
+    set the content of LocationEditTitle to `Edit location`
+    set the content of LocNameInput to LocNameVal
+    put element LocEditIndex of LocPostcodes into TempStr
+    set the content of LocPostcodeInput to TempStr
+    put element LocEditIndex of LocDistances into TempStr
+    set the content of LocDistanceInput to TempStr
+    put element LocEditIndex of LocNotes into TempStr
+    set the content of LocNotesInput to TempStr
+    set the content of LocationEditStatus to ``
+    set style `display` of LocationEditOverlay to `flex`
+    return
+
+OnCloseLocationEditor:
+    set style `display` of LocationEditOverlay to `none`
+    return
+
+OnSaveLocationRecord:
+    put the content of LocNameInput into LocNameVal
+    put trim LocNameVal into LocNameVal
+    if LocNameVal is empty
+    begin
+        set the content of LocationEditStatus to `Name is required.`
+        return
+    end
+    put the content of LocPostcodeInput into LocPostcodeVal
+    put trim LocPostcodeVal into LocPostcodeVal
+    put the content of LocDistanceInput into LocDistanceVal
+    put trim LocDistanceVal into LocDistanceVal
+    put the content of LocNotesInput into LocNotesVal
+
+    put trim LocNameVal into TempStr2
+    put lowercase TempStr2 into TempStr2
+    put 0 into LocDuplicate
+    put 0 into I
+    while I is less than LocCount
+    begin
+        if I is not LocEditIndex
+        begin
+            put element I of LocNames into TempStr
+            put trim TempStr into TempStr
+            put lowercase TempStr into TempStr
+            if TempStr is TempStr2
+                put 1 into LocDuplicate
+        end
+        add 1 to I
+    end
+    if LocDuplicate is 1
+    begin
+        set the content of LocationEditStatus to `Another location already has that name.`
+        return
+    end
+
+    if LocEditIsNew is 1
+    begin
+        put LocCount into J
+        add 1 to LocCount
+        set element J of LocNames to LocNameVal
+        set element J of LocPostcodes to LocPostcodeVal
+        set element J of LocDistances to LocDistanceVal
+        set element J of LocNotes to LocNotesVal
+        set element J of LocOrigNames to ``
+    end
+    else
+    begin
+        set element LocEditIndex of LocNames to LocNameVal
+        set element LocEditIndex of LocPostcodes to LocPostcodeVal
+        set element LocEditIndex of LocDistances to LocDistanceVal
+        set element LocEditIndex of LocNotes to LocNotesVal
+    end
+
+    set the content of LocationEditStatus to ``
+    set style `display` of LocationEditOverlay to `none`
+    gosub RenderLocations
+    return
+
+OnLocationDelete:
+    put the index of LocDelBtns into LocDeleteIndex
+    confirm `Delete this location? Bookings already using it will keep the name.` gosub DoLocationDelete
+    return
+
+DoLocationDelete:
+    put LocDeleteIndex into J
+    put J into I
+    add 1 to I
+    while I is less than LocCount
+    begin
+        put element I of LocNames into LocNameVal
+        put element I of LocPostcodes into LocPostcodeVal
+        put element I of LocDistances into LocDistanceVal
+        put element I of LocNotes into LocNotesVal
+        put element I of LocOrigNames into LocFrom
+        subtract 1 from I
+        set element I of LocNames to LocNameVal
+        set element I of LocPostcodes to LocPostcodeVal
+        set element I of LocDistances to LocDistanceVal
+        set element I of LocNotes to LocNotesVal
+        set element I of LocOrigNames to LocFrom
+        add 1 to I
+        add 1 to I
+    end
+    subtract 1 from LocCount
+    gosub RenderLocations
+    return
+
+OnCloseLocations:
+    set style `display` of LocationEditOverlay to `none`
+    set style `display` of LocationOverlay to `none`
+    put 0 into LocationsLoaded
+    return
+
+OnSaveLocations:
+    set style `color` of LocationStatus to `#555`
+    set the content of LocationStatus to `Saving...`
+    put `{"locations":[` into LocBody
+    put 0 into I
+    while I is less than LocCount
+    begin
+        if I is greater than 0
+            put LocBody cat `,` into LocBody
+        put LocBody cat `{"name":"` into LocBody
+        put element I of LocNames into TempStr2
+        gosub AppendLocString
+        put LocBody cat `","postcode":"` into LocBody
+        put element I of LocPostcodes into TempStr2
+        gosub AppendLocString
+        put LocBody cat `","distance":"` into LocBody
+        put element I of LocDistances into TempStr2
+        gosub AppendLocString
+        put LocBody cat `","notes":"` into LocBody
+        put element I of LocNotes into TempStr2
+        gosub AppendLocString
+        put LocBody cat `"}` into LocBody
+        add 1 to I
+    end
+    put LocBody cat `],"renames":[` into LocBody
+    put 0 into I
+    put 0 into LocRenameCount
+    while I is less than LocCount
+    begin
+        put element I of LocOrigNames into LocFrom
+        put element I of LocNames into LocTo
+        if LocFrom is not empty and LocFrom is not LocTo
+        begin
+            if LocRenameCount is greater than 0
+                put LocBody cat `,` into LocBody
+            add 1 to LocRenameCount
+            put LocBody cat `{"from":"` into LocBody
+            put LocFrom into TempStr2
+            gosub AppendLocString
+            put LocBody cat `","to":"` into LocBody
+            put LocTo into TempStr2
+            gosub AppendLocString
+            put LocBody cat `"}` into LocBody
+
+            ! Keep the booking being edited in step with a renamed venue.
+            put the content of LocationInput into LocCompare
+            put trim LocCompare into LocCompare
+            put lowercase LocCompare into LocCompare
+            put trim LocFrom into TempStr
+            put lowercase TempStr into TempStr
+            if LocCompare is TempStr
+                set the content of LocationInput to LocTo
+        end
+        add 1 to I
+    end
+    put LocBody cat `]}` into LocBody
+
+    gosub PostLocations
+    if LocSaveFailed is not empty
+    begin
+        gosub CheckSession
+        if SessionState is `expired`
+        begin
+            gosub RecoverSession
+            if SessionRecovered is not empty
+                gosub PostLocations
+        end
+    end
+
+    if LocSaveStatus is `ok`
+    begin
+        put 0 into I
+        while I is less than LocCount
+        begin
+            put element I of LocNames into TempStr
+            set element I of LocOrigNames to TempStr
+            add 1 to I
+        end
+        if LocRenamed is greater than 0
+            gosub Refresh
+        set style `color` of LocationStatus to `#080`
+        set the content of LocationStatus to `Saved ✓`
+        wait 1 second
+        set the content of LocationStatus to ``
+        set style `display` of LocationOverlay to `none`
+        return
+    end
+
+    set style `color` of LocationStatus to `#c00`
+    if LocSaveStatus is not empty
+        set the content of LocationStatus to `Save failed: ` cat LocSaveStatus
+    else if SessionState is `expired`
+        set the content of LocationStatus to `Save failed — session expired, please sign in again.`
+    else if SessionState is `valid`
+        set the content of LocationStatus to `Save failed — the server rejected the save.`
+    else
+        set the content of LocationStatus to `Save failed — could not reach server.`
+    return
+
+PostLocations:
+    put `` into LocSaveStatus
+    put `` into LocSaveFailed
+    put 0 into LocRenamed
+    rest post LocBody to `locations.php` giving LocResponseJson on failure
+    begin
+        put `yes` into LocSaveFailed
+        return
+    end
+    put json LocResponseJson into LocResponseObj
+    put property `status` of LocResponseObj into LocSaveStatus
+    put property `renamed` of LocResponseObj into LocRenamed
+    return
+
+AppendLocString:
+    gosub EscapeJson
+    put LocBody cat TempStr2 into LocBody
+    return
+
+EscapeJson:
+    put TempStr2 cat `` into TempOrig
+    put `` into TempStr2
+    put 0 into J
+    put the length of TempOrig into SortK
+    while J is less than SortK
+    begin
+        put left 1 of from J of TempOrig into Ch
+        if Ch is `\`
+            put TempStr2 cat `\\` into TempStr2
+        else if Ch is `"`
+            put TempStr2 cat `\"` into TempStr2
+        else if Ch is newline
+            put TempStr2 cat `\n` into TempStr2
+        else
+            put TempStr2 cat Ch into TempStr2
+        add 1 to J
+    end
+    return
+!! @hash 7e0f22b9
 !!!
 !! OnSave: read form fields, build a JSON record, POST to bookings-save.php.
 OnSave:
@@ -1432,6 +2056,9 @@ OnSave:
         wait 3 seconds
         set the content of ModalStatus to ``
         set style `display` of Overlay to `none`
+        set style `display` of LocationOverlay to `none`
+        set style `display` of LocationEditOverlay to `none`
+        put 0 into LocationsLoaded
         gosub Refresh
         return
     end
@@ -1447,7 +2074,7 @@ OnSave:
     wait 3 seconds
     set the content of ModalStatus to ``
     return
-!! @hash 2f0ab35c
+!! @hash f9465326
 !!!
 !! PostSave: POST the assembled record and report the outcome.
 !!
@@ -1884,8 +2511,11 @@ TodayString:
 !! OnCancel: close the modal without saving.
 OnCancel:
     set style `display` of Overlay to `none`
+    set style `display` of LocationOverlay to `none`
+    set style `display` of LocationEditOverlay to `none`
+    put 0 into LocationsLoaded
     return
-!! @hash fdcd1339
+!! @hash c0114a44
 !!!
 !! OnDelete: confirm then delete the current record.
 OnDelete:
