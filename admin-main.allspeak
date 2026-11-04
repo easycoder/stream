@@ -135,6 +135,31 @@
     button LocNewBtns
     button LocEditBtns
     button LocDelBtns
+    div ClientPhoneRow
+    input ClientPhoneInput
+    div ClientOverlay
+    div ClientEditOverlay
+    div ClientList
+    div ClientStatus
+    div ClientEditTitle
+    div ClientEditStatus
+    button ClientAddBtn
+    button ClientNoneBtn
+    button ClientCancelBtn
+    button ClientSaveBtn
+    button ClientEditCancelBtn
+    button ClientEditSaveBtn
+    input ClientRecCompanyInput
+    input ClientRecRepInput
+    input ClientRecPhoneInput
+    input ClientRecEmailInput
+    div ClientRowDivs
+    div ClientPickDivs
+    div ClientNameDivs
+    div ClientMetaDivs
+    button ClientNewBtns
+    button ClientEditBtns
+    button ClientDelBtns
 
     variable RowStyleData
     variable RowStyleSub
@@ -180,6 +205,45 @@
     variable LocDelBtnStyle
     variable LocRenameCount
     variable LocDuplicate
+    variable ClientsLoaded
+    variable ClientCount
+    variable ClientCompanies
+    variable ClientReps
+    variable ClientPhones
+    variable ClientEmails
+    variable ClientOrigCompanies
+    variable ClientOrigReps
+    variable ClientResponse
+    variable ClientItem
+    variable ClientEditIndex
+    variable ClientEditIsNew
+    variable ClientDeleteIndex
+    variable ClientBody
+    variable ClientSaveStatus
+    variable ClientSaveFailed
+    variable ClientResponseJson
+    variable ClientResponseObj
+    variable ClientRenamed
+    variable ClientRecCompanyVal
+    variable ClientRecRepVal
+    variable ClientRecPhoneVal
+    variable ClientRecEmailVal
+    variable ClientFromCompany
+    variable ClientFromRep
+    variable ClientToCompany
+    variable ClientToRep
+    variable ClientCompare
+    variable ClientMeta
+    variable ClientRowStyle
+    variable ClientPickStyle
+    variable ClientNameStyle
+    variable ClientMetaStyle
+    variable ClientBtnStyle
+    variable ClientDelBtnStyle
+    variable ClientRenameCount
+    variable ClientDuplicate
+    variable ClientKeyA
+    variable ClientKeyB
     variable AllBookings
     variable EmailTemplate
     variable StreamUrl
@@ -395,6 +459,24 @@
     attach LocPostcodeInput to `location-postcode-input`
     attach LocDistanceInput to `location-distance-input`
     attach LocNotesInput to `location-notes-input`
+    attach ClientPhoneInput to `client-phone-input`
+    attach ClientPhoneRow to `client-phone-row`
+    attach ClientOverlay to `client-overlay`
+    attach ClientEditOverlay to `client-edit-overlay`
+    attach ClientList to `client-list`
+    attach ClientStatus to `client-status`
+    attach ClientEditTitle to `client-edit-title`
+    attach ClientEditStatus to `client-edit-status`
+    attach ClientAddBtn to `client-add-btn`
+    attach ClientNoneBtn to `client-none-btn`
+    attach ClientCancelBtn to `client-cancel-btn`
+    attach ClientSaveBtn to `client-save-btn`
+    attach ClientEditCancelBtn to `client-edit-cancel-btn`
+    attach ClientEditSaveBtn to `client-edit-save-btn`
+    attach ClientRecCompanyInput to `client-detail-company-input`
+    attach ClientRecRepInput to `client-detail-rep-input`
+    attach ClientRecPhoneInput to `client-detail-phone-input`
+    attach ClientRecEmailInput to `client-detail-email-input`
     attach MileageInput to `mileage-input`
     attach ExpenseInput to `expense-input`
     attach FeesInput to `fees-input`
@@ -464,6 +546,20 @@
     set LocNotes to array
     set LocOrigNames to array
 
+    put `display: flex; align-items: center; gap: 0.4em; padding: 0.3em 0.4em; border-bottom: 1px solid #eee` into ClientRowStyle
+    put `flex: 1; min-width: 0; cursor: pointer; padding: 0.2em 0.3em; border-radius: 4px` into ClientPickStyle
+    put `font-weight: bold` into ClientNameStyle
+    put `font-size: 0.85em; color: #666; white-space: pre-wrap; word-break: break-word` into ClientMetaStyle
+    put `padding: 0.2em 0.6em; font-size: 0.8em; cursor: pointer; border: 1px solid #aaa; border-radius: 4px; background: #eee; color: #333; flex-shrink: 0` into ClientBtnStyle
+    put `padding: 0.2em 0.6em; font-size: 0.8em; cursor: pointer; border: 1px solid #d33; border-radius: 4px; background: #fdd; color: #900; flex-shrink: 0` into ClientDelBtnStyle
+    put 0 into ClientsLoaded
+    set ClientCompanies to array
+    set ClientReps to array
+    set ClientPhones to array
+    set ClientEmails to array
+    set ClientOrigCompanies to array
+    set ClientOrigReps to array
+
     put `January,February,March,April,May,June,July,August,September,October,November,December` into MonthNames
     split MonthNames on `,`
 
@@ -499,6 +595,16 @@
     on click LocationSaveBtn gosub OnSaveLocations
     on click LocationEditCancelBtn gosub OnCloseLocationEditor
     on click LocationEditSaveBtn gosub OnSaveLocationRecord
+    on click ContactInput gosub OnOpenClients
+    on click ClientInput gosub OnOpenClients
+    on click ClientEmailInput gosub OnOpenClients
+    on click ClientPhoneInput gosub OnOpenClients
+    on click ClientAddBtn gosub OnClientNew
+    on click ClientNoneBtn gosub OnClientNone
+    on click ClientCancelBtn gosub OnCloseClients
+    on click ClientSaveBtn gosub OnSaveClients
+    on click ClientEditCancelBtn gosub OnCloseClientEditor
+    on click ClientEditSaveBtn gosub OnSaveClientRecord
 
 
     get SavedCreds from storage as `admin.credentials`
@@ -518,7 +624,7 @@
     fork to Heartbeat
     fork to WatchForUploadedDocument
     stop
-!! @hash dc89fbeb
+!! @hash 51321695
 !!!
 !! Login: POST credentials to login.php, on success show the admin panel
 !! and load data.
@@ -1067,6 +1173,9 @@ OnAdd:
     set style `display` of LocationOverlay to `none`
     set style `display` of LocationEditOverlay to `none`
     put 0 into LocationsLoaded
+    set style `display` of ClientOverlay to `none`
+    set style `display` of ClientEditOverlay to `none`
+    put 0 into ClientsLoaded
     set the content of DateInput to ``
     set the content of TimeInput to ``
     set the content of NameInput to ``
@@ -1076,6 +1185,7 @@ OnAdd:
     set the content of ContactInput to ``
     set the content of ClientInput to ``
     set the content of ClientEmailInput to ``
+    set the content of ClientPhoneInput to ``
     set the content of DacastInput to ``
     set the content of StreamUrlInput to ``
     set the content of RecordingUrlInput to ``
@@ -1109,7 +1219,7 @@ In the meantime, here is a link to a recording of the stream, for those who may 
     gosub SelectKindService
     set style `display` of Overlay to `flex`
     return
-!! @hash 549811d3
+!! @hash a62e860f
 !!!
 !! PopulateForm: fill the modal with the current Row's data.
 PopulateForm:
@@ -1118,6 +1228,9 @@ PopulateForm:
     set style `display` of LocationOverlay to `none`
     set style `display` of LocationEditOverlay to `none`
     put 0 into LocationsLoaded
+    set style `display` of ClientOverlay to `none`
+    set style `display` of ClientEditOverlay to `none`
+    put 0 into ClientsLoaded
 
     put `general` into ActiveFormTab
     put property `kind` of Row into Kind
@@ -1154,6 +1267,9 @@ PopulateForm:
 
     put property `client_email` of Row into TempStr
     set the content of ClientEmailInput to TempStr
+
+    put property `client_phone` of Row into TempStr
+    set the content of ClientPhoneInput to TempStr
 
     put property `dacast_id` of Row into TempStr
     set the content of DacastInput to TempStr
@@ -1254,7 +1370,7 @@ PopulateForm:
         set attribute `disabled` of DocumentUrlBtn to `disabled`
 
     return
-!! @hash 81a64af4
+!! @hash 478ce256
 !!!
 !! Kind selection: show the sections each kind needs and relabel the shared Name field.
 !!
@@ -1275,6 +1391,7 @@ SelectKindService:
     set style `display` of ContactInput to `inline-block`
     set style `display` of ClientInput to `inline-block`
     set style `display` of ClientEmailInput to `inline-block`
+    set style `display` of ClientPhoneInput to `inline-block`
     set style `display` of DacastInput to `inline-block`
     set style `display` of StreamUrlInput to `inline-block`
     set style `display` of TitleField to `inline-block`
@@ -1291,6 +1408,7 @@ SelectKindService:
     set style `display` of ContactRow to `flex`
     set style `display` of ClientRow to `flex`
     set style `display` of ClientEmailRow to `flex`
+    set style `display` of ClientPhoneRow to `flex`
     set style `display` of DacastRow to `flex`
     set style `display` of StreamUrlRow to `flex`
     set style `display` of MileageRow to `flex`
@@ -1325,6 +1443,7 @@ SelectKindExpense:
     set style `display` of ContactRow to `none`
     set style `display` of ClientRow to `none`
     set style `display` of ClientEmailRow to `none`
+    set style `display` of ClientPhoneRow to `none`
     set style `display` of DacastRow to `none`
     set style `display` of StreamUrlRow to `none`
     set style `display` of MileageRow to `none`
@@ -1356,6 +1475,7 @@ SelectKindSlideshow:
     set style `display` of ContactInput to `inline-block`
     set style `display` of ClientInput to `inline-block`
     set style `display` of ClientEmailInput to `inline-block`
+    set style `display` of ClientPhoneInput to `inline-block`
     set style `display` of DacastInput to `none`
     set style `display` of StreamUrlInput to `none`
     set style `display` of TitleField to `none`
@@ -1372,6 +1492,7 @@ SelectKindSlideshow:
     set style `display` of ContactRow to `flex`
     set style `display` of ClientRow to `flex`
     set style `display` of ClientEmailRow to `flex`
+    set style `display` of ClientPhoneRow to `flex`
     set style `display` of DacastRow to `none`
     set style `display` of StreamUrlRow to `none`
     set style `display` of MileageRow to `none`
@@ -1390,7 +1511,7 @@ SelectKindSlideshow:
     set style `display` of NotesRow to `flex`
     gosub SyncTabsToKind
     return
-!! @hash 9bc71c7f
+!! @hash b3c4144f
 !!!
 !! Form tabs: the kind buttons and the Save/Cancel/Delete row belong to the whole modal; only the field panel switches.
 !!
@@ -1893,6 +2014,470 @@ EscapeJson:
     return
 !! @hash 7e0f22b9
 !!!
+!! Clients: repeat clients opened from the read-only client fields.
+!!
+!! The pair of Client company and Client rep is the key; phone and email are shared data on the client record. All four fields are read-only in the form, and clicking any one opens the picker.
+!!
+!! Edits are staged in memory until the window's Save. Clicking a row applies company, rep, phone and email to the booking. Because company and rep form the key, a change to either is remembered against the original pair and sent with the save; the server applies that pair change to every booking that used it. Phone and email edits affect the client record and future picks, not historic bookings.
+!!
+!! No client clears the four fields and closes the window, so a booking can go ahead with only the family contact.
+OnOpenClients:
+    set style `display` of LocationOverlay to `none`
+    set style `display` of LocationEditOverlay to `none`
+    set the content of ClientStatus to ``
+    if ClientsLoaded is 0
+        gosub LoadClients
+    else
+        gosub RenderClients
+    set style `display` of ClientOverlay to `flex`
+    return
+
+LoadClients:
+    put random 999999999 into CacheBuster
+    rest get ClientResponse from `clients.php?cb=` cat CacheBuster on failure
+    begin
+        put 0 into ClientCount
+        set ClientCompanies to array
+        set ClientReps to array
+        set ClientPhones to array
+        set ClientEmails to array
+        set ClientOrigCompanies to array
+        set ClientOrigReps to array
+        set the elements of ClientRowDivs to 0
+        set the elements of ClientPickDivs to 0
+        set the elements of ClientNameDivs to 0
+        set the elements of ClientMetaDivs to 0
+        set the elements of ClientNewBtns to 0
+        set the elements of ClientEditBtns to 0
+        set the elements of ClientDelBtns to 0
+        set the content of ClientList to ``
+        set style `color` of ClientStatus to `#c00`
+        set the content of ClientStatus to `Could not load clients.`
+        return
+    end
+    put json count of ClientResponse into ClientCount
+    set ClientCompanies to array
+    set ClientReps to array
+    set ClientPhones to array
+    set ClientEmails to array
+    set ClientOrigCompanies to array
+    set ClientOrigReps to array
+    put 0 into I
+    while I is less than ClientCount
+    begin
+        put element I of ClientResponse into ClientItem
+        put property `company` of ClientItem into TempStr
+        set element I of ClientCompanies to TempStr
+        set element I of ClientOrigCompanies to TempStr
+        put property `rep` of ClientItem into TempStr
+        set element I of ClientReps to TempStr
+        set element I of ClientOrigReps to TempStr
+        put property `phone` of ClientItem into TempStr
+        set element I of ClientPhones to TempStr
+        put property `email` of ClientItem into TempStr
+        set element I of ClientEmails to TempStr
+        add 1 to I
+    end
+    put 1 into ClientsLoaded
+    gosub RenderClients
+    return
+
+RenderClients:
+    set the content of ClientList to ``
+    if ClientCount is 0
+    begin
+        set style `color` of ClientStatus to `#666`
+        set the content of ClientStatus to `No saved clients yet — use New client to add one.`
+        return
+    end
+    set the content of ClientStatus to ``
+    set the elements of ClientRowDivs to ClientCount
+    set the elements of ClientPickDivs to ClientCount
+    set the elements of ClientNameDivs to ClientCount
+    set the elements of ClientMetaDivs to ClientCount
+    set the elements of ClientNewBtns to ClientCount
+    set the elements of ClientEditBtns to ClientCount
+    set the elements of ClientDelBtns to ClientCount
+    put 0 into I
+    while I is less than ClientCount
+    begin
+        index ClientRowDivs to I
+        create ClientRowDivs in ClientList
+        set the style of ClientRowDivs to ClientRowStyle
+
+        index ClientPickDivs to I
+        create ClientPickDivs in ClientRowDivs
+        set the style of ClientPickDivs to ClientPickStyle
+
+        index ClientNameDivs to I
+        create ClientNameDivs in ClientPickDivs
+        set the style of ClientNameDivs to ClientNameStyle
+        put element I of ClientCompanies into TempStr
+        set the content of ClientNameDivs to TempStr
+
+        index ClientMetaDivs to I
+        create ClientMetaDivs in ClientPickDivs
+        set the style of ClientMetaDivs to ClientMetaStyle
+        gosub BuildClientMeta
+
+        index ClientNewBtns to I
+        create ClientNewBtns in ClientRowDivs
+        set the content of ClientNewBtns to `New`
+        set the style of ClientNewBtns to ClientBtnStyle
+
+        index ClientEditBtns to I
+        create ClientEditBtns in ClientRowDivs
+        set the content of ClientEditBtns to `Edit`
+        set the style of ClientEditBtns to ClientBtnStyle
+
+        index ClientDelBtns to I
+        create ClientDelBtns in ClientRowDivs
+        set the content of ClientDelBtns to `Delete`
+        set the style of ClientDelBtns to ClientDelBtnStyle
+
+        add 1 to I
+    end
+    on click ClientPickDivs gosub OnClientPick
+    on click ClientNewBtns gosub OnClientNew
+    on click ClientEditBtns gosub OnClientEdit
+    on click ClientDelBtns gosub OnClientDelete
+    return
+
+BuildClientMeta:
+    put `` into ClientMeta
+    put element I of ClientReps into TempStr
+    if TempStr is not empty
+        put TempStr into ClientMeta
+    put element I of ClientPhones into TempStr
+    if TempStr is not empty
+    begin
+        if ClientMeta is not empty
+            put ClientMeta cat ` • ` into ClientMeta
+        put ClientMeta cat TempStr into ClientMeta
+    end
+    put element I of ClientEmails into TempStr
+    if TempStr is not empty
+    begin
+        if ClientMeta is not empty
+            put ClientMeta cat ` • ` into ClientMeta
+        put ClientMeta cat TempStr into ClientMeta
+    end
+    set the content of ClientMetaDivs to ClientMeta
+    return
+
+OnClientPick:
+    put the index of ClientPickDivs into J
+    put element J of ClientCompanies into TempStr
+    set the content of ClientInput to TempStr
+    put element J of ClientReps into TempStr
+    set the content of ContactInput to TempStr
+    put element J of ClientPhones into TempStr
+    set the content of ClientPhoneInput to TempStr
+    put element J of ClientEmails into TempStr
+    set the content of ClientEmailInput to TempStr
+    set style `display` of ClientOverlay to `none`
+    return
+
+OnClientNew:
+    put -1 into ClientEditIndex
+    put 1 into ClientEditIsNew
+    set the content of ClientEditTitle to `New client`
+    set the content of ClientRecCompanyInput to ``
+    set the content of ClientRecRepInput to ``
+    set the content of ClientRecPhoneInput to ``
+    set the content of ClientRecEmailInput to ``
+    set the content of ClientEditStatus to ``
+    set style `display` of ClientEditOverlay to `flex`
+    return
+
+OnClientNone:
+    set the content of ClientInput to ``
+    set the content of ContactInput to ``
+    set the content of ClientPhoneInput to ``
+    set the content of ClientEmailInput to ``
+    set style `display` of ClientEditOverlay to `none`
+    set style `display` of ClientOverlay to `none`
+    return
+
+OnClientEdit:
+    put the index of ClientEditBtns into ClientEditIndex
+    put element ClientEditIndex of ClientCompanies into ClientRecCompanyVal
+    put element ClientEditIndex of ClientReps into ClientRecRepVal
+    if ClientRecCompanyVal is empty and ClientRecRepVal is empty
+    begin
+        gosub OnClientNew
+        return
+    end
+    put 0 into ClientEditIsNew
+    set the content of ClientEditTitle to `Edit client`
+    set the content of ClientRecCompanyInput to ClientRecCompanyVal
+    set the content of ClientRecRepInput to ClientRecRepVal
+    put element ClientEditIndex of ClientPhones into TempStr
+    set the content of ClientRecPhoneInput to TempStr
+    put element ClientEditIndex of ClientEmails into TempStr
+    set the content of ClientRecEmailInput to TempStr
+    set the content of ClientEditStatus to ``
+    set style `display` of ClientEditOverlay to `flex`
+    return
+
+OnCloseClientEditor:
+    set style `display` of ClientEditOverlay to `none`
+    return
+
+OnSaveClientRecord:
+    put the content of ClientRecCompanyInput into ClientRecCompanyVal
+    put trim ClientRecCompanyVal into ClientRecCompanyVal
+    put the content of ClientRecRepInput into ClientRecRepVal
+    put trim ClientRecRepVal into ClientRecRepVal
+    put the content of ClientRecPhoneInput into ClientRecPhoneVal
+    put trim ClientRecPhoneVal into ClientRecPhoneVal
+    put the content of ClientRecEmailInput into ClientRecEmailVal
+    put trim ClientRecEmailVal into ClientRecEmailVal
+    if ClientRecCompanyVal is empty and ClientRecRepVal is empty
+    begin
+        set the content of ClientEditStatus to `A client needs a company or a rep.`
+        return
+    end
+
+    put lowercase ClientRecCompanyVal into ClientKeyA
+    put lowercase ClientRecRepVal into ClientKeyB
+    put 0 into ClientDuplicate
+    put 0 into I
+    while I is less than ClientCount
+    begin
+        if I is not ClientEditIndex
+        begin
+            put element I of ClientCompanies into TempStr
+            put trim TempStr into TempStr
+            put lowercase TempStr into TempStr
+            if TempStr is ClientKeyA
+            begin
+                put element I of ClientReps into TempStr
+                put trim TempStr into TempStr
+                put lowercase TempStr into TempStr
+                if TempStr is ClientKeyB
+                    put 1 into ClientDuplicate
+            end
+        end
+        add 1 to I
+    end
+    if ClientDuplicate is 1
+    begin
+        set the content of ClientEditStatus to `Another client already has that company and rep.`
+        return
+    end
+
+    if ClientEditIsNew is 1
+    begin
+        put ClientCount into J
+        add 1 to ClientCount
+        set element J of ClientCompanies to ClientRecCompanyVal
+        set element J of ClientReps to ClientRecRepVal
+        set element J of ClientPhones to ClientRecPhoneVal
+        set element J of ClientEmails to ClientRecEmailVal
+        set element J of ClientOrigCompanies to ``
+        set element J of ClientOrigReps to ``
+    end
+    else
+    begin
+        set element ClientEditIndex of ClientCompanies to ClientRecCompanyVal
+        set element ClientEditIndex of ClientReps to ClientRecRepVal
+        set element ClientEditIndex of ClientPhones to ClientRecPhoneVal
+        set element ClientEditIndex of ClientEmails to ClientRecEmailVal
+    end
+
+    set the content of ClientEditStatus to ``
+    set style `display` of ClientEditOverlay to `none`
+    gosub RenderClients
+    return
+
+OnClientDelete:
+    put the index of ClientDelBtns into ClientDeleteIndex
+    confirm `Delete this client? Bookings already using it will keep the name.` gosub DoClientDelete
+    return
+
+DoClientDelete:
+    put ClientDeleteIndex into J
+    put J into I
+    add 1 to I
+    while I is less than ClientCount
+    begin
+        put element I of ClientCompanies into ClientRecCompanyVal
+        put element I of ClientReps into ClientRecRepVal
+        put element I of ClientPhones into ClientRecPhoneVal
+        put element I of ClientEmails into ClientRecEmailVal
+        put element I of ClientOrigCompanies into ClientFromCompany
+        put element I of ClientOrigReps into ClientFromRep
+        subtract 1 from I
+        set element I of ClientCompanies to ClientRecCompanyVal
+        set element I of ClientReps to ClientRecRepVal
+        set element I of ClientPhones to ClientRecPhoneVal
+        set element I of ClientEmails to ClientRecEmailVal
+        set element I of ClientOrigCompanies to ClientFromCompany
+        set element I of ClientOrigReps to ClientFromRep
+        add 1 to I
+        add 1 to I
+    end
+    subtract 1 from ClientCount
+    gosub RenderClients
+    return
+
+OnCloseClients:
+    set style `display` of ClientEditOverlay to `none`
+    set style `display` of ClientOverlay to `none`
+    put 0 into ClientsLoaded
+    return
+
+OnSaveClients:
+    set style `color` of ClientStatus to `#555`
+    set the content of ClientStatus to `Saving...`
+    put `{"clients":[` into ClientBody
+    put 0 into I
+    while I is less than ClientCount
+    begin
+        if I is greater than 0
+            put ClientBody cat `,` into ClientBody
+        put ClientBody cat `{"company":"` into ClientBody
+        put element I of ClientCompanies into TempStr2
+        gosub AppendClientString
+        put ClientBody cat `","rep":"` into ClientBody
+        put element I of ClientReps into TempStr2
+        gosub AppendClientString
+        put ClientBody cat `","phone":"` into ClientBody
+        put element I of ClientPhones into TempStr2
+        gosub AppendClientString
+        put ClientBody cat `","email":"` into ClientBody
+        put element I of ClientEmails into TempStr2
+        gosub AppendClientString
+        put ClientBody cat `"}` into ClientBody
+        add 1 to I
+    end
+    put ClientBody cat `],"renames":[` into ClientBody
+    put 0 into I
+    put 0 into ClientRenameCount
+    while I is less than ClientCount
+    begin
+        put element I of ClientOrigCompanies into ClientFromCompany
+        put element I of ClientOrigReps into ClientFromRep
+        put element I of ClientCompanies into ClientToCompany
+        put element I of ClientReps into ClientToRep
+        put 0 into ClientKeyB
+        if ClientFromCompany is not empty
+            put 1 into ClientKeyB
+        if ClientFromRep is not empty
+            put 1 into ClientKeyB
+        put 0 into ClientKeyA
+        if ClientFromCompany is not ClientToCompany
+            put 1 into ClientKeyA
+        if ClientFromRep is not ClientToRep
+            put 1 into ClientKeyA
+        if ClientKeyA is 1 and ClientKeyB is 1
+        begin
+            if ClientRenameCount is greater than 0
+                put ClientBody cat `,` into ClientBody
+            add 1 to ClientRenameCount
+            put ClientBody cat `{"old_company":"` into ClientBody
+            put ClientFromCompany into TempStr2
+            gosub AppendClientString
+            put ClientBody cat `","old_rep":"` into ClientBody
+            put ClientFromRep into TempStr2
+            gosub AppendClientString
+            put ClientBody cat `","company":"` into ClientBody
+            put ClientToCompany into TempStr2
+            gosub AppendClientString
+            put ClientBody cat `","rep":"` into ClientBody
+            put ClientToRep into TempStr2
+            gosub AppendClientString
+            put ClientBody cat `"}` into ClientBody
+
+            ! Keep the booking being edited in step with a renamed client.
+            put the content of ClientInput into ClientCompare
+            put trim ClientCompare into ClientCompare
+            put lowercase ClientCompare into ClientCompare
+            put trim ClientFromCompany into TempStr
+            put lowercase TempStr into TempStr
+            if ClientCompare is TempStr
+            begin
+                put the content of ContactInput into ClientMeta
+                put trim ClientMeta into ClientMeta
+                put lowercase ClientMeta into ClientMeta
+                put trim ClientFromRep into TempStr
+                put lowercase TempStr into TempStr
+                if ClientMeta is TempStr
+                begin
+                    set the content of ClientInput to ClientToCompany
+                    set the content of ContactInput to ClientToRep
+                end
+            end
+        end
+        add 1 to I
+    end
+    put ClientBody cat `]}` into ClientBody
+
+    gosub PostClients
+    if ClientSaveFailed is not empty
+    begin
+        gosub CheckSession
+        if SessionState is `expired`
+        begin
+            gosub RecoverSession
+            if SessionRecovered is not empty
+                gosub PostClients
+        end
+    end
+
+    if ClientSaveStatus is `ok`
+    begin
+        put 0 into I
+        while I is less than ClientCount
+        begin
+            put element I of ClientCompanies into TempStr
+            set element I of ClientOrigCompanies to TempStr
+            put element I of ClientReps into TempStr
+            set element I of ClientOrigReps to TempStr
+            add 1 to I
+        end
+        if ClientRenamed is greater than 0
+            gosub Refresh
+        set style `color` of ClientStatus to `#080`
+        set the content of ClientStatus to `Saved ✓`
+        wait 1 second
+        set the content of ClientStatus to ``
+        set style `display` of ClientOverlay to `none`
+        return
+    end
+
+    set style `color` of ClientStatus to `#c00`
+    if ClientSaveStatus is not empty
+        set the content of ClientStatus to `Save failed: ` cat ClientSaveStatus
+    else if SessionState is `expired`
+        set the content of ClientStatus to `Save failed — session expired, please sign in again.`
+    else if SessionState is `valid`
+        set the content of ClientStatus to `Save failed — the server rejected the save.`
+    else
+        set the content of ClientStatus to `Save failed — could not reach server.`
+    return
+
+PostClients:
+    put `` into ClientSaveStatus
+    put `` into ClientSaveFailed
+    put 0 into ClientRenamed
+    rest post ClientBody to `clients.php` giving ClientResponseJson on failure
+    begin
+        put `yes` into ClientSaveFailed
+        return
+    end
+    put json ClientResponseJson into ClientResponseObj
+    put property `status` of ClientResponseObj into ClientSaveStatus
+    put property `renamed` of ClientResponseObj into ClientRenamed
+    return
+
+AppendClientString:
+    gosub EscapeJson
+    put ClientBody cat TempStr2 into ClientBody
+    return
+!! @hash 6994e887
+!!!
 !! OnSave: read form fields, build a JSON record, POST to bookings-save.php.
 OnSave:
     set the content of ModalStatus to `Saving...`
@@ -1991,6 +2576,8 @@ OnSave:
     put BodyText cat `,` into BodyText
     gosub JsonAddString with `client_email`
     put BodyText cat `,` into BodyText
+    gosub JsonAddString with `client_phone`
+    put BodyText cat `,` into BodyText
     gosub JsonAddString with `dacast_id`
     put BodyText cat `,` into BodyText
     gosub JsonAddString with `stream_url`
@@ -2059,6 +2646,9 @@ OnSave:
         set style `display` of LocationOverlay to `none`
         set style `display` of LocationEditOverlay to `none`
         put 0 into LocationsLoaded
+        set style `display` of ClientOverlay to `none`
+        set style `display` of ClientEditOverlay to `none`
+        put 0 into ClientsLoaded
         gosub Refresh
         return
     end
@@ -2074,7 +2664,7 @@ OnSave:
     wait 3 seconds
     set the content of ModalStatus to ``
     return
-!! @hash f9465326
+!! @hash dc7a447a
 !!!
 !! PostSave: POST the assembled record and report the outcome.
 !!
@@ -2514,8 +3104,11 @@ OnCancel:
     set style `display` of LocationOverlay to `none`
     set style `display` of LocationEditOverlay to `none`
     put 0 into LocationsLoaded
+    set style `display` of ClientOverlay to `none`
+    set style `display` of ClientEditOverlay to `none`
+    put 0 into ClientsLoaded
     return
-!! @hash c0114a44
+!! @hash e1449f8d
 !!!
 !! OnDelete: confirm then delete the current record.
 OnDelete:
@@ -2605,6 +3198,7 @@ JsonAddString:
     else if Key is `contact` put the content of ContactInput into TempStr2
     else if Key is `client` put the content of ClientInput into TempStr2
     else if Key is `client_email` put the content of ClientEmailInput into TempStr2
+    else if Key is `client_phone` put the content of ClientPhoneInput into TempStr2
     else if Key is `dacast_id` put the content of DacastInput into TempStr2
     else if Key is `stream_url` put the content of StreamUrlInput into TempStr2
     else if Key is `recording_url` put the content of RecordingUrlInput into TempStr2
@@ -2644,7 +3238,7 @@ JsonAddString:
 
     put BodyText cat TempStr2 cat `"` into BodyText
     return
-!! @hash 890d2825
+!! @hash 3d49a88a
 !!!
 !! JsonAddNumber: append "key":value to BodyText (no quotes around value).
 !! Mileage/Expense/Fees inputs are in display format (miles/pounds);

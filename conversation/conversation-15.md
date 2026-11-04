@@ -164,5 +164,53 @@ checkbox that misaligns it with the other checkboxes.
 - Verified in a browser: all three checkboxes now share the same left edge
   (155.2px) in the Data tab, and the screenshot shows them in line.
 
+## User (2026-11-04)
 
+The strategy we applied to Locations can also be applied in a similar way to
+Clients. Here the combination of Client rep and Client company is unique.
+Shared data are 1) a new 'Client phone' field and 2) the existing client email
+address. In the listing, the sort order is Client company then Client rep.
 
+## Assistant (2026-11-04) — Clients lookup
+
+- `clients.php` (new, added to `deploy.sh`): `GET` builds `clients.json` from
+  the booking files on first use, grouping by normalised company + rep,
+  choosing the most common spelling of each (ties to the newest booking), and
+  rewriting the booking keys that used another spelling. `POST` saves the list
+  and applies each `{old_company, old_rep, company, rep}` rename to every
+  booking with the old pair. Sort order is company, then rep.
+- `bookings-save.php`: stores the new `client_phone` field.
+- `admin.json`: added a **Client phone** row after Client email. All four client
+  fields (rep, company, email, phone) are read-only and clicking any of them
+  opens the Clients window. The window has a scrolling list sorted by company
+  then rep, New/Edit/Delete on each row, a top-level New client, and
+  Cancel/Save. The detail popup edits company, rep, phone and email.
+- `admin-main.allspeak`: added the client staging arrays, list rendering,
+  pick/New/Edit/Delete, duplicate-key check, save-and-rename body, and the same
+  session-recovery retry as booking saves. `client_phone` is loaded in
+  `PopulateForm`, cleared in `OnAdd` and serialised by `OnSave`. Phone and email
+  edits update the client record and future picks only; the global replace is
+  for the company + rep key, matching Locations.
+- Verified in a browser against a mock endpoint: the list opened from the
+  Client company field in the required company-then-rep order; picking
+  Mason & Sons / Sarah Bell filled all four fields; renaming the company to
+  Mason & Sons Ltd produced a POST body with the matching `old_company` /
+  `old_rep` rename and updated the open booking; New and Delete worked; the
+  booking save posted `client_phone: 07700 900111` alongside client, contact
+  and client_email. `asdoc-check.py` reports 46 sections, 0 errors, 0 warnings;
+  `clients.php` and `bookings-save.php` parse with php-parser.
+- **PHP is still not installed locally**, so `clients.php` has not been executed
+  against real booking files; smoke-test the first list build on deployment.
+
+## User (2026-11-04)
+
+I forgot to mention should be an option to have no client (I deal directly with
+the contact)
+
+## Assistant (2026-11-04) — No client option
+
+- Added a **No client** button to the Clients window. It clears Client company,
+  Client rep, Client phone and Client email and closes the window, so a booking
+  can be saved with only the family contact.
+- Verified in a browser: selecting a client then clicking No client left all
+  four fields empty and closed the window.

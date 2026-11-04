@@ -87,6 +87,7 @@ $record = [
     'contact'          => $body['contact']         ?? '',
     'client'           => $body['client']          ?? '',
     'client_email'     => $body['client_email']    ?? '',
+    'client_phone'     => $body['client_phone']    ?? '',
     'mileage'          => (int)($body['mileage']   ?? 0),
     'expense'          => (int)($body['expense']   ?? 0),
     'fees'             => (int)($body['fees']      ?? 0),

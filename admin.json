@@ -127,7 +127,9 @@
       "$EmptyState",
       "$Overlay",
       "$LocationOverlay",
-      "$LocationEditOverlay"
+      "$LocationEditOverlay",
+      "$ClientOverlay",
+      "$ClientEditOverlay"
     ],
     "$Header": {
       "#element": "div",
@@ -468,6 +470,7 @@
               "$ContactRow",
               "$ClientRow",
               "$ClientEmailRow",
+              "$ClientPhoneRow",
               "$ContactsSeparator",
               "$ContactNameRow",
               "$ContactRelationRow",
@@ -702,10 +705,14 @@
               "@id": "contact-input",
               "@type": "text",
               "@placeholder": "Contact person",
+              "@readonly": "readonly",
+              "@title": "Click to choose a client",
               "padding": "0.3em",
               "font-size": "1em",
               "flex": "1",
-              "min-width": "0"
+              "min-width": "0",
+              "background": "#f5f5f5",
+              "cursor": "pointer"
             },
             "display": "flex",
             "align-items": "center",
@@ -731,10 +738,14 @@
               "@id": "client-input",
               "@type": "text",
               "@placeholder": "e.g. Mason & Sons",
+              "@readonly": "readonly",
+              "@title": "Click to choose a client",
               "padding": "0.3em",
               "font-size": "1em",
               "flex": "1",
-              "min-width": "0"
+              "min-width": "0",
+              "background": "#f5f5f5",
+              "cursor": "pointer"
             },
             "display": "flex",
             "align-items": "center",
@@ -760,10 +771,47 @@
               "@id": "client-email-input",
               "@type": "email",
               "@placeholder": "e.g. client@example.com",
+              "@readonly": "readonly",
+              "@title": "Click to choose a client",
               "padding": "0.3em",
               "font-size": "1em",
               "flex": "1",
-              "min-width": "0"
+              "min-width": "0",
+              "background": "#f5f5f5",
+              "cursor": "pointer"
+            },
+            "display": "flex",
+            "align-items": "center",
+            "gap": "0.5em"
+          },
+          "$ClientPhoneRow": {
+            "#element": "div",
+            "@id": "client-phone-row",
+            "#": [
+              "$ClientPhoneLabel",
+              "$ClientPhoneInput"
+            ],
+            "$ClientPhoneLabel": {
+              "#element": "label",
+              "#content": "Client phone",
+              "font-size": "0.85em",
+              "color": "#555",
+              "width": "120px",
+              "flex-shrink": "0"
+            },
+            "$ClientPhoneInput": {
+              "#element": "input",
+              "@id": "client-phone-input",
+              "@type": "tel",
+              "@placeholder": "e.g. 07700 900123",
+              "@readonly": "readonly",
+              "@title": "Click to choose a client",
+              "padding": "0.3em",
+              "font-size": "1em",
+              "flex": "1",
+              "min-width": "0",
+              "background": "#f5f5f5",
+              "cursor": "pointer"
             },
             "display": "flex",
             "align-items": "center",
@@ -1740,6 +1788,328 @@
           "$LocationEditSaveBtn": {
             "#element": "button",
             "@id": "location-edit-save-btn",
+            "padding": "0.4em 1em",
+            "background": "#28a",
+            "color": "white",
+            "border": "0",
+            "border-radius": "4px",
+            "cursor": "pointer",
+            "#content": "Save"
+          }
+        }
+      }
+    },
+    "$ClientOverlay": {
+      "#element": "div",
+      "@id": "client-overlay",
+      "display": "none",
+      "position": "fixed",
+      "top": "0",
+      "left": "0",
+      "width": "100%",
+      "height": "100%",
+      "background": "rgba(0,0,0,0.4)",
+      "align-items": "flex-start",
+      "justify-content": "center",
+      "padding-top": "5vh",
+      "z-index": "1100",
+      "#": [
+        "$ClientWindow"
+      ],
+      "$ClientWindow": {
+        "#element": "div",
+        "background": "white",
+        "border-radius": "8px",
+        "padding": "1.5em",
+        "width": "680px",
+        "max-width": "90%",
+        "display": "flex",
+        "flex-direction": "column",
+        "box-shadow": "0 4px 30px rgba(0,0,0,0.3)",
+        "#": [
+          "$ClientHeader",
+          "$ClientList",
+          "$ClientStatus",
+          "$ClientButtons"
+        ],
+        "$ClientHeader": {
+          "#element": "div",
+          "display": "flex",
+          "align-items": "center",
+          "gap": "0.5em",
+          "margin-bottom": "1em",
+          "#": [
+            "$ClientTitle",
+            "$ClientNoneBtn",
+            "$ClientAddBtn"
+          ],
+          "$ClientTitle": {
+            "#element": "h2",
+            "@id": "client-title",
+            "margin": "0",
+            "font-weight": "400",
+            "flex": "1",
+            "#content": "Clients"
+          },
+          "$ClientAddBtn": {
+            "#element": "button",
+            "@id": "client-add-btn",
+            "@type": "button",
+            "padding": "0.3em 0.9em",
+            "font-size": "0.85em",
+            "cursor": "pointer",
+            "border": "0",
+            "border-radius": "4px",
+            "background": "#28a",
+            "color": "white",
+            "#content": "New client"
+          },
+          "$ClientNoneBtn": {
+            "#element": "button",
+            "@id": "client-none-btn",
+            "@type": "button",
+            "padding": "0.3em 0.9em",
+            "font-size": "0.85em",
+            "cursor": "pointer",
+            "border": "1px solid #aaa",
+            "border-radius": "4px",
+            "background": "#eee",
+            "color": "#333",
+            "#content": "No client"
+          }
+        },
+        "$ClientList": {
+          "#element": "div",
+          "@id": "client-list",
+          "display": "flex",
+          "flex-direction": "column",
+          "gap": "0.2em",
+          "max-height": "55vh",
+          "overflow-y": "auto",
+          "border": "1px solid #ddd",
+          "border-radius": "4px",
+          "padding": "0.4em"
+        },
+        "$ClientStatus": {
+          "#element": "div",
+          "@id": "client-status",
+          "min-height": "1.2em",
+          "font-size": "0.9em",
+          "color": "#c00",
+          "margin": "0.5em 0 0 0"
+        },
+        "$ClientButtons": {
+          "#element": "div",
+          "display": "flex",
+          "gap": "0.5em",
+          "justify-content": "flex-end",
+          "margin-top": "0.6em",
+          "#": [
+            "$ClientCancelBtn",
+            "$ClientSaveBtn"
+          ],
+          "$ClientCancelBtn": {
+            "#element": "button",
+            "@id": "client-cancel-btn",
+            "padding": "0.4em 1em",
+            "cursor": "pointer",
+            "#content": "Cancel"
+          },
+          "$ClientSaveBtn": {
+            "#element": "button",
+            "@id": "client-save-btn",
+            "padding": "0.4em 1em",
+            "background": "#28a",
+            "color": "white",
+            "border": "0",
+            "border-radius": "4px",
+            "cursor": "pointer",
+            "#content": "Save"
+          }
+        }
+      }
+    },
+    "$ClientEditOverlay": {
+      "#element": "div",
+      "@id": "client-edit-overlay",
+      "display": "none",
+      "position": "fixed",
+      "top": "0",
+      "left": "0",
+      "width": "100%",
+      "height": "100%",
+      "background": "rgba(0,0,0,0.5)",
+      "align-items": "flex-start",
+      "justify-content": "center",
+      "padding-top": "12vh",
+      "z-index": "1200",
+      "#": [
+        "$ClientEditWindow"
+      ],
+      "$ClientEditWindow": {
+        "#element": "div",
+        "background": "white",
+        "border-radius": "8px",
+        "padding": "1.5em",
+        "width": "480px",
+        "max-width": "90%",
+        "box-shadow": "0 4px 30px rgba(0,0,0,0.3)",
+        "#": [
+          "$ClientEditTitle",
+          "$ClientDetailsCompanyRow",
+          "$ClientDetailsRepRow",
+          "$ClientDetailsPhoneRow",
+          "$ClientDetailsEmailRow",
+          "$ClientEditStatus",
+          "$ClientEditButtons"
+        ],
+        "$ClientEditTitle": {
+          "#element": "h2",
+          "@id": "client-edit-title",
+          "margin": "0 0 1em 0",
+          "font-weight": "400",
+          "#content": "New client"
+        },
+        "$ClientDetailsCompanyRow": {
+          "#element": "div",
+          "display": "flex",
+          "align-items": "center",
+          "gap": "0.5em",
+          "margin-bottom": "0.4em",
+          "#": [
+            "$ClientCompanyLabel",
+            "$ClientCompanyInput"
+          ],
+          "$ClientCompanyLabel": {
+            "#element": "label",
+            "#content": "Client company",
+            "width": "110px",
+            "flex-shrink": "0",
+            "font-size": "0.85em",
+            "color": "#555"
+          },
+          "$ClientCompanyInput": {
+            "#element": "input",
+            "@id": "client-detail-company-input",
+            "@type": "text",
+            "flex": "1",
+            "min-width": "0",
+            "padding": "0.3em",
+            "font-size": "1em"
+          }
+        },
+        "$ClientDetailsRepRow": {
+          "#element": "div",
+          "display": "flex",
+          "align-items": "center",
+          "gap": "0.5em",
+          "margin-bottom": "0.4em",
+          "#": [
+            "$ClientRepLabel",
+            "$ClientRepInput"
+          ],
+          "$ClientRepLabel": {
+            "#element": "label",
+            "#content": "Client rep",
+            "width": "110px",
+            "flex-shrink": "0",
+            "font-size": "0.85em",
+            "color": "#555"
+          },
+          "$ClientRepInput": {
+            "#element": "input",
+            "@id": "client-detail-rep-input",
+            "@type": "text",
+            "flex": "1",
+            "min-width": "0",
+            "padding": "0.3em",
+            "font-size": "1em"
+          }
+        },
+        "$ClientDetailsPhoneRow": {
+          "#element": "div",
+          "display": "flex",
+          "align-items": "center",
+          "gap": "0.5em",
+          "margin-bottom": "0.4em",
+          "#": [
+            "$ClientDetailsPhoneLabel",
+            "$ClientDetailsPhoneInput"
+          ],
+          "$ClientDetailsPhoneLabel": {
+            "#element": "label",
+            "#content": "Client phone",
+            "width": "110px",
+            "flex-shrink": "0",
+            "font-size": "0.85em",
+            "color": "#555"
+          },
+          "$ClientDetailsPhoneInput": {
+            "#element": "input",
+            "@id": "client-detail-phone-input",
+            "@type": "tel",
+            "flex": "1",
+            "min-width": "0",
+            "padding": "0.3em",
+            "font-size": "1em"
+          }
+        },
+        "$ClientDetailsEmailRow": {
+          "#element": "div",
+          "display": "flex",
+          "align-items": "center",
+          "gap": "0.5em",
+          "margin-bottom": "0.4em",
+          "#": [
+            "$ClientDetailsEmailLabel",
+            "$ClientDetailsEmailInput"
+          ],
+          "$ClientDetailsEmailLabel": {
+            "#element": "label",
+            "#content": "Client email",
+            "width": "110px",
+            "flex-shrink": "0",
+            "font-size": "0.85em",
+            "color": "#555"
+          },
+          "$ClientDetailsEmailInput": {
+            "#element": "input",
+            "@id": "client-detail-email-input",
+            "@type": "email",
+            "flex": "1",
+            "min-width": "0",
+            "padding": "0.3em",
+            "font-size": "1em"
+          }
+        },
+        "$ClientEditStatus": {
+          "#element": "div",
+          "@id": "client-edit-status",
+          "min-height": "1.2em",
+          "font-size": "0.9em",
+          "color": "#c00",
+          "margin": "0.4em 0 0 0"
+        },
+        "$ClientEditButtons": {
+          "#element": "div",
+          "display": "flex",
+          "gap": "0.5em",
+          "justify-content": "flex-end",
+          "margin-top": "0.8em",
+          "#": [
+            "$ClientEditCancelBtn",
+            "$ClientEditSaveBtn"
+          ],
+          "$ClientEditCancelBtn": {
+            "#element": "button",
+            "@id": "client-edit-cancel-btn",
+            "padding": "0.4em 1em",
+            "cursor": "pointer",
+            "#content": "Cancel"
+          },
+          "$ClientEditSaveBtn": {
+            "#element": "button",
+            "@id": "client-edit-save-btn",
             "padding": "0.4em 1em",
             "background": "#28a",
             "color": "white",
