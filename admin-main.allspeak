@@ -11,6 +11,7 @@
     script Admin
 
     div Body
+    div Page
     variable Layout
 
     div LoginPanel
@@ -22,6 +23,7 @@
 
     div AdminPanel
     div Header
+    div LogTableWrap
     div LogBody
     div EmptyState
     button LoadSampleBtn
@@ -390,7 +392,7 @@
     variable PingJson
 !! Build the grid template — 12 columns on a desktop, 6 on a mobile in portrait.
 !!
-!! Mobile portrait keeps Date, Time, Name, Link, Inv and Paid, and drops the flag, location, contact, client, expense and fees columns — an operator standing in a crematorium does not need the money, and at 390px the twelve columns are unreadable anyway. The branch is taken once, here, before the row styles are built, because `mobile` and `portrait` are tests rather than listeners (learn/reference/06-conditions.md): the answer is read when the line runs, so rotating the phone does not re-run it and needs a reload. The header's grid comes from the same string as the rows' grid, so the labels cannot drift from the cells beneath them.
+!! Mobile portrait keeps Date, Time, Name, Link, Inv and Paid, and drops the flag, location, contact, client, expense and fees columns — an operator standing in a crematorium does not need the money, and at 390px the twelve columns are unreadable anyway. The same branch gives the page the viewport's height and lets the list scroll inside the panel, so the sheet no longer stops at a fixed offset and leaves a dead band below it; the 16px is the browser's own body margin, and the panel must be shown with `display: flex` rather than `block` or the fill collapses. The branch is taken once, here, before the row styles are built, because `mobile` and `portrait` are tests rather than listeners (learn/reference/06-conditions.md): the answer is read when the line runs, so rotating the phone does not re-run it and needs a reload. The header's grid comes from the same string as the rows' grid, so the labels cannot drift from the cells beneath them.
 !!
 !! Wire up click handlers then show login.
 !! Check browser storage for saved credentials. If present, populate the
@@ -414,6 +416,8 @@
 
     attach AdminPanel to `admin-panel`
     attach Header to `header`
+    attach Page to `page`
+    attach LogTableWrap to `log-table-wrap`
     attach LogBody to `log-body`
     attach EmptyState to `empty-state`
     attach LoadSampleBtn to `load-sample-btn`
@@ -591,6 +595,15 @@
         set the style of LHFees to `display: none`
     end
 
+    ! On a phone the page fills the viewport and the list scrolls inside the
+    ! panel. The 16px is the browser's own 8px body margin, top and bottom.
+    if MobileView
+    begin
+        set the style of Page to `font-family: sans-serif; font-size: 14px; color: #222; background: #f5f5f5; margin: 0; padding: 0.4em; box-sizing: border-box; display: flex; flex-direction: column; height: calc(100vh - 16px); height: calc(100dvh - 16px)`
+        set the style of AdminPanel to `background: white; border: 1px solid #ddd; border-radius: 6px; padding: 1em; margin-top: 0.4em; box-sizing: border-box; display: flex; flex-direction: column; flex: 1; min-height: 0`
+        set the style of LogTableWrap to `overflow-y: auto; flex: 1; min-height: 0; max-height: none`
+    end
+
     put `text-align: right; padding-right: 0.4em; color: #666` into CellRight
     put `padding: 0.3em 0.9em; cursor: pointer; border: 0; border-radius: 4px; background: #28a; color: white` into KindSelectedStyle
     put `padding: 0.3em 0.9em; cursor: pointer; border: 0; border-radius: 4px; background: #eee; color: #333` into KindUnselectedStyle
@@ -692,7 +705,7 @@
     fork to Heartbeat
     fork to WatchForUploadedDocument
     stop
-!! @hash 9efe433c
+!! @hash 05adc9d0
 !!!
 !! Login: POST credentials to login.php, on success show the admin panel
 !! and load data.
@@ -716,7 +729,10 @@ OnLogin:
         return
     end
     set style `display` of LoginPanel to `none`
-    set style `display` of AdminPanel to `block`
+    if MobileView
+        set style `display` of AdminPanel to `flex`
+    else
+        set style `display` of AdminPanel to `block`
     put attribute `checked` of RememberCheckbox into TempStr
     if TempStr is not empty
     begin
@@ -729,7 +745,7 @@ OnLogin:
         put `` into storage as `admin.credentials`
     gosub Refresh
     return
-!! @hash ec85b4e5
+!! @hash 08ade772
 !!!
 !! Refresh: fetch all bookings from the server and render the table.
 !! Pass 1: count rows and discover month boundaries so we can pre-size

@@ -1,5 +1,6 @@
 data/
 deploy/
 ignore/
+various/
 .code-version
 .claude/

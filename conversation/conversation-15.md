@@ -416,3 +416,34 @@ Refreshed the EmitSubtotal block hash with asdoc-check (0 errors, 0 warnings).
 Verified against the mock again at 1280x900 and 390x844 with an iPhone UA: title
 "Bookings" in both, month rows "June 2026" / "May 2026" / "April 2026" in both,
 and the grand total row still reads "Grand total" with its figures on desktop.
+
+## 12:50
+
+The mobile screen could be a little taller; there's quite a gap at the bottom. See various/screenshot1.jpeg.
+
+**Assistant**
+
+The screenshot showed the panel stopping around 58% of the screen with grey
+below it. The cause was arithmetic rather than a stray margin: `#log-table-wrap`
+had `max-height: calc(100vh - 200px)` and `#page` had `min-height: 100vh` with a
+1em margin, so the list stopped at a fixed offset while the page kept its extra
+height.
+
+On the mobile-portrait branch the page is now a flex column at
+`calc(100dvh - 16px)` with no margin (16px is the browser's own 8px body margin,
+top and bottom — the runtime's `set body style` only accepts `background`, so
+it cannot be zeroed from the script). The panel is `flex: 1;
+display: flex; flex-direction: column; min-height: 0`, so `#log-table-wrap`
+takes the remaining height and scrolls inside it, with `max-height: none`.
+
+One trap: `OnLogin` set the panel to `display: block`, which would have
+collapsed the fill, so that line now picks `flex` on mobile and `block` on
+desktop. Desktop styles are never touched.
+
+Verified with playwright at 412x915 (Pixel UA, DPR 2.25) against a mock with 40
+bookings: page does not scroll (document height equals the viewport), the wrap
+is 807px tall over 1278px of rows and scrolls to the last April row, the header
+stays at the wrap's top when scrolled, and the panel's bottom edge sits just
+above the viewport bottom. Desktop at 1280x900 still reports panel `display:
+block`, wrap `max-height: 700px`, page margin 14px. Mobile login panel unchanged
+(top 70, 279 tall). No page errors.
