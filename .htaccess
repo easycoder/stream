@@ -12,6 +12,12 @@ RewriteEngine On
     <FilesMatch "\.(json|allspeak)$">
         Header set Cache-Control "no-cache, must-revalidate"
     </FilesMatch>
+    # The service worker must never be served stale, or a browser keeps an
+    # old caching strategy (and an old shell) after a deploy. The manifest is
+    # covered by the json rule above.
+    <FilesMatch "^sw\.js$">
+        Header set Cache-Control "no-cache, must-revalidate"
+    </FilesMatch>
 </IfModule>
 
 # Serve real files and directories as-is

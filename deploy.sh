@@ -5,6 +5,9 @@
 #   /                 <- AllSpeak triples (HTML, .json layouts, -main.allspeak scripts)
 #   /*.php            <- backend endpoints (login, session heartbeat/auth probe,
 #                        bookings list/save/delete)
+#   /manifest.json    <- PWA manifest for the admin panel
+#   /sw.js            <- service worker (installable shell, data stays live)
+#   /icons/           <- PWA icons referenced by the manifest
 #   /.htaccess        <- URL rewrites for /admin and /{slug}
 #   /data/YYYY/MM/DD/ <- per-booking JSON files, written server-side. NEVER touched by deploy.
 #
@@ -21,8 +24,8 @@
 #   conversation/             build transcripts
 #   seed.allspeak, sample.json one-time helpers
 #   build.allspeak            replaced by export.php
-#   locations.json            server-generated venue list; locations.php creates it
-#   clients.json              server-generated client list; clients.php creates it
+#   data/locations.json       server-generated venue list; locations.php creates it
+#   data/clients.json         server-generated client list; clients.php creates it
 # These are excluded by listing only the production files explicitly below.
 
 set -euo pipefail
@@ -44,6 +47,7 @@ echo "Deploying stream.eclecity.net from ${LOCAL}..."
 tar czf /tmp/stream-deploy.tar.gz \
     -C "$LOCAL" \
     admin.html admin-main.allspeak admin.json \
+    manifest.json sw.js icons \
     index.html index-main.allspeak index.json \
     stream.html stream-main.allspeak stream.json \
     allspeak.js \

@@ -3,12 +3,12 @@
 // JSON file so a booking's Location, Postcode and Distance can be filled in
 // without retyping them.
 //
-// GET  locations.php   → return locations.json. If the file does not exist
-//                        yet, build it once from the booking records: group
-//                        by postcode (and, for records without one, by name),
-//                        choose the most common spelling of each name, and
-//                        rewrite the bookings that used a different spelling
-//                        so every record agrees.
+// GET  locations.php   → return data/locations.json. If the file does not
+//                        exist yet, build it once from the booking records:
+//                        group by postcode (and, for records without one, by
+//                        name), choose the most common spelling of each name,
+//                        and rewrite the bookings that used a different
+//                        spelling so every record agrees.
 // POST locations.php   → save {locations:[...], renames:[{from,to}]}. Each
 //                        rename is applied to every booking file — the global
 //                        search/replace performed when a location is renamed.
@@ -16,7 +16,7 @@
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store, no-cache, must-revalidate');
 
-$locationsFile = __DIR__ . '/locations.json';
+$locationsFile = __DIR__ . '/data/locations.json';
 $dataDir = __DIR__ . '/data';
 
 function loc_trim($s) {
@@ -61,7 +61,26 @@ function loc_write_json($path, $data) {
     return $json !== false && file_put_contents($path, $json) !== false;
 }
 
-// Build the first locations.json from the booking records.
+function loc_ensure_data_dir($dataDir) {
+    if (!is_dir($dataDir)) {
+        return @mkdir($dataDir, 0755, true);
+    }
+    return true;
+}
+
+// Move a locations.json left at the site root by the earlier version.
+function loc_migrate_legacy($locationsFile, $dataDir) {
+    $legacy = __DIR__ . '/locations.json';
+    if (is_file($locationsFile) || !is_file($legacy)) {
+        return;
+    }
+    $data = loc_read_json($legacy);
+    if (is_array($data) && loc_ensure_data_dir($dataDir) && loc_write_json($locationsFile, $data)) {
+        @unlink($legacy);
+    }
+}
+
+// Build the first data/locations.json from the booking records.
 function loc_build($dataDir) {
     $records = [];
     foreach (loc_booking_files($dataDir) as $path) {
@@ -191,6 +210,7 @@ function loc_build($dataDir) {
     return $locations;
 }
 
+loc_migrate_legacy($locationsFile, $dataDir);
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 
 if ($method === 'GET') {
@@ -200,9 +220,9 @@ if ($method === 'GET') {
     }
     if (!is_array($locations)) {
         $locations = loc_build($dataDir);
-        if (!loc_write_json($locationsFile, $locations)) {
+        if (!loc_ensure_data_dir($dataDir) || !loc_write_json($locationsFile, $locations)) {
             http_response_code(500);
-            echo json_encode(['status' => 'fail', 'error' => 'Could not write locations.json']);
+            echo json_encode(['status' => 'fail', 'error' => 'Could not write data/locations.json']);
             exit;
         }
     }
@@ -291,9 +311,9 @@ if (is_array($renames)) {
     }
 }
 
-if (!loc_write_json($locationsFile, $out)) {
+if (!loc_ensure_data_dir($dataDir) || !loc_write_json($locationsFile, $out)) {
     http_response_code(500);
-    echo json_encode(['status' => 'fail', 'error' => 'Could not write locations.json']);
+    echo json_encode(['status' => 'fail', 'error' => 'Could not write data/locations.json']);
     exit;
 }
 

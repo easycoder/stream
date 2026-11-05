@@ -58,6 +58,9 @@ serve as examples to delete or overwrite.
 | `account.html`       | Minimal launcher — loads the AllSpeak runtime and bootstraps the app.  |
 | `account-main.allspeak` | Main app script — rendering, table, modal, save/load logic.            |
 | `account.json`       | Webson layout describing the page structure and styles.                |
+| `manifest.json`      | PWA manifest — makes `admin.html` installable as an app.               |
+| `sw.js`              | Service worker — caches the admin shell; data requests stay live.      |
+| `icons/`             | App icons (192, 512, maskable, Apple touch).                           |
 | `sample.json`        | The fictional dataset offered by the **Load sample data** button.      |
 | `server.allspeak`    | Generic AllSpeak dev server — serves files, exposes `/list`/`/read`/`/write`. |
 | `seed.allspeak`      | Reference example of a CSV-to-JSON importer; adapt to your own spreadsheet. |
@@ -67,6 +70,31 @@ serve as examples to delete or overwrite.
 | `.allspeak-init`     | Marks the project as initialised so the AI bootstrap skips the setup wizard. |
 | `conversation-*.md`  | Build-log transcripts of the AI-assisted construction of this project. |
 | `data/`              | Local data files — gitignored. Created on demand by the app.           |
+
+## Install it as an app
+
+`index.html` — the site root, and the app's start URL — is a PWA; `admin.html`
+is the same app at a second address. Open it in Chrome or Edge and use the
+install button in the address bar (or **⋮ → Install Eclecity Filming — Admin**),
+or in Safari on iOS/iPadOS **Share → Add to Home Screen**. It then opens in its
+own window without browser chrome.
+
+Because the manifest's `start_url` is `/`, the app has one identity however it
+was installed: installing from `/admin.html` launches the root. Keep the
+`<link rel="manifest">`, the Apple meta tags and the registration snippet on
+**both** launcher pages — the install button is offered from the page you are
+on, and `/` is what a phone reaches when the domain is opened.
+
+The installed app is a **shell**, not an offline copy of the books. The page,
+its layout and the runtime are cached so the window opens instantly and still
+opens if the connection drops; every data request — login, bookings, locations,
+clients, uploads — goes to the server, and nothing is cached or queued. With no
+connection you get the app chrome and an error from the request that needs the
+server, not stale figures presented as current.
+
+Service workers need a secure context: `https://` in production, `localhost`
+when running the dev server. Opening the HTML from the filesystem will not
+register one.
 
 ## Data shape
 

@@ -1607,7 +1607,7 @@ SyncTabsToKind:
 !!
 !! The list is staged in memory — LocNames, LocPostcodes, LocDistances and LocNotes — so Delete changes only those arrays until a save posts the whole list. New location opens the editor for a new record; clicking a row opens the editor for that record, and only Delete sits on each row. The venue's own Notes stay with the venue and are sent with every save.
 !!
-!! The first open fetches locations.php, which builds locations.json from the existing booking files if it does not exist yet. A rename is remembered against the name the record was loaded with (LocOrigNames) and sent with the save, which is what lets the server perform the global search/replace across booking files.
+!! The first open fetches locations.php, which builds data/locations.json from the existing booking files if it does not exist yet. A rename is remembered against the name the record was loaded with (LocOrigNames) and sent with the save, which is what lets the server perform the global search/replace across booking files.
 OnEditCurrentLocation:
     set the content of LocationEditStatus to ``
     if LocationsLoaded is 0

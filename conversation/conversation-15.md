@@ -282,3 +282,87 @@ That all works fine, so now do the equivalent for Clients.
   change, Save from the main form persisted and returned to the main form, Save
   from the list persisted and returned to the list, No client cleared the
   fields, and a company rename posted the old/new pair in `renames`.
+
+## User (2026-11-05)
+
+I think the JSON files for Locations and Clients should live at the top level
+of the data/ folder, to ensure all data can be bundled up and archived.
+
+## Assistant (2026-11-05) — move lookups into data/
+
+- `locations.php` now reads and writes `data/locations.json`; `clients.php`
+  does the same for `data/clients.json`. Both create `data/` when it is missing.
+- A one-time migration moves an existing root-level `locations.json` or
+  `clients.json` into `data/` on first read, then deletes the old root copy.
+  This supersedes the earlier note that the files lived at the site root.
+- `bookings.php` already skips any JSON without a `slug`, so the two lookup
+  files are ignored when it walks `data/`.
+- Updated the deploy comments and the locations doc-block prose; `DIFF.md`
+  records the redeploy and the automatic move.
+- Verified the PHP parses and the old root path now appears only in the
+  migration fallback.
+
+## 12:12
+
+I would like the app to be made into a PWA.
+
+**Assistant**
+
+Asked two questions first: which page becomes installable, and how much works
+offline. Answers: **admin.html only**, **installable shell only — data stays
+live**.
+
+Added `manifest.json`, `sw.js` and `icons/` (192, 512, maskable 512, Apple
+touch 180 — a play mark on slate, generated with PIL), and added the manifest
+link, theme colour and Apple meta tags plus the service-worker registration to
+`admin.html`.
+
+The worker precaches only the shell (`admin.html`, `admin.json`,
+`admin-main.allspeak`, `allspeak.js`, manifest, icons), serves it
+network-first with the cache as fallback, keys entries by path so the `?cb=`
+cache-busters do not fragment it, and leaves `.php`, `data/` and every
+non-admin navigation untouched — so the stream viewer and the landing page are
+never served stale.
+
+`.htaccess` revalidates `sw.js`; `deploy.sh` uploads the three new items. README
+gained an install section, DIFF.md rewritten.
+
+Verified in a real browser against a local static server: the worker installs
+and controls the page, the precache holds exactly the nine shell entries,
+network-first returns fresh content even with a poisoned cache entry, a `.php`
+request passes through and is not cached, and with the server stopped a reload
+renders the full sign-in window from the cache while the data request fails as
+intended. The first version of the worker keyed the cache by the request URL
+including `?cb=`, which the offline test caught — fixed to key by path.
+
+## 12:22
+
+I've deployed, then refreshed on my phone, clearing data beforehand. Install says "This app cannot be installed"
+
+**Assistant**
+
+Checked the live site first: `manifest.json`, `sw.js` and the icons all serve
+with the right MIME types, and Chromium's CDP `Page.getInstallabilityErrors`
+returned an empty list for `/admin.html` — manifest parsed, worker active,
+cache populated. So the page I had built was installable; the phone was not
+looking at it.
+
+The landing page check gave it away: `https://stream.eclecity.net/` reported no
+manifest and no registration, yet compiled "Admin: 3593 lines". `index.html` is
+the app — it boots `admin-main.allspeak` — and `/admin` redirects to it. I had
+put the manifest link and the registration on `admin.html` only, so opening the
+domain on a phone got a page with no manifest, which is exactly "This app cannot
+be installed".
+
+Fixed: index.html carries the same head tags and registration; the manifest's
+start_url is `/` so there is one app identity from either address; the worker
+precaches `/` and maps `/`, `/index.html`, `/admin` and `/admin.html` onto the
+shell entry for offline navigation. README records that the tags must stay on
+both launchers.
+
+Verified with playwright-core against the local server, using CDP and a real
+`context.setOffline(true)`: `/` and `/admin.html` both report no installability
+errors, the worker activates, the cache holds `/` plus the shell, an offline
+reload renders the sign-in window from `/`, and an offline navigation to
+`/admin` falls back to the same shell. start_url resolves to `/`, scope `/`,
+display standalone, three icons.

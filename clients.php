@@ -2,12 +2,13 @@
 // Clients lookup — the repeat clients, keyed by the unique combination of
 // client rep and client company, kept in a single JSON file.
 //
-// GET  clients.php   → return clients.json. If the file does not exist yet,
-//                      build it once from the booking records: group by the
-//                      normalised company + rep pair, choose the most common
-//                      spelling of each, and rewrite the bookings that used a
-//                      different spelling. Phone and email are shared data on
-//                      the client record; they do not rewrite historic bookings.
+// GET  clients.php   → return data/clients.json. If the file does not exist
+//                      yet, build it once from the booking records: group by
+//                      the normalised company + rep pair, choose the most
+//                      common spelling of each, and rewrite the bookings that
+//                      used a different spelling. Phone and email are shared
+//                      data on the client record; they do not rewrite historic
+//                      bookings.
 // POST clients.php   → save {clients:[...], renames:[{old_company, old_rep,
 //                      company, rep}]}. Each rename is applied to every booking
 //                      whose old company + rep matches.
@@ -15,7 +16,7 @@
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store, no-cache, must-revalidate');
 
-$clientsFile = __DIR__ . '/clients.json';
+$clientsFile = __DIR__ . '/data/clients.json';
 $dataDir = __DIR__ . '/data';
 
 function cl_trim($s) {
@@ -60,6 +61,25 @@ function cl_write_json($path, $data) {
     return $json !== false && file_put_contents($path, $json) !== false;
 }
 
+function cl_ensure_data_dir($dataDir) {
+    if (!is_dir($dataDir)) {
+        return @mkdir($dataDir, 0755, true);
+    }
+    return true;
+}
+
+// Move a clients.json left at the site root by the earlier version.
+function cl_migrate_legacy($clientsFile, $dataDir) {
+    $legacy = __DIR__ . '/clients.json';
+    if (is_file($clientsFile) || !is_file($legacy)) {
+        return;
+    }
+    $data = cl_read_json($legacy);
+    if (is_array($data) && cl_ensure_data_dir($dataDir) && cl_write_json($clientsFile, $data)) {
+        @unlink($legacy);
+    }
+}
+
 function cl_sort(&$clients) {
     usort($clients, function ($a, $b) {
         $company = strcasecmp($a['company'], $b['company']);
@@ -70,7 +90,7 @@ function cl_sort(&$clients) {
     });
 }
 
-// Build the first clients.json from the booking records.
+// Build the first data/clients.json from the booking records.
 function cl_build($dataDir) {
     $records = [];
     foreach (cl_booking_files($dataDir) as $path) {
@@ -169,6 +189,7 @@ function cl_build($dataDir) {
     return $clients;
 }
 
+cl_migrate_legacy($clientsFile, $dataDir);
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 
 if ($method === 'GET') {
@@ -178,9 +199,9 @@ if ($method === 'GET') {
     }
     if (!is_array($clients)) {
         $clients = cl_build($dataDir);
-        if (!cl_write_json($clientsFile, $clients)) {
+        if (!cl_ensure_data_dir($dataDir) || !cl_write_json($clientsFile, $clients)) {
             http_response_code(500);
-            echo json_encode(['status' => 'fail', 'error' => 'Could not write clients.json']);
+            echo json_encode(['status' => 'fail', 'error' => 'Could not write data/clients.json']);
             exit;
         }
     }
@@ -272,9 +293,9 @@ if (is_array($renames)) {
     }
 }
 
-if (!cl_write_json($clientsFile, $out)) {
+if (!cl_ensure_data_dir($dataDir) || !cl_write_json($clientsFile, $out)) {
     http_response_code(500);
-    echo json_encode(['status' => 'fail', 'error' => 'Could not write clients.json']);
+    echo json_encode(['status' => 'fail', 'error' => 'Could not write data/clients.json']);
     exit;
 }
 
