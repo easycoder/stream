@@ -1775,9 +1775,18 @@
           "justify-content": "flex-end",
           "margin-top": "0.8em",
           "#": [
+            "$LocationShowAllBtn",
             "$LocationEditCancelBtn",
-            "$LocationEditSaveBtn"
+            "$LocationEditSaveBtn",
+            "$LocationSelectBtn"
           ],
+          "$LocationShowAllBtn": {
+            "#element": "button",
+            "@id": "location-show-all-btn",
+            "padding": "0.4em 1em",
+            "cursor": "pointer",
+            "#content": "Show all"
+          },
           "$LocationEditCancelBtn": {
             "#element": "button",
             "@id": "location-edit-cancel-btn",
@@ -1789,12 +1798,19 @@
             "#element": "button",
             "@id": "location-edit-save-btn",
             "padding": "0.4em 1em",
+            "cursor": "pointer",
+            "#content": "Save"
+          },
+          "$LocationSelectBtn": {
+            "#element": "button",
+            "@id": "location-select-btn",
+            "padding": "0.4em 1em",
             "background": "#28a",
             "color": "white",
             "border": "0",
             "border-radius": "4px",
             "cursor": "pointer",
-            "#content": "Save"
+            "#content": "Select"
           }
         }
       }
@@ -2097,9 +2113,18 @@
           "justify-content": "flex-end",
           "margin-top": "0.8em",
           "#": [
+            "$ClientShowAllBtn",
             "$ClientEditCancelBtn",
-            "$ClientEditSaveBtn"
+            "$ClientEditSaveBtn",
+            "$ClientSelectBtn"
           ],
+          "$ClientShowAllBtn": {
+            "#element": "button",
+            "@id": "client-show-all-btn",
+            "padding": "0.4em 1em",
+            "cursor": "pointer",
+            "#content": "Show all"
+          },
           "$ClientEditCancelBtn": {
             "#element": "button",
             "@id": "client-edit-cancel-btn",
@@ -2111,12 +2136,19 @@
             "#element": "button",
             "@id": "client-edit-save-btn",
             "padding": "0.4em 1em",
+            "cursor": "pointer",
+            "#content": "Save"
+          },
+          "$ClientSelectBtn": {
+            "#element": "button",
+            "@id": "client-select-btn",
+            "padding": "0.4em 1em",
             "background": "#28a",
             "color": "white",
             "border": "0",
             "border-radius": "4px",
             "cursor": "pointer",
-            "#content": "Save"
+            "#content": "Select"
           }
         }
       }

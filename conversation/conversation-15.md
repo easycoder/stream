@@ -214,3 +214,71 @@ the contact)
   can be saved with only the family contact.
 - Verified in a browser: selecting a client then clicking No client left all
   four fields empty and closed the window.
+
+## User (2026-11-05)
+
+The new locations feature is a bit counter-intuitive, so I want to improve it.
+In Edit booking, when Location is clicked it should open the editing form for
+that location. This will be as it is now but with two new buttons: "Show all"
+will bring up the list of locations. "Select" will set this location in the
+main editor and close the location editor. The button order will be "Show all",
+"Cancel", "Save, "Select". "Save" will save the data and will return the user
+to where this was called from. "Select" will save the data then return to the
+main form. Please also ensure that all fields are saved. I think the Notes
+field isn't currently saved.
+
+## User (2026-11-05)
+
+In the locations list, clicking the name edits it. Buttons New and Edit are not
+needed per row.
+
+## Assistant (2026-11-05) — direct location editor
+
+- Clicking the read-only Location field now opens the location editor for the
+  current venue (matched case-insensitively against the saved list), or a new
+  venue form carrying the current name and hidden postcode/distance when there
+  is no match.
+- The editor footer is **Show all / Cancel / Save / Select**. Save writes the
+  whole list and returns to the origin (main form or locations list); Select
+  writes, applies Name/Postcode/Distance to the booking and closes both windows;
+  Show all opens the list.
+- The locations list now evaluates a row click as **Edit**: it opens the
+  editor for that record. Per-row New/Edit buttons were removed; each row has
+  only Delete, and New location remains at the top.
+- Shared save path: `BuildLocationsBody` + `SaveLocationData` are used by the
+  list Save and by the editor's Save/Select, so every path posts the full
+  record. `StageLocationRecord` validates and stages the edit, `RebaseLocation-
+  Names` re-baselines for the next rename, and `ShowLocationSaveError` keeps
+  failures visible in the editor.
+- Notes: verified in a browser against the mock — changing Notes and pressing
+  Select posted `"notes":"Access via the side door. Ring the bell."`, and
+  reopening the editor showed it. Changing Notes and pressing Save (from the
+  main form) posted `"Save path notes."`; Save from the list returned to the
+  list and updated the row. The list row now shows only Delete.
+
+## User (2026-11-05)
+
+That all works fine, so now do the equivalent for Clients.
+
+## Assistant (2026-11-05) — direct client editor
+
+- Clicking any read-only client field now opens the client editor for the
+  current company + rep pair, or a new client form carrying the current
+  company, rep, phone and email when the pair is not saved. The editor footer
+  is **Show all / Cancel / Save / Select**.
+- Save writes the whole client list and returns to the origin (main form or
+  clients list); Select writes, applies company/rep/phone/email to the booking
+  and closes both windows; Show all opens the list.
+- The clients list now treats a row click as **Edit**. Per-row New/Edit buttons
+  were removed; each row has only Delete. New client and No client remain at
+  the top. No client still clears all four fields.
+- Shared save path: `BuildClientsBody` + `SaveClientData` are used by the list
+  Save and the editor's Save/Select; `StageClientRecord` validates/stages,
+  `RebaseClientKeys` re-baselines the key pair, and `ShowClientSaveError` keeps
+  failures visible in the editor.
+- Verified in a browser against the mock: the editor opened directly, Show all
+  listed clients with only Delete per row, a row click opened the editor,
+  changing the phone and pressing Select applied all four fields and posted the
+  change, Save from the main form persisted and returned to the main form, Save
+  from the list persisted and returned to the list, No client cleared the
+  fields, and a company rename posted the old/new pair in `renames`.
