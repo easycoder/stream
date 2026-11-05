@@ -366,3 +366,53 @@ errors, the worker activates, the cache holds `/` plus the shell, an offline
 reload renders the sign-in window from `/`, and an offline navigation to
 `/admin` falls back to the same shell. start_url resolves to `/`, scope `/`,
 display standalone, three icons.
+
+## 12:32
+
+On mobile in portrait mode there's far too much on the screen, so in that situation I'd like to display only these items: Date, Time, Name, Link, Inv, Paid. See learn/ Reference 6.Conditions re if mobile and portrait
+
+**Assistant**
+
+Read learn/reference/06-conditions.md first: `mobile` is a user-agent test and
+`portrait` a viewport-shape test, read when the line runs rather than watched,
+so the answer is taken once at startup and a rotation needs a reload.
+
+Added `MobileView`, set from `if mobile and portrait` before the row styles are
+built. On that branch the grid is six columns (`1.1fr 0.6fr 2fr 0.5fr 0.5fr
+0.5fr`) instead of twelve and rows carry `font-size: 0.85em`. EmitRow skips the
+flag column and the location/contact/client/expense/fees block; EmitSubtotal
+draws a single cell spanning `1 / -1` as a month divider; EmitGrandTotal returns
+early, since it only totals money columns that view does not show.
+
+The header's grid came from admin.json and the rows' from the script, so it
+could drift; the header now takes its style from the same Grid string. The
+twelve header cells gained ids (`lh-date` … `lh-paid`) and the six not shown on
+mobile are hidden with `display: none`. Note `set style \`grid-template-columns\``
+would silently do nothing — the runtime assigns `style[name]`, so a hyphenated
+property needs cssText via `set the style of`.
+
+Doc prose updated for the four affected blocks and hashes refreshed with
+asdoc-check (0 errors, 0 warnings).
+
+Verified against a mock backend serving sample.json, with playwright at 1280x900
+and at 390x844 with an iPhone UA and isMobile: desktop keeps twelve headers,
+twelve-cell rows, subtotals with figures and the grand total; mobile shows Date,
+Time, Name, Link, Inv, Pd, six-cell rows, month dividers spanning 1/-1 and no
+grand total row. Measured header and row cells land on identical x positions
+(42, 107, 142, 260, 289, 319). No page errors.
+
+## 12:38
+
+That's good. Just a couple of minor tweaks. The monthly headers don't need the word "total". And the title "Service log" can be changed to "Bookings" for both mobile and desktop.
+
+**Assistant**
+
+Two one-line changes: the subtotal label is now `MonthLabel cat ` ` cat Yy`
+(the trailing `cat ` total`` dropped), and admin.json's `$Title` reads
+"Bookings". Both live in the same strings the mobile and desktop views share,
+so one edit covers each.
+
+Refreshed the EmitSubtotal block hash with asdoc-check (0 errors, 0 warnings).
+Verified against the mock again at 1280x900 and 390x844 with an iPhone UA: title
+"Bookings" in both, month rows "June 2026" / "May 2026" / "April 2026" in both,
+and the grand total row still reads "Grand total" with its figures on desktop.

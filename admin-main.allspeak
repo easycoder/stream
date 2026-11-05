@@ -25,6 +25,19 @@
     div LogBody
     div EmptyState
     button LoadSampleBtn
+    div LogHeader
+    div LHDate
+    div LHTime
+    div LHFlag
+    div LHName
+    div LHLocation
+    div LHContact
+    div LHClient
+    div LHExpense
+    div LHFees
+    div LHLink
+    div LHInv
+    div LHPaid
 
     div Overlay
     div ModalForm
@@ -165,6 +178,8 @@
     variable RowStyleSub
     variable RowStyleGrand
     variable Grid
+    variable HeaderStyle
+    variable MobileView
     variable CellRight
     variable KindSelectedStyle
     variable KindUnselectedStyle
@@ -373,7 +388,10 @@
     variable HeartbeatJson
     variable HeartbeatObj
     variable PingJson
-!! Build the grid template — 12 columns matching the columns we render.
+!! Build the grid template — 12 columns on a desktop, 6 on a mobile in portrait.
+!!
+!! Mobile portrait keeps Date, Time, Name, Link, Inv and Paid, and drops the flag, location, contact, client, expense and fees columns — an operator standing in a crematorium does not need the money, and at 390px the twelve columns are unreadable anyway. The branch is taken once, here, before the row styles are built, because `mobile` and `portrait` are tests rather than listeners (learn/reference/06-conditions.md): the answer is read when the line runs, so rotating the phone does not re-run it and needs a reload. The header's grid comes from the same string as the rows' grid, so the labels cannot drift from the cells beneath them.
+!!
 !! Wire up click handlers then show login.
 !! Check browser storage for saved credentials. If present, populate the
 !! fields and auto-login so the user skips the login panel on return visits.
@@ -399,6 +417,19 @@
     attach LogBody to `log-body`
     attach EmptyState to `empty-state`
     attach LoadSampleBtn to `load-sample-btn`
+    attach LogHeader to `log-header`
+    attach LHDate to `lh-date`
+    attach LHTime to `lh-time`
+    attach LHFlag to `lh-flag`
+    attach LHName to `lh-name`
+    attach LHLocation to `lh-location`
+    attach LHContact to `lh-contact`
+    attach LHClient to `lh-client`
+    attach LHExpense to `lh-expense`
+    attach LHFees to `lh-fees`
+    attach LHLink to `lh-link`
+    attach LHInv to `lh-inv`
+    attach LHPaid to `lh-paid`
 
     attach Overlay to `overlay`
     attach ModalForm to `modal-form`
@@ -524,16 +555,41 @@
     put 1 into IsCreate
 
 
-    put `1fr 0.7fr 0.4fr 2.5fr 2.5fr 1fr 1fr 0.6fr 0.6fr 0.5fr 0.5fr 0.5fr` into Grid
+    ! Mobile portrait drops to the six columns an operator needs in the hand.
+    ! The flag is read once, here, because these are tests rather than
+    ! listeners — see the block prose.
+    if mobile and portrait set MobileView
+    else clear MobileView
+    if MobileView
+        put `1.1fr 0.6fr 2fr 0.5fr 0.5fr 0.5fr` into Grid
+    else
+        put `1fr 0.7fr 0.4fr 2.5fr 2.5fr 1fr 1fr 0.6fr 0.6fr 0.5fr 0.5fr 0.5fr` into Grid
 
     put `display: grid; grid-template-columns: ` cat Grid into RowStyleData
     put RowStyleData cat `; padding: 0.3em 0.4em; border-bottom: 1px solid #eee; cursor: pointer` into RowStyleData
+    if MobileView
+        put RowStyleData cat `; font-size: 0.85em` into RowStyleData
 
     put `display: grid; grid-template-columns: ` cat Grid into RowStyleSub
     put RowStyleSub cat `; padding: 0.4em 0.4em; border-top: 1px solid #aaa; border-bottom: 1px solid #aaa; background: #fafafa; font-weight: bold` into RowStyleSub
 
     put `display: grid; grid-template-columns: ` cat Grid into RowStyleGrand
     put RowStyleGrand cat `; padding: 0.6em 0.4em; border-top: 2px solid #333; background: #eef; font-weight: bold` into RowStyleGrand
+
+    ! The header takes its grid from the same Grid, so the labels cannot drift
+    ! from the cells beneath them.
+    put `display: grid; grid-template-columns: ` cat Grid into HeaderStyle
+    put HeaderStyle cat `; padding: 0.5em 0.4em; position: sticky; top: 0; z-index: 1; border-bottom: 2px solid #333; font-weight: bold; background: #e8e8e8; font-size: 0.85em` into HeaderStyle
+    set the style of LogHeader to HeaderStyle
+    if MobileView
+    begin
+        set the style of LHFlag to `display: none`
+        set the style of LHLocation to `display: none`
+        set the style of LHContact to `display: none`
+        set the style of LHClient to `display: none`
+        set the style of LHExpense to `display: none`
+        set the style of LHFees to `display: none`
+    end
 
     put `text-align: right; padding-right: 0.4em; color: #666` into CellRight
     put `padding: 0.3em 0.9em; cursor: pointer; border: 0; border-radius: 4px; background: #28a; color: white` into KindSelectedStyle
@@ -636,7 +692,7 @@
     fork to Heartbeat
     fork to WatchForUploadedDocument
     stop
-!! @hash 5690d4df
+!! @hash 9efe433c
 !!!
 !! Login: POST credentials to login.php, on success show the admin panel
 !! and load data.
@@ -849,6 +905,8 @@ Refresh:
 !! @hash 77be460a
 !!!
 !! EmitRow: render one data row from the current record in 'Row'.
+!!
+!! Mobile portrait emits the six surviving columns only — Date, Time, Name, Link, Inv, Paid — in the order the reduced grid expects, so the skipped cells are skipped here as well as in the header.
 EmitRow:
     index DataRowDivs to I
     put property `date` of Row into BookingDate
@@ -904,9 +962,12 @@ EmitRow:
     set the content of CellDiv to BookingTime
 
     ! Column 3: expense flag (💰 only for expense rows)
-    create CellDiv in DataRowDivs
-    if Kind is `expense`
-        set the content of CellDiv to `💰`
+    if not MobileView
+    begin
+        create CellDiv in DataRowDivs
+        if Kind is `expense`
+            set the content of CellDiv to `💰`
+    end
 
     ! Column 4: name
     create CellDiv in DataRowDivs
@@ -920,35 +981,40 @@ EmitRow:
     else
         set the content of CellDiv to BookingName
 
-    ! Column 5: location
-    create CellDiv in DataRowDivs
-    put property `location` of Row into TempStr
-    if TempStr is not empty
+    ! Columns 5-9: location, contact, client, expense and fees — the middle
+    ! of the sheet, which mobile portrait leaves out.
+    if not MobileView
+    begin
+        ! Column 5: location
+        create CellDiv in DataRowDivs
+        put property `location` of Row into TempStr
+        if TempStr is not empty
+            set the content of CellDiv to TempStr
+
+        ! Column 6: contact
+        create CellDiv in DataRowDivs
+        put property `contact` of Row into TempStr
         set the content of CellDiv to TempStr
 
-    ! Column 6: contact
-    create CellDiv in DataRowDivs
-    put property `contact` of Row into TempStr
-    set the content of CellDiv to TempStr
+        ! Column 7: client
+        create CellDiv in DataRowDivs
+        put property `client` of Row into BookingClient
+        set the content of CellDiv to BookingClient
 
-    ! Column 7: client
-    create CellDiv in DataRowDivs
-    put property `client` of Row into BookingClient
-    set the content of CellDiv to BookingClient
+        ! Column 8: expense
+        create CellDiv in DataRowDivs
+        set the style of CellDiv to CellRight
+        put Expense into MoneyVal
+        gosub FormatMoney
+        set the content of CellDiv to MoneyStr
 
-    ! Column 8: expense
-    create CellDiv in DataRowDivs
-    set the style of CellDiv to CellRight
-    put Expense into MoneyVal
-    gosub FormatMoney
-    set the content of CellDiv to MoneyStr
-
-    ! Column 9: fees
-    create CellDiv in DataRowDivs
-    set the style of CellDiv to CellRight
-    put Fees into MoneyVal
-    gosub FormatMoney
-    set the content of CellDiv to MoneyStr
+        ! Column 9: fees
+        create CellDiv in DataRowDivs
+        set the style of CellDiv to CellRight
+        put Fees into MoneyVal
+        gosub FormatMoney
+        set the content of CellDiv to MoneyStr
+    end
 
     ! Column 10: link sent check — amber background if warning
     create CellDiv in DataRowDivs
@@ -996,7 +1062,7 @@ EmitRow:
     create RowWrappers in LogBody
 
     return
-!! @hash 04677113
+!! @hash 8854b376
 !!!
 !! OnRowClick: open the edit modal for the clicked row. We read the slug
 !! from the AllBookings array at the stored index.
@@ -1012,6 +1078,8 @@ OnRowClick:
 !! @hash d12bb316
 !!!
 !! EmitSubtotal: render a monthly subtotal row.
+!!
+!! On mobile portrait it is a full-width month divider instead: the expense and fees figures it carries between the label and the end of the row have no columns to sit in there.
 EmitSubtotal:
     if LastFy is empty
         return
@@ -1026,10 +1094,20 @@ EmitSubtotal:
     split Parts on `-`
     index Parts to 0
     put Parts into Yy
-    put MonthLabel cat ` ` cat Yy cat ` total` into MonthLabel
+    put MonthLabel cat ` ` cat Yy into MonthLabel
 
     create SubDiv in LogBody
     set the style of SubDiv to RowStyleSub
+
+    ! Mobile portrait: a month divider across the six columns, since the
+    ! expense and fees columns it used to carry are not shown.
+    if MobileView
+    begin
+        create CellDiv in SubDiv
+        set the style of CellDiv to `grid-column: 1 / -1`
+        set the content of CellDiv to MonthLabel
+        return
+    end
 
     create CellDiv in SubDiv
     create CellDiv in SubDiv
@@ -1056,10 +1134,15 @@ EmitSubtotal:
     create CellDiv in SubDiv
     create CellDiv in SubDiv
     return
-!! @hash 5c937da1
+!! @hash df4fa3c6
 !!!
 !! EmitGrandTotal: render the grand total row.
+!!
+!! Not rendered on mobile portrait: it exists to total the expense and fees columns, and that view has neither.
 EmitGrandTotal:
+    ! Nothing to total on mobile portrait: the money columns are not shown.
+    if MobileView
+        return
     create GrandDiv in LogBody
     set the style of GrandDiv to RowStyleGrand
 
@@ -1088,7 +1171,7 @@ EmitGrandTotal:
     create CellDiv in GrandDiv
     create CellDiv in GrandDiv
     return
-!! @hash ac90f52d
+!! @hash f95565c4
 !!!
 !! FormatMoney: convert integer pence to £XX.XX string.
 !! MoneyVal carries the value in (e.g. 1998); MoneyStr carries the result

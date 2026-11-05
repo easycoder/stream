@@ -150,7 +150,7 @@
       "@id": "title",
       "margin": "0",
       "font-size": "1.4em",
-      "#content": "Service log"
+      "#content": "Bookings"
     },
     "$AddButton": {
       "#element": "button",
@@ -2182,53 +2182,65 @@
       ],
       "$LHDate": {
         "#element": "div",
+        "@id": "lh-date",
         "#content": "Date"
       },
       "$LHTime": {
         "#element": "div",
+        "@id": "lh-time",
         "#content": "Time"
       },
       "$LHName": {
         "#element": "div",
+        "@id": "lh-name",
         "#content": "Name"
       },
       "$LHClient": {
         "#element": "div",
+        "@id": "lh-client",
         "#content": "Client"
       },
       "$LHExpense": {
         "#element": "div",
+        "@id": "lh-expense",
         "#content": "Exp"
       },
       "$LHFees": {
         "#element": "div",
+        "@id": "lh-fees",
         "#content": "Fees"
       },
       "$LHPaid": {
         "#element": "div",
+        "@id": "lh-paid",
         "#content": "Pd",
         "text-align": "center"
       },
       "$LHFlag": {
         "#element": "div",
+        "@id": "lh-flag",
         "#content": ""
       },
       "$LHLink": {
         "#element": "div",
+        "@id": "lh-link",
         "#content": "Link",
         "text-align": "center"
       },
       "$LHInv": {
         "#element": "div",
+        "@id": "lh-inv",
         "#content": "Inv",
         "text-align": "center"
       },
       "$LHLocation": {
         "#element": "div",
+        "@id": "lh-location",
         "#content": "Location"
       },
       "$LHContact": {
         "#element": "div",
+        "@id": "lh-contact",
         "#content": "Contact"
       }
     }
